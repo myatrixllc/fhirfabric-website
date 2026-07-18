@@ -274,6 +274,117 @@
   </div>
 </section>
 
+<!-- INTEGRATION PATTERNS -->
+<section class="section bg-off" id="integration">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Integration</div>
+    <h2 class="h2 reveal d1">Three ways to connect.<br /><em>You choose based on your architecture.</em></h2>
+    <p class="section-lead reveal d2">Payers don't rip out their systems. FHIRFabric plugs into what you already have — whether your data lives in separate systems, exposes live API endpoints, or is already normalized into FHIR R4.</p>
+
+    <div style="margin-top:48px;display:grid;grid-template-columns:1fr;gap:32px;">
+
+      <!-- Pattern 1 -->
+      <div style="border:1px solid var(--gray-2);border-radius:var(--r-lg);overflow:hidden;" class="reveal">
+        <div style="background:var(--teal-light);padding:20px 28px;display:flex;align-items:center;gap:16px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.75rem;font-weight:600;color:var(--white);flex-shrink:0;">01</div>
+          <div>
+            <div style="font-weight:600;font-size:1rem;color:var(--navy);">Semantic layer</div>
+            <div style="font-size:.82rem;color:var(--teal-2);margin-top:2px;">Fastest POC path — no live system access required</div>
+          </div>
+          <div style="margin-left:auto;font-family:var(--mono);font-size:.65rem;color:var(--teal-2);text-transform:uppercase;letter-spacing:.08em;">Days to implement</div>
+        </div>
+        <div style="padding:24px 28px;">
+          <p style="font-size:.9rem;color:var(--text-2);line-height:1.75;margin-bottom:20px;">The payer's middleware assembles data from all source systems — eligibility, provider, contracts, auth — and enriches the claim into one payload before calling the FHIRFabric API. We validate the enriched payload. No direct access to internal systems required.</p>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px;">
+            <div style="background:var(--gray-1);border-radius:var(--r);padding:10px 12px;text-align:center;font-size:.78rem;color:var(--navy);font-weight:500;">Eligibility DB</div>
+            <div style="background:var(--gray-1);border-radius:var(--r);padding:10px 12px;text-align:center;font-size:.78rem;color:var(--navy);font-weight:500;">Provider DB</div>
+            <div style="background:var(--gray-1);border-radius:var(--r);padding:10px 12px;text-align:center;font-size:.78rem;color:var(--navy);font-weight:500;">Claims system</div>
+            <div style="background:var(--gray-1);border-radius:var(--r);padding:10px 12px;text-align:center;font-size:.78rem;color:var(--navy);font-weight:500;">Contracts DB</div>
+            <div style="background:var(--gray-1);border-radius:var(--r);padding:10px 12px;text-align:center;font-size:.78rem;color:var(--navy);font-weight:500;">Auth / PA</div>
+          </div>
+          <div style="background:var(--teal-light);border:1px solid rgba(0,131,143,.2);border-radius:var(--r);padding:12px 16px;font-size:.85rem;color:var(--teal-2);">
+            ↓ &nbsp; Payer middleware enriches all data into one payload → <strong>POST /v1/claims/validate</strong> → FHIRFabric validates → decision returned
+          </div>
+        </div>
+      </div>
+
+      <!-- Pattern 2 -->
+      <div style="border:1px solid var(--gray-2);border-radius:var(--r-lg);overflow:hidden;" class="reveal">
+        <div style="background:var(--coral-lt);padding:20px 28px;display:flex;align-items:center;gap:16px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.75rem;font-weight:600;color:var(--white);flex-shrink:0;">02</div>
+          <div>
+            <div style="font-weight:600;font-size:1rem;color:var(--navy);">Real-time API</div>
+            <div style="font-size:.82rem;color:var(--coral-2);margin-top:2px;">Production standard — payer exposes system endpoints</div>
+          </div>
+          <div style="margin-left:auto;font-family:var(--mono);font-size:.65rem;color:var(--coral-2);text-transform:uppercase;letter-spacing:.08em;">Weeks to implement</div>
+        </div>
+        <div style="padding:24px 28px;">
+          <p style="font-size:.9rem;color:var(--text-2);line-height:1.75;margin-bottom:20px;">FHIRFabric pipeline stages make real-time API calls to the payer's source systems at the moment each stage needs the data. Stage 1 fires — calls the eligibility API. Stage 8 fires — calls the provider credentialing system. The payer exposes REST or 270/271 EDI endpoints; we handle the orchestration.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div style="border:1px solid var(--gray-2);border-radius:var(--r);padding:14px 16px;">
+              <div style="font-family:var(--mono);font-size:.65rem;color:var(--coral);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Stage 1 — Eligibility</div>
+              <div style="font-size:.82rem;color:var(--text-2);">GET /eligibility?member=... <br/>or 270 inquiry → 271 response</div>
+            </div>
+            <div style="border:1px solid var(--gray-2);border-radius:var(--r);padding:14px 16px;">
+              <div style="font-family:var(--mono);font-size:.65rem;color:var(--coral);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Stage 8 — Provider</div>
+              <div style="font-size:.82rem;color:var(--text-2);">GET /providers/{npi}/contract <br/>CAQH ProView or internal API</div>
+            </div>
+            <div style="border:1px solid var(--gray-2);border-radius:var(--r);padding:14px 16px;">
+              <div style="font-family:var(--mono);font-size:.65rem;color:var(--coral);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Stage 9 — Pricing</div>
+              <div style="font-size:.82rem;color:var(--text-2);">GET /feeschedule?cpt=...&npi=... <br/>or S3 fee schedule lookup</div>
+            </div>
+            <div style="border:1px solid var(--gray-2);border-radius:var(--r);padding:14px 16px;">
+              <div style="font-family:var(--mono);font-size:.65rem;color:var(--coral);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Stage 7 — Prior auth</div>
+              <div style="font-size:.82rem;color:var(--text-2);">GET /authorizations?member=... <br/>Cohere Health or internal PA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pattern 3 -->
+      <div style="border:1px solid var(--gray-2);border-radius:var(--r-lg);overflow:hidden;" class="reveal">
+        <div style="background:#EEEDFE;padding:20px 28px;display:flex;align-items:center;gap:16px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#534AB7;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.75rem;font-weight:600;color:var(--white);flex-shrink:0;">03</div>
+          <div>
+            <div style="font-weight:600;font-size:1rem;color:var(--navy);">FHIR native</div>
+            <div style="font-size:.82rem;color:#534AB7;margin-top:2px;">Zero integration work — automatic if running FHIRFabric interoperability</div>
+          </div>
+          <div style="margin-left:auto;font-family:var(--mono);font-size:.65rem;color:#534AB7;text-transform:uppercase;letter-spacing:.08em;">Zero to implement</div>
+        </div>
+        <div style="padding:24px 28px;">
+          <p style="font-size:.9rem;color:var(--text-2);line-height:1.75;margin-bottom:20px;">If the payer already runs FHIRFabric for CMS interoperability compliance, every source system is already normalized into FHIR R4 resources in the shared datastore. The payment integrity pipeline reads directly — no ETL, no API calls, no integration project. One platform, one data layer, two capabilities.</p>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;">
+            <div style="background:#EEEDFE;border-radius:var(--r);padding:10px 12px;text-align:center;">
+              <div style="font-size:.72rem;color:#3C3489;font-weight:600;margin-bottom:2px;">Coverage</div>
+              <div style="font-size:.68rem;color:#534AB7;">Eligibility</div>
+            </div>
+            <div style="background:#EEEDFE;border-radius:var(--r);padding:10px 12px;text-align:center;">
+              <div style="font-size:.72rem;color:#3C3489;font-weight:600;margin-bottom:2px;">Practitioner</div>
+              <div style="font-size:.68rem;color:#534AB7;">Provider</div>
+            </div>
+            <div style="background:#EEEDFE;border-radius:var(--r);padding:10px 12px;text-align:center;">
+              <div style="font-size:.72rem;color:#3C3489;font-weight:600;margin-bottom:2px;">Claim</div>
+              <div style="font-size:.68rem;color:#534AB7;">Claims</div>
+            </div>
+            <div style="background:#EEEDFE;border-radius:var(--r);padding:10px 12px;text-align:center;">
+              <div style="font-size:.72rem;color:#3C3489;font-weight:600;margin-bottom:2px;">Contract</div>
+              <div style="font-size:.68rem;color:#534AB7;">Contracts</div>
+            </div>
+            <div style="background:#EEEDFE;border-radius:var(--r);padding:10px 12px;text-align:center;">
+              <div style="font-size:.72rem;color:#3C3489;font-weight:600;margin-bottom:2px;">ClaimResponse</div>
+              <div style="font-size:.68rem;color:#534AB7;">Auth / PA</div>
+            </div>
+          </div>
+          <div style="background:#EEEDFE;border:1px solid rgba(83,74,183,.2);border-radius:var(--r);padding:12px 16px;font-size:.85rem;color:#3C3489;">
+            All FHIR R4 resources live in the shared FHIRFabric datastore → PI pipeline reads natively → <strong>no integration work required</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- DIFFERENTIATORS -->
 <section class="section">
   <div class="section-inner">
@@ -342,3 +453,5 @@
 </script>
 </body>
 </html>
+
+<!-- INTEGRATION PATTERNS — inserted before differentiators -->

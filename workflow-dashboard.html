@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FHIRFabric — Workflow Intelligence Dashboard</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+  <style>
+    body{background:#F0F2F5}
+    .wrap{max-width:1280px;margin:0 auto;padding:88px 32px 60px}
+
+    /* Header */
+    .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .hdr-title{font-size:1.1rem;font-weight:600;color:var(--navy)}
+    .hdr-sub{font-size:.78rem;color:var(--text-3);margin-top:2px}
+    .live-badge{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.62rem;color:#0F6E56;background:#E1F5EE;border:1px solid rgba(15,110,86,.2);border-radius:100px;padding:5px 12px}
+    .ldot{width:6px;height:6px;border-radius:50%;background:#1D9E75;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+    /* Date filter */
+    .date-strip{display:flex;gap:6px;margin-bottom:20px;align-items:center}
+    .dfilter{font-size:.75rem;padding:5px 14px;border:1px solid #D0D7E1;border-radius:100px;background:white;color:var(--text-3);cursor:pointer;font-family:var(--sans);transition:all .12s}
+    .dfilter.on{background:var(--navy);color:white;border-color:var(--navy)}
+    .dfilter:hover:not(.on){border-color:#9BA8B6;color:var(--navy)}
+
+    /* Summary strip */
+    .summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+    .sum-card{background:white;border:1px solid #E2E6ED;border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
+    .sum-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
+    .sc-total::after{background:var(--navy)}
+    .sc-approved::after{background:#3B6D11}
+    .sc-denied::after{background:#A32D2D}
+    .sc-pended::after{background:#854F0B}
+    .sc-savings::after{background:#00838F}
+    .sum-label{font-family:var(--mono);font-size:.58rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+    .sum-val{font-family:var(--serif);font-size:1.8rem;line-height:1}
+    .sum-sub{font-size:.7rem;color:var(--text-3);margin-top:4px}
+
+    /* ── WORKFLOW FUNNEL ── */
+    .funnel-section{background:white;border:1px solid #E2E6ED;border-radius:14px;overflow:hidden;margin-bottom:16px}
+    .funnel-header{background:var(--navy);padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+    .funnel-title{font-size:.9rem;font-weight:600;color:white}
+    .funnel-sub{font-size:.72rem;color:rgba(255,255,255,.5)}
+    .funnel-body{padding:20px}
+
+    /* Stage row */
+    .stage-row{display:grid;grid-template-columns:200px 1fr 180px;gap:0;align-items:stretch;border-bottom:1px solid #F0F2F5;cursor:pointer;transition:background .1s}
+    .stage-row:last-child{border-bottom:none}
+    .stage-row:hover{background:#F7F8FA}
+    .stage-row.active-row{background:#EEF3FF}
+
+    /* Stage label */
+    .stage-label{padding:14px 16px;display:flex;align-items:center;gap:10px;border-right:1px solid #F0F2F5}
+    .stage-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.7rem;font-weight:600;color:white;flex-shrink:0}
+    .stage-name{font-size:.8rem;font-weight:600;color:var(--navy)}
+    .stage-type{font-family:var(--mono);font-size:.55rem;color:var(--text-3);margin-top:2px}
+
+    /* Bar area */
+    .stage-bars{padding:14px 16px;display:flex;flex-direction:column;gap:5px;justify-content:center}
+    .bar-row{display:flex;align-items:center;gap:8px}
+    .bar-label{font-size:.7rem;color:var(--text-3);width:80px;flex-shrink:0;text-align:right}
+    .bar-track{flex:1;height:18px;background:#F0F2F5;border-radius:4px;overflow:hidden;position:relative}
+    .bar-fill{height:100%;border-radius:4px;transition:width .6s;display:flex;align-items:center;padding-left:6px}
+    .bar-fill span{font-size:.65rem;font-weight:600;color:white;white-space:nowrap}
+    .bar-count{font-size:.72rem;font-weight:600;color:var(--navy);width:28px;text-align:right}
+
+    /* Stage outcome */
+    .stage-outcome{padding:14px 16px;border-left:1px solid #F0F2F5;display:flex;flex-direction:column;gap:4px;justify-content:center}
+    .outcome-item{display:flex;align-items:center;justify-content:space-between;font-size:.72rem}
+    .outcome-label{color:var(--text-3)}
+    .outcome-val{font-weight:600}
+
+    /* Drop-off detail panel */
+    .detail-panel{background:#F7F8FA;border:1px solid #E2E6ED;border-radius:10px;margin-top:10px;padding:14px 16px;display:none}
+    .detail-panel.open{display:block}
+    .dp-title{font-size:.75rem;font-weight:600;color:var(--navy);margin-bottom:10px}
+    .dp-claims{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .dp-claim{background:white;border:1px solid #E2E6ED;border-radius:8px;padding:10px 12px;border-left:3px solid transparent}
+    .dp-claim.err{border-left-color:#A32D2D}
+    .dp-claim.pend{border-left-color:#854F0B}
+    .dp-claim.siu{border-left-color:#534AB7}
+    .dp-claim-id{font-family:var(--mono);font-size:.65rem;color:var(--text-3);margin-bottom:3px}
+    .dp-claim-issue{font-size:.75rem;color:var(--navy);font-weight:500;margin-bottom:2px}
+    .dp-claim-rule{font-size:.68rem;color:var(--text-3)}
+    .dp-claim-badge{display:inline-flex;align-items:center;gap:3px;font-size:.6rem;font-weight:600;padding:2px 6px;border-radius:100px;margin-top:4px}
+
+    /* Right panel */
+    .main-cols{display:grid;grid-template-columns:1fr 280px;gap:14px;align-items:start}
+    .right-col{display:flex;flex-direction:column;gap:12px}
+    .panel{background:white;border:1px solid #E2E6ED;border-radius:12px;overflow:hidden}
+    .panel-head{padding:12px 16px;border-bottom:1px solid #F0F2F5;display:flex;align-items:center;gap:8px}
+    .panel-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
+    .panel-title{font-size:.82rem;font-weight:600;color:var(--navy)}
+    .panel-body{padding:10px 16px}
+    .prow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #F0F2F5;font-size:.78rem}
+    .prow:last-child{border-bottom:none}
+    .prow-label{color:var(--text-3)}
+    .prow-val{font-weight:600;color:var(--navy)}
+    .mini-bar{height:4px;background:#F0F2F5;border-radius:2px;margin-top:3px}
+    .mini-fill{height:4px;border-radius:2px}
+
+    @media(max-width:1024px){
+      .main-cols{grid-template-columns:1fr}
+      .summary{grid-template-columns:repeat(3,1fr)}
+      .dp-claims{grid-template-columns:1fr 1fr}
+      .stage-row{grid-template-columns:160px 1fr 140px}
+    }
+    @media(max-width:768px){
+      .wrap{padding:88px 16px 40px}
+      .summary{grid-template-columns:1fr 1fr}
+      .stage-row{grid-template-columns:1fr;border-bottom:2px solid #E2E6ED}
+      .stage-label,.stage-outcome{border:none}
+      .dp-claims{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg>
+      </div>
+      <span class="logo-name">FHIRFabric</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="platform.html">Platform</a></li>
+      <li><a href="payment-integrity.html">Payment Integrity</a></li>
+      <li><a href="dashboard.html">PI Dashboard</a></li>
+      <li><a href="pa-dashboard.html">PA Dashboard</a></li>
+      <li><a href="workflow-dashboard.html" class="active">Workflow</a></li>
+      <li><a href="compliance.html">Compliance</a></li>
+      <li><a href="experience.html">Experience</a></li>
+      <li><a href="contact.html" class="nav-cta">Request a Briefing</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">Workflow Intelligence Dashboard</div>
+      <div class="hdr-sub">Where every claim is in the pipeline — and exactly why it stopped</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="live-badge"><div class="ldot"></div>Live</div>
+      <a href="dashboard.html" style="font-size:.78rem;padding:7px 14px;border:1px solid #D0D7E1;border-radius:8px;background:white;color:var(--navy);text-decoration:none;font-weight:500;">← PI Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Date filter -->
+  <div class="date-strip">
+    <span style="font-size:.75rem;color:var(--text-3);">Period:</span>
+    <button class="dfilter on" onclick="setPeriod('today',this)">Today</button>
+    <button class="dfilter" onclick="setPeriod('week',this)">This week</button>
+    <button class="dfilter" onclick="setPeriod('month',this)">This month</button>
+    <button class="dfilter" onclick="setPeriod('ytd',this)">YTD</button>
+  </div>
+
+  <!-- Summary strip -->
+  <div class="summary">
+    <div class="sum-card sc-total">
+      <div class="sum-label">Received</div>
+      <div class="sum-val" id="s-total" style="color:var(--navy)">0</div>
+      <div class="sum-sub">Claims entered pipeline</div>
+    </div>
+    <div class="sum-card sc-approved">
+      <div class="sum-label">Approved</div>
+      <div class="sum-val" id="s-approved" style="color:#3B6D11">0</div>
+      <div class="sum-sub" id="s-approved-pct">—</div>
+    </div>
+    <div class="sum-card sc-denied">
+      <div class="sum-label">Denied</div>
+      <div class="sum-val" id="s-denied" style="color:#A32D2D">0</div>
+      <div class="sum-sub" id="s-denied-pct">—</div>
+    </div>
+    <div class="sum-card sc-pended">
+      <div class="sum-label">Pended</div>
+      <div class="sum-val" id="s-pended" style="color:#854F0B">0</div>
+      <div class="sum-sub">Awaiting review</div>
+    </div>
+    <div class="sum-card sc-savings">
+      <div class="sum-label">Est. savings</div>
+      <div class="sum-val" id="s-savings" style="color:#00838F">$0</div>
+      <div class="sum-sub">Pre-payment</div>
+    </div>
+  </div>
+
+  <div class="main-cols">
+
+    <!-- Left: workflow funnel -->
+    <div>
+      <div class="funnel-section">
+        <div class="funnel-header">
+          <div>
+            <div class="funnel-title">Payment Integrity Workflow — Stage-by-Stage Funnel</div>
+            <div class="funnel-sub">Click any stage to see which claims dropped and why</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:.65rem;color:rgba(255,255,255,.4);">Today · July 18 2026</div>
+        </div>
+        <div class="funnel-body" id="funnel-body"></div>
+      </div>
+
+      <!-- Detail panel -->
+      <div class="detail-panel" id="detail-panel">
+        <div class="dp-title" id="dp-title">Stage detail</div>
+        <div class="dp-claims" id="dp-claims"></div>
+      </div>
+    </div>
+
+    <!-- Right: insight panels -->
+    <div class="right-col">
+
+      <!-- Top drop-off stages -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#FCEBEB;color:#A32D2D;"><i class="ti ti-alert-circle" aria-hidden="true"></i></div>
+          <div class="panel-title">Top drop-off stages</div>
+        </div>
+        <div class="panel-body" id="top-dropoff"></div>
+      </div>
+
+      <!-- Denial breakdown -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#FCEBEB;color:#A32D2D;"><i class="ti ti-circle-x" aria-hidden="true"></i></div>
+          <div class="panel-title">Denial reasons</div>
+        </div>
+        <div class="panel-body" id="denial-breakdown"></div>
+      </div>
+
+      <!-- Savings by stage -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#E1F5EE;color:#0F6E56;"><i class="ti ti-coins" aria-hidden="true"></i></div>
+          <div class="panel-title">Savings by stage</div>
+        </div>
+        <div class="panel-body" id="savings-stage"></div>
+      </div>
+
+      <!-- Auto-adjudication rate -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#EEEDFE;color:#534AB7;"><i class="ti ti-robot" aria-hidden="true"></i></div>
+          <div class="panel-title">AI performance</div>
+        </div>
+        <div class="panel-body">
+          <div class="prow"><span class="prow-label">Auto-adjudicated</span><span class="prow-val" id="ai-auto">—</span></div>
+          <div class="prow"><span class="prow-label">AI confidence avg</span><span class="prow-val" id="ai-conf">—</span></div>
+          <div class="prow"><span class="prow-label">Human review needed</span><span class="prow-val" id="ai-human">—</span></div>
+          <div class="prow"><span class="prow-label">Rule-only stages</span><span class="prow-val" id="ai-rule">7 stages</span></div>
+          <div class="prow"><span class="prow-label">LLM-augmented stages</span><span class="prow-val" id="ai-llm">5 stages</span></div>
+          <div class="prow"><span class="prow-label">Avg pipeline time</span><span class="prow-val" id="ai-time">—</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div>
+        <span class="logo-name">FHIRFabric</span>
+      </a>
+      <p>Stage-by-stage payment integrity visibility — see exactly where claims drop and why.</p>
+      <p class="footer-parent">A <a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix</a> company</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col"><h4>Dashboards</h4><ul>
+        <li><a href="dashboard.html">PI Dashboard</a></li>
+        <li><a href="pa-dashboard.html">PA Dashboard</a></li>
+        <li><a href="workflow-dashboard.html">Workflow</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Platform</h4><ul>
+        <li><a href="platform.html">Interoperability</a></li>
+        <li><a href="payment-integrity.html">Payment Integrity</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Company</h4><ul>
+        <li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 FHIRFabric · A MyAtrix Company · Downers Grove, IL</span>
+    <span>support@fhirfabric.com</span>
+  </div>
+</footer>
+
+<script>
+// ── DATA MODEL ──
+const PERIODS = {
+  today: {
+    total: 10, approved: 4, denied: 3, pended: 3, savings: 29232,
+    stages: [
+      { num:'01', name:'Claim received', type:'Intake', color:'#0B1F3A',
+        inflow:10, passed:10, denied:0, pended:0, savings:0,
+        issues:[] },
+      { num:'02', name:'Eligibility + COB', type:'RULE', color:'#0F6E56',
+        inflow:10, passed:9, denied:1, pended:0, savings:0,
+        issues:[
+          {id:'CLM-00449',issue:'Coverage lapsed — term date Jun 30, 2024',rule:'EV-001',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'},
+        ]},
+      { num:'03', name:'Benefit validation', type:'RULE', color:'#0F6E56',
+        inflow:9, passed:9, denied:0, pended:0, savings:0,
+        issues:[] },
+      { num:'04', name:'Claim editing (NCCI/MUE)', type:'RULE', color:'#854F0B',
+        inflow:9, passed:7, denied:1, pended:1, savings:6867,
+        issues:[
+          {id:'CLM-00441',issue:'NCCI bundling CPT 27447+27310 · MUE exceeded · Wrong POS',rule:'NCCI-27447-27310',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'},
+          {id:'CLM-00445',issue:'E&M same-day upcoding CPT 99215+99214',rule:'NCCI-99215-99214',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'},
+          {id:'CLM-00446',issue:'MUE limit exceeded CPT 93306 qty 3, max 1',rule:'MUE-93306',type:'pend',badge:'Pended',badgeColor:'#FAEEDA',badgeText:'#412402'},
+        ]},
+      { num:'05', name:'Coding validation (AI)', type:'LLM', color:'#534AB7',
+        inflow:7, passed:6, denied:0, pended:1, savings:0,
+        issues:[
+          {id:'CLM-00443',issue:'I50.9 unspecified — AI flagged CDI opportunity; combination code gap',rule:'CV-002',type:'pend',badge:'Pended',badgeColor:'#FAEEDA',badgeText:'#412402'},
+        ]},
+      { num:'06', name:'Medical necessity (AI)', type:'LLM', color:'#534AB7',
+        inflow:6, passed:5, denied:0, pended:1, savings:0,
+        issues:[
+          {id:'CLM-00447',issue:'CPT 43239 — GERD without documented 8-week PPI trial failure (LCD L35062)',rule:'NCD-L35062',type:'pend',badge:'Pended',badgeColor:'#EEEDFE',badgeText:'#26215C'},
+        ]},
+      { num:'07', name:'Prior authorization', type:'RULE', color:'#0F6E56',
+        inflow:5, passed:4, denied:0, pended:1, savings:0,
+        issues:[
+          {id:'CLM-00441',issue:'CPT 27447 requires PA — no valid auth on file',rule:'PA-REQUIRED-27447',type:'pend',badge:'PA required',badgeColor:'#EEEDFE',badgeText:'#26215C'},
+        ]},
+      { num:'08', name:'Provider contract', type:'LLM', color:'#534AB7',
+        inflow:4, passed:4, denied:0, pended:0, savings:0,
+        issues:[] },
+      { num:'09', name:'Pricing / contract rate', type:'RULE', color:'#0F6E56',
+        inflow:4, passed:4, denied:0, pended:0, savings:9404,
+        issues:[
+          {id:'CLM-00441',issue:'CPT 27447: billed $14,000 · allowed $4,595 (120% Medicare)',rule:'RATE-OVER-27447',type:'pend',badge:'Adjusted',badgeColor:'#FAEEDA',badgeText:'#412402'},
+        ]},
+      { num:'10', name:'Duplicate detection', type:'RULE', color:'#0F6E56',
+        inflow:4, passed:4, denied:0, pended:0, savings:0,
+        issues:[] },
+      { num:'11', name:'FWA screening (AI)', type:'LLM', color:'#72243E',
+        inflow:4, passed:3, denied:0, pended:1, savings:0,
+        issues:[
+          {id:'CLM-00444',issue:'Provider billing 340% above peer median · systematic unbundling pattern across 6 claims',rule:'FWA-OUTLIER',type:'siu',badge:'SIU referred',badgeColor:'#EEEDFE',badgeText:'#26215C'},
+        ]},
+      { num:'12', name:'AI decision engine', type:'LLM', color:'#534AB7',
+        inflow:3, passed:3, denied:0, pended:0, savings:12961,
+        issues:[] },
+    ]
+  },
+  week: {
+    total:68, approved:41, denied:16, pended:11, savings:187400,
+    stages:[
+      {num:'01',name:'Claim received',type:'Intake',color:'#0B1F3A',inflow:68,passed:68,denied:0,pended:0,savings:0,issues:[]},
+      {num:'02',name:'Eligibility + COB',type:'RULE',color:'#0F6E56',inflow:68,passed:62,denied:4,pended:2,savings:0,issues:[{id:'Multiple',issue:'4 denied — lapsed coverage / COB secondary pending',rule:'EV-001 / COB-001',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
+      {num:'03',name:'Benefit validation',type:'RULE',color:'#0F6E56',inflow:62,passed:61,denied:1,pended:0,savings:0,issues:[{id:'CLM-W-011',issue:'Non-covered cosmetic procedure billed as reconstructive',rule:'BEN-002',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
+      {num:'04',name:'Claim editing (NCCI/MUE)',type:'RULE',color:'#854F0B',inflow:61,passed:54,denied:5,pended:2,savings:42300,issues:[{id:'Multiple (7)',issue:'NCCI bundling (4) · MUE exceeded (2) · Wrong POS (1)',rule:'NCCI / MUE / POS',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
+      {num:'05',name:'Coding validation (AI)',type:'LLM',color:'#534AB7',inflow:54,passed:51,denied:0,pended:3,savings:0,issues:[{id:'Multiple (3)',issue:'ICD-10 specificity flags · DRG combination code gaps',rule:'CV-001/002',type:'pend',badge:'Pended',badgeColor:'#FAEEDA',badgeText:'#412402'}]},
+      {num:'06',name:'Medical necessity (AI)',type:'LLM',color:'#534AB7',inflow:51,passed:48,denied:2,pended:1,savings:0,issues:[{id:'Multiple (3)',issue:'LCD criteria not met (2 denied) · Documentation insufficient (1 pended)',rule:'LCD L35062 / NCD',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
+      {num:'07',name:'Prior authorization',type:'RULE',color:'#0F6E56',inflow:48,passed:45,denied:0,pended:3,savings:0,issues:[{id:'Multiple (3)',issue:'No valid PA on file for high-cost procedures',rule:'PA-REQUIRED',type:'pend',badge:'Pended',badgeColor:'#EEEDFE',badgeText:'#26215C'}]},
+      {num:'08',name:'Provider contract',type:'LLM',color:'#534AB7',inflow:45,passed:43,denied:2,pended:0,savings:0,issues:[{id:'Multiple (2)',issue:'Provider not credentialed for billed taxonomy',rule:'PV-002',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
+      {num:'09',name:'Pricing / contract rate',type:'RULE',color:'#0F6E56',inflow:43,passed:43,denied:0,pended:0,savings:61200,issues:[]},
+      {num:'10',name:'Duplicate detection',type:'RULE',color:'#0F6E56',inflow:43,passed:42,denied:1,pended:0,savings:0,issues:[{id:'CLM-W-044',issue:'Exact duplicate — same claim submitted to two payers',rule:'DUP-001',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
+      {num:'11',name:'FWA screening (AI)',type:'LLM',color:'#72243E',inflow:42,passed:41,denied:0,pended:1,savings:0,issues:[{id:'CLM-W-051',issue:'Provider outlier pattern referred to SIU',rule:'FWA-OUTLIER',type:'siu',badge:'SIU',badgeColor:'#EEEDFE',badgeText:'#26215C'}]},
+      {num:'12',name:'AI decision engine',type:'LLM',color:'#534AB7',inflow:41,passed:41,denied:0,pended:0,savings:83900,issues:[]},
+    ]
+  },
+};
+// Add month/ytd as scaled versions
+['month','ytd'].forEach((p,i) => {
+  const sc=i===0?4.3:52;
+  const base=PERIODS.week;
+  PERIODS[p]={
+    total:Math.round(base.total*sc),approved:Math.round(base.approved*sc),
+    denied:Math.round(base.denied*sc),pended:Math.round(base.pended*sc),
+    savings:Math.round(base.savings*sc),
+    stages:base.stages.map(s=>({...s,inflow:Math.round(s.inflow*sc),passed:Math.round(s.passed*sc),denied:Math.round(s.denied*sc),pended:Math.round(s.pended*sc),savings:Math.round(s.savings*sc)}))
+  };
+});
+
+let currentPeriod='today', activeStage=null;
+
+function fmt(n){return n>=1000?'$'+(n/1000).toFixed(1)+'K':'$'+n}
+
+function renderAll(){
+  const d=PERIODS[currentPeriod];
+  // Summary
+  document.getElementById('s-total').textContent=d.total;
+  document.getElementById('s-approved').textContent=d.approved;
+  document.getElementById('s-approved-pct').textContent=Math.round(d.approved/d.total*100)+'% of claims';
+  document.getElementById('s-denied').textContent=d.denied;
+  document.getElementById('s-denied-pct').textContent=Math.round(d.denied/d.total*100)+'% of claims';
+  document.getElementById('s-pended').textContent=d.pended;
+  document.getElementById('s-savings').textContent=fmt(d.savings);
+  // AI
+  document.getElementById('ai-auto').textContent=Math.round(d.approved/d.total*100)+'%';
+  document.getElementById('ai-conf').textContent='88%';
+  document.getElementById('ai-human').textContent=d.pended+' claims';
+  document.getElementById('ai-time').textContent='<60 sec';
+
+  // Funnel
+  const fb=document.getElementById('funnel-body');
+  fb.innerHTML=d.stages.map((s,i)=>{
+    const pct=s.inflow>0?Math.round(s.passed/s.inflow*100):100;
+    const dropPct=s.inflow>0?Math.round((s.denied+s.pended)/s.inflow*100):0;
+    const hasIssues=s.denied+s.pended>0;
+    return `<div class="stage-row${activeStage===i?' active-row':''}" onclick="toggleStage(${i})">
+      <div class="stage-label">
+        <div class="stage-num" style="background:${s.color}">${s.num}</div>
+        <div>
+          <div class="stage-name">${s.name}</div>
+          <div class="stage-type">${s.type}</div>
+        </div>
+      </div>
+      <div class="stage-bars">
+        <div class="bar-row">
+          <div class="bar-label" style="font-size:.65rem;color:var(--text-3)">In: ${s.inflow}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${pct}%;background:#3B6D11;">
+              <span>${s.passed} passed</span>
+            </div>
+          </div>
+          <div class="bar-count" style="color:#3B6D11">${s.passed}</div>
+        </div>
+        ${s.denied>0?`<div class="bar-row">
+          <div class="bar-label" style="font-size:.65rem;color:#A32D2D">Denied</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${Math.round(s.denied/s.inflow*100)}%;background:#A32D2D;">
+              <span>${s.denied}</span>
+            </div>
+          </div>
+          <div class="bar-count" style="color:#A32D2D">${s.denied}</div>
+        </div>`:''}
+        ${s.pended>0?`<div class="bar-row">
+          <div class="bar-label" style="font-size:.65rem;color:#854F0B">Pended</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${Math.round(s.pended/s.inflow*100)}%;background:#EF9F27;">
+              <span>${s.pended}</span>
+            </div>
+          </div>
+          <div class="bar-count" style="color:#854F0B">${s.pended}</div>
+        </div>`:''}
+      </div>
+      <div class="stage-outcome">
+        ${s.savings>0?`<div class="outcome-item"><span class="outcome-label">Savings</span><span class="outcome-val" style="color:#0F6E56">${fmt(s.savings)}</span></div>`:''}
+        <div class="outcome-item"><span class="outcome-label">Pass rate</span><span class="outcome-val" style="color:${pct===100?'#3B6D11':'var(--navy)'}">${pct}%</span></div>
+        ${hasIssues?`<div class="outcome-item"><span class="outcome-label" style="color:#A32D2D">Drop-off</span><span class="outcome-val" style="color:#A32D2D">${dropPct}%</span></div>`:''}
+        ${s.issues.length>0?`<div style="font-size:.65rem;color:var(--teal);margin-top:4px;font-weight:500;">↓ click to see issues</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Right panels
+  const dropoffs=d.stages.filter(s=>s.denied+s.pended>0)
+    .map(s=>({name:s.name,n:s.denied+s.pended,savings:s.savings}))
+    .sort((a,b)=>b.n-a.n);
+  const maxD=Math.max(...dropoffs.map(x=>x.n));
+  document.getElementById('top-dropoff').innerHTML=dropoffs.slice(0,5).map(x=>`
+    <div class="prow" style="flex-direction:column;align-items:flex-start;gap:2px;">
+      <div style="display:flex;justify-content:space-between;width:100%">
+        <span class="prow-label">${x.name}</span>
+        <span class="prow-val" style="color:#A32D2D">${x.n} claim${x.n>1?'s':''}</span>
+      </div>
+      <div class="mini-bar" style="width:100%"><div class="mini-fill" style="background:#E24B4A;width:${Math.round(x.n/maxD*100)}%"></div></div>
+    </div>`).join('');
+
+  const reasons={};
+  d.stages.forEach(s=>s.issues.forEach(i=>{
+    const k=i.rule.split('-')[0]; reasons[k]=(reasons[k]||0)+1;
+  }));
+  const rEntries=Object.entries(reasons).sort((a,b)=>b[1]-a[1]);
+  const maxR=Math.max(...rEntries.map(e=>e[1]));
+  document.getElementById('denial-breakdown').innerHTML=rEntries.map(([r,n])=>`
+    <div class="prow" style="flex-direction:column;align-items:flex-start;gap:2px;">
+      <div style="display:flex;justify-content:space-between;width:100%">
+        <span class="prow-label">${r} edits</span>
+        <span class="prow-val">${n}</span>
+      </div>
+      <div class="mini-bar" style="width:100%"><div class="mini-fill" style="background:var(--coral);width:${Math.round(n/maxR*100)}%"></div></div>
+    </div>`).join('');
+
+  const savEntries=d.stages.filter(s=>s.savings>0).sort((a,b)=>b.savings-a.savings);
+  const maxS=Math.max(...savEntries.map(s=>s.savings));
+  document.getElementById('savings-stage').innerHTML=savEntries.map(s=>`
+    <div class="prow" style="flex-direction:column;align-items:flex-start;gap:2px;">
+      <div style="display:flex;justify-content:space-between;width:100%">
+        <span class="prow-label">${s.name.split('(')[0].trim()}</span>
+        <span class="prow-val" style="color:#0F6E56">${fmt(s.savings)}</span>
+      </div>
+      <div class="mini-bar" style="width:100%"><div class="mini-fill" style="background:#1D9E75;width:${Math.round(s.savings/maxS*100)}%"></div></div>
+    </div>`).join('');
+}
+
+function toggleStage(i){
+  const d=PERIODS[currentPeriod];
+  const s=d.stages[i];
+  const panel=document.getElementById('detail-panel');
+  if(activeStage===i){
+    activeStage=null;panel.classList.remove('open');
+    renderAll();return;
+  }
+  activeStage=i;
+  document.getElementById('dp-title').textContent=`Stage ${s.num} — ${s.name}: ${s.denied+s.pended} issue${s.denied+s.pended!==1?'s':''} (${s.denied} denied · ${s.pended} pended)`;
+  if(!s.issues.length){
+    document.getElementById('dp-claims').innerHTML='<div style="font-size:.82rem;color:var(--text-3);padding:4px 0;grid-column:1/-1;">✓ All claims passed this stage cleanly.</div>';
+  } else {
+    document.getElementById('dp-claims').innerHTML=s.issues.map(issue=>`
+      <div class="dp-claim ${issue.type}">
+        <div class="dp-claim-id">${issue.id}</div>
+        <div class="dp-claim-issue">${issue.issue}</div>
+        <div class="dp-claim-rule">Rule: ${issue.rule}</div>
+        <span class="dp-claim-badge" style="background:${issue.badgeColor};color:${issue.badgeText};border:1px solid ${issue.badgeText}22;">${issue.badge}</span>
+      </div>`).join('');
+  }
+  panel.classList.add('open');
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+  renderAll();
+}
+
+function setPeriod(p,btn){
+  currentPeriod=p;activeStage=null;
+  document.getElementById('detail-panel').classList.remove('open');
+  document.querySelectorAll('.dfilter').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderAll();
+}
+
+renderAll();
+
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));
+document.getElementById('hamburger').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');this.classList.toggle('active');});
+</script>
+</body>
+</html>

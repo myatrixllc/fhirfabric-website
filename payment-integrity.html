@@ -184,23 +184,78 @@
             <text x="220" y="254" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.85)">91% confidence</text>
             <text x="220" y="265" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.85)">$16,200 saved · SIU referred</text>
           </g>
-          <!-- RIGHT: gaps -->
-          <rect x="312" y="50" width="120" height="200" rx="10" fill="#122647" stroke="rgba(255,255,255,.1)" stroke-width=".5"/>
-          <text x="372" y="71" text-anchor="middle" font-size="8.5" font-weight="600" fill="rgba(255,255,255,.45)" letter-spacing="1">GAPS FILLED</text>
-          <g class="fil"><rect x="320" y="82" width="104" height="15" rx="3" fill="rgba(232,85,61,.15)" stroke="rgba(232,85,61,.3)" stroke-width=".5"/><text x="372" y="93" text-anchor="middle" font-size="8" fill="#F09595">Clinical reasoning</text></g>
-          <g class="fil" style="animation-delay:.25s"><rect x="320" y="102" width="104" height="15" rx="3" fill="rgba(232,85,61,.15)" stroke="rgba(232,85,61,.3)" stroke-width=".5"/><text x="372" y="113" text-anchor="middle" font-size="8" fill="#F09595">DRG CC/MCC accuracy</text></g>
-          <g class="fil" style="animation-delay:.5s"><rect x="320" y="122" width="104" height="15" rx="3" fill="rgba(232,85,61,.15)" stroke="rgba(232,85,61,.3)" stroke-width=".5"/><text x="372" y="133" text-anchor="middle" font-size="8" fill="#F09595">Upcoding patterns</text></g>
-          <g class="fil" style="animation-delay:.75s"><rect x="320" y="142" width="104" height="15" rx="3" fill="rgba(232,85,61,.15)" stroke="rgba(232,85,61,.3)" stroke-width=".5"/><text x="372" y="153" text-anchor="middle" font-size="8" fill="#F09595">Cross-signal FWA</text></g>
-          <g class="fil" style="animation-delay:1s"><rect x="320" y="162" width="104" height="15" rx="3" fill="rgba(232,85,61,.15)" stroke="rgba(232,85,61,.3)" stroke-width=".5"/><text x="372" y="173" text-anchor="middle" font-size="8" fill="#F09595">Policy citations</text></g>
-          <g class="fil" style="animation-delay:1.25s"><rect x="320" y="182" width="104" height="15" rx="3" fill="rgba(232,85,61,.15)" stroke="rgba(232,85,61,.3)" stroke-width=".5"/><text x="372" y="193" text-anchor="middle" font-size="8" fill="#F09595">Medical necessity</text></g>
-          <text x="372" y="222" text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,.28)">not in rules engines</text>
-          <text x="372" y="234" text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,.28)">now in FHIRFabric</text>
+          <!-- RIGHT: Live Dashboard Metrics -->
+          <rect x="310" y="18" width="122" height="268" rx="10" fill="#0D1B2E" stroke="rgba(255,255,255,.12)" stroke-width=".5"/>
+          <!-- Dashboard header -->
+          <text x="371" y="34" text-anchor="middle" font-size="7" font-weight="600" fill="rgba(255,255,255,.4)" letter-spacing="1">PI DASHBOARD</text>
+          <circle cx="426" cy="32" r="3" fill="#1D9E75" opacity=".9" style="animation:arrowPulse 2s infinite"/>
+          <!-- KPI tiles -->
+          <!-- Denied -->
+          <rect x="316" y="42" width="54" height="36" rx="5" fill="#1A1230" stroke="rgba(162,45,45,.4)" stroke-width=".5"/>
+          <rect x="316" y="42" width="54" height="3" rx="2" fill="#A32D2D"/>
+          <text x="343" y="57" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.4)">Denied</text>
+          <text x="343" y="72" text-anchor="middle" font-size="14" font-weight="700" fill="#F09595" class="rdeny" style="animation-name:kpiCount">2</text>
+          <!-- Savings -->
+          <rect x="376" y="42" width="50" height="36" rx="5" fill="#0A1F18" stroke="rgba(29,158,117,.4)" stroke-width=".5"/>
+          <rect x="376" y="42" width="50" height="3" rx="2" fill="#1D9E75"/>
+          <text x="401" y="57" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.4)">Savings</text>
+          <text x="401" y="72" text-anchor="middle" font-size="10" font-weight="700" fill="#6FD0D8" class="rdeny">$25K</text>
+          <!-- SIU tile -->
+          <rect x="316" y="84" width="54" height="36" rx="5" fill="#12102A" stroke="rgba(60,52,137,.4)" stroke-width=".5"/>
+          <rect x="316" y="84" width="54" height="3" rx="2" fill="#3C3489"/>
+          <text x="343" y="99" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.4)">SIU</text>
+          <text x="343" y="114" text-anchor="middle" font-size="14" font-weight="700" fill="#CECBF6" class="rdeny">1</text>
+          <!-- FWA tile -->
+          <rect x="376" y="84" width="50" height="36" rx="5" fill="#1F0D16" stroke="rgba(114,36,62,.4)" stroke-width=".5"/>
+          <rect x="376" y="84" width="50" height="3" rx="2" fill="#72243E"/>
+          <text x="401" y="99" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.4)">FWA</text>
+          <text x="401" y="114" text-anchor="middle" font-size="14" font-weight="700" fill="#F4C0D1" class="rdeny">2</text>
+          <!-- Mini claim rows -->
+          <text x="319" y="134" font-size="6.5" font-weight="600" fill="rgba(255,255,255,.35)" letter-spacing=".5">LATEST CLAIMS</text>
+          <!-- Row 1 -->
+          <g class="fil">
+            <rect x="316" y="140" width="110" height="19" rx="4" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.07)" stroke-width=".5"/>
+            <text x="321" y="153" font-size="7" fill="rgba(255,255,255,.5)">CLM-441 · $16,200</text>
+            <rect x="386" y="143" width="34" height="13" rx="3" fill="rgba(60,52,137,.3)" stroke="rgba(60,52,137,.5)" stroke-width=".5"/>
+            <text x="403" y="153" text-anchor="middle" font-size="6.5" fill="#CECBF6">SIU</text>
+          </g>
+          <!-- Row 2 -->
+          <g class="fil" style="animation-delay:.4s">
+            <rect x="316" y="164" width="110" height="19" rx="4" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.07)" stroke-width=".5"/>
+            <text x="321" y="177" font-size="7" fill="rgba(255,255,255,.5)">CLM-445 · $37,200</text>
+            <rect x="386" y="167" width="34" height="13" rx="3" fill="rgba(162,45,45,.3)" stroke="rgba(162,45,45,.5)" stroke-width=".5"/>
+            <text x="403" y="177" text-anchor="middle" font-size="6.5" fill="#F09595">DENY</text>
+          </g>
+          <!-- Row 3 -->
+          <g class="fil" style="animation-delay:.8s">
+            <rect x="316" y="188" width="110" height="19" rx="4" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.07)" stroke-width=".5"/>
+            <text x="321" y="201" font-size="7" fill="rgba(255,255,255,.5)">CLM-442 · $75</text>
+            <rect x="386" y="191" width="34" height="13" rx="3" fill="rgba(59,109,17,.3)" stroke="rgba(59,109,17,.5)" stroke-width=".5"/>
+            <text x="403" y="201" text-anchor="middle" font-size="6.5" fill="#C0DD97">PASS</text>
+          </g>
+          <!-- Savings bar -->
+          <text x="319" y="222" font-size="6.5" font-weight="600" fill="rgba(255,255,255,.35)" letter-spacing=".5">SAVINGS BY STAGE</text>
+          <!-- NCCI bar -->
+          <text x="319" y="234" font-size="6.5" fill="rgba(255,255,255,.4)">Editing</text>
+          <rect x="355" y="228" width="70" height="7" rx="3" fill="rgba(255,255,255,.06)"/>
+          <rect x="355" y="228" width="48" height="7" rx="3" fill="#EF9F27" class="rdeny"/>
+          <text x="427" y="235" font-size="6" fill="rgba(255,255,255,.4)">$6.9K</text>
+          <!-- DRG bar -->
+          <text x="319" y="249" font-size="6.5" fill="rgba(255,255,255,.4)">DRG</text>
+          <rect x="355" y="243" width="70" height="7" rx="3" fill="rgba(255,255,255,.06)"/>
+          <rect x="355" y="243" width="62" height="7" rx="3" fill="#E8553D" class="rdeny"/>
+          <text x="427" y="250" font-size="6" fill="rgba(255,255,255,.4)">$7K</text>
+          <!-- Pricing bar -->
+          <text x="319" y="264" font-size="6.5" fill="rgba(255,255,255,.4)">Pricing</text>
+          <rect x="355" y="258" width="70" height="7" rx="3" fill="rgba(255,255,255,.06)"/>
+          <rect x="355" y="258" width="36" height="7" rx="3" fill="#1D9E75" class="rdeny"/>
+          <text x="427" y="265" font-size="6" fill="rgba(255,255,255,.4)">$4.1K</text>
           <!-- Bottom labels -->
           <text x="67"  y="265" text-anchor="middle" font-size="8" font-weight="600" fill="rgba(255,255,255,.35)">YOUR SYSTEM</text>
           <text x="67"  y="277" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.22)">unchanged</text>
           <text x="220" y="284" text-anchor="middle" font-size="8" font-weight="600" fill="#1D9E75">FHIRFabric PI</text>
-          <text x="372" y="265" text-anchor="middle" font-size="8" font-weight="600" fill="rgba(255,255,255,.35)">GAPS COVERED</text>
-          <text x="372" y="277" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.22)">AI-augmented</text>
+          <text x="371" y="290" text-anchor="middle" font-size="8" font-weight="600" fill="rgba(255,255,255,.35)">PI DASHBOARD</text>
+          <text x="371" y="302" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.22)">real-time visibility</text>
         </svg>
       </div>
     </div>

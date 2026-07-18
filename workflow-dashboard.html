@@ -509,6 +509,162 @@ let period='today', selectedStage=null, selectedSub=null, expandedStages=new Set
 
 function fmt(n){return n>=1000000?'$'+(n/1000000).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(0)+'K':'$'+n}
 
+// ── SYNTHETIC CLAIM GENERATOR ──
+const PROVIDERS = ['Riverside Orthopaedics','Metro Cardiology Group','Northside Gastro LLC',
+  'Clearwater Primary Care','Midwest Heart & Vascular','Northwestern Orthopedics',
+  'Chicago Eye Institute','Midwest Spine Center','Regional Health Partners','Lake Shore Imaging'];
+const MEMBERS = ['MBR-2024-88821','MBR-2024-55102','MBR-2024-71103','MBR-2024-33291',
+  'MBR-2024-19982','MBR-2024-55899','MBR-2024-77412','MBR-2024-66301','MBR-2024-44892','MBR-2024-92011'];
+const AMOUNTS = [16200,8200,4800,75,37200,12000,3200,950,2100,6800,14500,890,5600,22000,1200];
+const DENIAL_RULES = {
+  2: [{rule:'EV-001',desc:'Coverage lapsed — term date before DOS'},{rule:'EV-001',desc:'Pre-coverage service — DOS before effective date'},{rule:'EV-003',desc:'Member ID not found in eligibility system'},{rule:'EV-002',desc:'Member ID format invalid'}],
+  3: [{rule:'BEN-001',desc:'Non-covered service category'},{rule:'BEN-002',desc:'Cosmetic/experimental exclusion applies'},{rule:'BEN-003',desc:'Annual benefit limit exhausted'}],
+  4: [{rule:'COB-001',desc:'COB order dispute — awaiting primary EOB'},{rule:'COB-002',desc:'MSP — Medicare secondary rules apply'}],
+  8: [{rule:'NCCI-BUNDLE',desc:'NCCI bundling violation — component billed with parent'},{rule:'MUE-EXCEED',desc:'MUE limit exceeded — units above CMS maximum'},{rule:'POS-RESTRICT',desc:'CPT not payable at billed place of service'},{rule:'UPCODE-AI',desc:'AI: upcoding pattern detected across E&M levels'}],
+  9: [{rule:'DUP-001',desc:'Exact duplicate — same claim already paid'},{rule:'FREQ-001',desc:'Service frequency limit exceeded for benefit period'}],
+  10:[{rule:'PV-002',desc:'Taxonomy/specialty mismatch — provider not credentialed for this CPT'},{rule:'PV-001',desc:'NPI deactivated or not found in NPPES'}],
+  12:[{rule:'FWA-OUTLIER',desc:'Provider billing >2 SD above peer group median'},{rule:'FWA-PATTERN',desc:'Systematic unbundling pattern across multiple claims'},{rule:'FWA-PHANTOM',desc:'Service rendered date inconsistent with facility records'}],
+  13:[{rule:'AI-DECISION',desc:'Multi-stage errors — denied at final disposition'},{rule:'AI-DECISION',desc:'NCCI + MUE + POS combined — denied'},{rule:'AI-DECISION',desc:'Medical necessity not established'}],
+};
+const PEND_RULES = {
+  4: [{rule:'MUE-WARN',desc:'MUE at limit — documentation review required'}],
+  6: [{rule:'PA-REQUIRED',desc:'Prior authorization required — no auth on file'},{rule:'REFERRAL',desc:'HMO referral required for specialist visit'}],
+  7: [{rule:'LCD-FAIL',desc:'LCD criteria not met — documentation insufficient'},{rule:'MED-NEC',desc:'Medical necessity documentation required'}],
+  8: [{rule:'CDI-FLAG',desc:'AI: ICD-10 specificity gap — CDI review recommended'}],
+  11:[{rule:'RATE-ADJ',desc:'Billed above contracted rate — adjusted to allowed amount'}],
+};
+
+function generateClaims(stageId, type, count) {
+  const rules = type==='deny' ? (DENIAL_RULES[stageId]||DENIAL_RULES[13])
+              : type==='pend' ? (PEND_RULES[stageId]||[{rule:'REVIEW',desc:'Manual review required'}])
+              : [];
+  const claims = [];
+  for(let i=0; i<count; i++){
+    const rule = rules[i % rules.length];
+    const amt  = AMOUNTS[i % AMOUNTS.length];
+    claims.push({
+      id: 'CLM-' + String(2024000 + stageId*1000 + i).slice(-5),
+      member: MEMBERS[i % MEMBERS.length],
+      provider: PROVIDERS[i % PROVIDERS.length],
+      amount: amt,
+      rule: rule.rule,
+      desc: rule.desc,
+      type: type,
+    });
+  }
+  return claims;
+}
+
+// ── DRILLDOWN STATE ──
+let drilldown = null; // {stageId, type, claims, page, search, filterRule}
+const PAGE_SIZE = 20;
+
+function openDrilldown(stageId, type, count, e) {
+  e && e.stopPropagation();
+  const stage = STAGES.find(s=>s.id===stageId);
+  const claims = generateClaims(stageId, type, count);
+  drilldown = {stageId, type, claims, page:1, search:'', filterRule:''};
+  selectedStage = stageId; selectedSub = null;
+  renderTree();
+  renderDrilldown(stage);
+}
+
+function renderDrilldown(stage) {
+  if(!drilldown) return;
+  const {type, claims, page, search, filterRule} = drilldown;
+  const typeLabel = type==='deny'?'Denied':type==='pend'?'Pended':'SIU Referred';
+  const typeBadge = type==='deny'?'b-deny':type==='pend'?'b-pend':'b-siu';
+  const typeColor = type==='deny'?'#A32D2D':type==='pend'?'#854F0B':'#534AB7';
+  const typeBg    = type==='deny'?'#FCEBEB':type==='pend'?'#FAEEDA':'#EEEDFE';
+
+  // Filter
+  const rules = [...new Set(claims.map(c=>c.rule))];
+  let filtered = claims.filter(c=>{
+    const matchSearch = !search || c.id.includes(search.toUpperCase()) ||
+      c.member.toLowerCase().includes(search.toLowerCase()) ||
+      c.provider.toLowerCase().includes(search.toLowerCase()) ||
+      c.desc.toLowerCase().includes(search.toLowerCase());
+    const matchRule = !filterRule || c.rule === filterRule;
+    return matchSearch && matchRule;
+  });
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paged = filtered.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+
+  document.getElementById('right-panel').innerHTML = `
+    <div class="claims-card" style="border:1px solid ${typeColor}22;">
+      <div class="claims-header" style="background:${typeBg};border-bottom:1px solid ${typeColor}22;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="stage-bullet" style="background:${stage.color};width:22px;height:22px;font-size:.58rem">${String(stage.id).padStart(2,'0')}</div>
+          <div>
+            <div class="claims-title">${stage.name}</div>
+            <div style="font-size:.68rem;color:${typeColor};font-weight:600;margin-top:1px;">${filtered.length} claims ${typeLabel.toLowerCase()} at this stage</div>
+          </div>
+        </div>
+        <button onclick="closeDrilldown()" style="font-size:.72rem;padding:5px 10px;border:1px solid #D0D7E1;border-radius:6px;background:white;cursor:pointer;color:var(--navy);">← Back to stage</button>
+      </div>
+      <!-- Search + filter -->
+      <div style="padding:10px 14px;border-bottom:1px solid #F0F2F5;display:flex;gap:8px;align-items:center;">
+        <input type="text" placeholder="Search claim ID, member, provider, issue..." value="${search}"
+          oninput="drilldown.search=this.value;drilldown.page=1;renderDrilldown(STAGES.find(s=>s.id===${stage.id}))"
+          style="flex:1;font-size:.75rem;padding:6px 10px;border:1px solid #D0D7E1;border-radius:6px;font-family:var(--sans);color:var(--navy);outline:none;"/>
+        <select onchange="drilldown.filterRule=this.value;drilldown.page=1;renderDrilldown(STAGES.find(s=>s.id===${stage.id}))"
+          style="font-size:.72rem;padding:6px 8px;border:1px solid #D0D7E1;border-radius:6px;font-family:var(--sans);color:var(--navy);background:white;">
+          <option value="">All rules</option>
+          ${rules.map(r=>`<option value="${r}"${filterRule===r?' selected':''}>${r}</option>`).join('')}
+        </select>
+        <div style="font-size:.68rem;color:var(--text-3);white-space:nowrap;">${filtered.length} of ${claims.length}</div>
+      </div>
+      <!-- Table header -->
+      <div style="display:grid;grid-template-columns:90px 100px 1fr 1fr 60px 80px;gap:0;background:#F7F8FA;border-bottom:1px solid #E2E6ED;">
+        ${['Claim ID','Member','Provider','Issue / Rule','Billed','Status'].map(h=>`
+          <div style="padding:7px 10px;font-size:.58rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;">${h}</div>`).join('')}
+      </div>
+      <!-- Rows -->
+      <div style="max-height:420px;overflow-y:auto;">
+        ${paged.length ? paged.map((c,i)=>`
+          <div style="display:grid;grid-template-columns:90px 100px 1fr 1fr 60px 80px;gap:0;border-bottom:1px solid #F0F2F5;transition:background .1s;" onmouseover="this.style.background='#F7F8FA'" onmouseout="this.style.background='white'">
+            <div style="padding:8px 10px;font-family:var(--mono);font-size:.65rem;color:var(--text-3);">${c.id}</div>
+            <div style="padding:8px 10px;font-size:.7rem;color:var(--text-3);">${c.member.replace('MBR-2024-','')}</div>
+            <div style="padding:8px 10px;font-size:.72rem;color:var(--navy);">${c.provider}</div>
+            <div style="padding:8px 10px;">
+              <div style="font-size:.72rem;color:var(--navy);">${c.desc}</div>
+              <div style="font-family:var(--mono);font-size:.6rem;color:var(--text-3);margin-top:2px;">${c.rule}</div>
+            </div>
+            <div style="padding:8px 10px;font-size:.72rem;color:var(--navy);font-weight:500;">$${c.amount.toLocaleString()}</div>
+            <div style="padding:8px 10px;"><span class="badge ${typeBadge}">${typeLabel}</span></div>
+          </div>`).join('')
+        : `<div style="padding:24px;text-align:center;color:var(--text-3);font-size:.8rem;">No claims match your search</div>`}
+      </div>
+      <!-- Pagination -->
+      <div style="padding:10px 14px;border-top:1px solid #F0F2F5;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:.72rem;color:var(--text-3);">
+          Showing ${Math.min((currentPage-1)*PAGE_SIZE+1, filtered.length)}–${Math.min(currentPage*PAGE_SIZE, filtered.length)} of ${filtered.length} claims
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button onclick="drilldown.page=${currentPage-1};renderDrilldown(STAGES.find(s=>s.id===${stage.id}))" ${currentPage<=1?'disabled':''} 
+            style="font-size:.72rem;padding:4px 10px;border:1px solid #D0D7E1;border-radius:6px;background:white;cursor:pointer;color:var(--navy);${currentPage<=1?'opacity:.4;cursor:default;':''}">← Prev</button>
+          <div style="display:flex;gap:2px;">
+            ${Array.from({length:Math.min(totalPages,7)},(_, i)=>{
+              const pg = totalPages<=7 ? i+1 : currentPage<=4 ? i+1 : currentPage>=totalPages-3 ? totalPages-6+i : currentPage-3+i;
+              return `<button onclick="drilldown.page=${pg};renderDrilldown(STAGES.find(s=>s.id===${stage.id}))"
+                style="font-size:.7rem;width:26px;height:26px;border:1px solid ${pg===currentPage?'var(--navy)':'#D0D7E1'};border-radius:5px;background:${pg===currentPage?'var(--navy)':'white'};color:${pg===currentPage?'white':'var(--navy)'};cursor:pointer;">${pg}</button>`;
+            }).join('')}
+          </div>
+          <button onclick="drilldown.page=${currentPage+1};renderDrilldown(STAGES.find(s=>s.id===${stage.id}))" ${currentPage>=totalPages?'disabled':''}
+            style="font-size:.72rem;padding:4px 10px;border:1px solid #D0D7E1;border-radius:6px;background:white;cursor:pointer;color:var(--navy);${currentPage>=totalPages?'opacity:.4;cursor:default;':''}">Next →</button>
+        </div>
+        <div style="font-size:.68rem;color:var(--text-3);">Page ${currentPage} of ${totalPages}</div>
+      </div>
+    </div>`;
+}
+
+function closeDrilldown(){
+  drilldown=null;
+  const stage=STAGES.find(s=>s.id===selectedStage);
+  if(stage) renderDetail(stage,null);
+}
+
 function renderKPIs(){
   const d=PERIOD_TOTALS[period];
   document.getElementById('s-total').textContent=d.total;
@@ -527,9 +683,9 @@ function chipHTML(p){
   const pd=p.periods[period];
   let html='';
   if(pd.pass>0) html+=`<span class="chip chip-pass">${pd.pass}✓</span>`;
-  if(pd.deny>0) html+=`<span class="chip chip-deny">${pd.deny}✗</span>`;
-  if(pd.pend>0) html+=`<span class="chip chip-pend">${pd.pend}⏳</span>`;
-  if(pd.siu)    html+=`<span class="chip chip-fwa">${pd.siu}🔍</span>`;
+  if(pd.deny>0) html+=`<span class="chip chip-deny" title="Click to see all ${pd.deny} denied claims" onclick="openDrilldown(${p.id},'deny',${pd.deny},event)" style="cursor:pointer;">${pd.deny}✗</span>`;
+  if(pd.pend>0) html+=`<span class="chip chip-pend" title="Click to see all ${pd.pend} pended claims" onclick="openDrilldown(${p.id},'pend',${pd.pend},event)" style="cursor:pointer;">${pd.pend}⏳</span>`;
+  if(pd.siu)    html+=`<span class="chip chip-fwa" title="Click to see SIU referrals" onclick="openDrilldown(${p.id},'siu',${pd.siu},event)" style="cursor:pointer;">${pd.siu}🔍</span>`;
   if(pd.pass>0 && !pd.deny && !pd.pend && !pd.siu) html='<span class="chip chip-ok">all pass</span>';
   return html;
 }
@@ -601,17 +757,17 @@ function renderDetail(stage, sub){
               <div style="font-weight:600;color:#3B6D11;">✓ ${pd.pass} pass</div>
               <div style="font-size:.6rem;color:var(--text-3);">next stage →</div>
             </div>
-            ${pd.deny>0?`<div style="background:#FFF5F5;border:1.5px solid #A32D2D;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;">
+            ${pd.deny>0?`<div onclick="openDrilldown(stage.id,'deny',${pd.deny})" style="background:#FFF5F5;border:1.5px solid #A32D2D;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;cursor:pointer;transition:box-shadow .1s;" onmouseover="this.style.boxShadow='0 2px 6px rgba(162,45,45,.2)'" onmouseout="this.style.boxShadow='none'">
               <div style="font-weight:600;color:#A32D2D;">✗ ${pd.deny} denied</div>
-              <div style="font-size:.6rem;color:var(--text-3);">→ 835 denial</div>
+              <div style="font-size:.6rem;color:#A32D2D;">click to see all →</div>
             </div>`:''}
-            ${pd.pend>0?`<div style="background:#FFFBF5;border:1.5px solid #854F0B;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;">
+            ${pd.pend>0?`<div onclick="openDrilldown(stage.id,'pend',${pd.pend})" style="background:#FFFBF5;border:1.5px solid #854F0B;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;cursor:pointer;transition:box-shadow .1s;" onmouseover="this.style.boxShadow='0 2px 6px rgba(133,79,11,.2)'" onmouseout="this.style.boxShadow='none'">
               <div style="font-weight:600;color:#854F0B;">⏳ ${pd.pend} pended</div>
-              <div style="font-size:.6rem;color:var(--text-3);">→ review queue</div>
+              <div style="font-size:.6rem;color:#854F0B;">click to see all →</div>
             </div>`:''}
-            ${pd.siu>0?`<div style="background:#EEEDFE;border:1.5px solid #534AB7;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;">
+            ${pd.siu>0?`<div onclick="openDrilldown(stage.id,'siu',${pd.siu})" style="background:#EEEDFE;border:1.5px solid #534AB7;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;cursor:pointer;transition:box-shadow .1s;" onmouseover="this.style.boxShadow='0 2px 6px rgba(83,74,183,.2)'" onmouseout="this.style.boxShadow='none'">
               <div style="font-weight:600;color:#534AB7;">🔍 ${pd.siu} SIU</div>
-              <div style="font-size:.6rem;color:var(--text-3);">→ investigations</div>
+              <div style="font-size:.6rem;color:#534AB7;">click to see all →</div>
             </div>`:''}
           </div>
         </div>

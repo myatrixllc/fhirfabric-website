@@ -277,11 +277,41 @@
 <!-- INTEGRATION PATTERNS -->
 <section class="section bg-off" id="integration">
   <div class="section-inner">
-    <div class="eyebrow reveal">Integration</div>
-    <h2 class="h2 reveal d1">Three ways to connect.<br /><em>You choose based on your architecture.</em></h2>
-    <p class="section-lead reveal d2">Payers don't rip out their systems. FHIRFabric plugs into what you already have — whether your data lives in separate systems, exposes live API endpoints, or is already normalized into FHIR R4.</p>
+    <div class="eyebrow reveal">Plug and play</div>
+    <h2 class="h2 reveal d1">Your adjudication system stays.<br /><em>We fill the gaps it can't cover.</em></h2>
+    <p class="section-lead reveal d2">Facets, QNXT, and HealthEdge handle the mechanical edits they were built for. FHIRFabric handles the clinical reasoning, AI-augmented coding validation, DRG accuracy, and cross-signal FWA detection that rules engines can't do — and returns a decision your existing system acts on. One API call. No workflow change. No rip and replace.</p>
 
-    <div style="margin-top:48px;display:grid;grid-template-columns:1fr;gap:32px;">
+    <div style="border:1px solid var(--gray-2);border-radius:var(--r-lg);padding:28px 32px;margin:36px 0 16px;background:var(--white);" class="reveal">
+      <div style="font-family:var(--mono);font-size:.65rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px;">How it fits into your existing workflow</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;align-items:center;">
+        <div style="border:1px solid var(--gray-2);border-radius:var(--r);padding:16px 18px;background:var(--off-white);">
+          <div style="font-weight:600;font-size:.9rem;color:var(--navy);margin-bottom:6px;">Your adjudication system</div>
+          <div style="font-size:.78rem;color:var(--text-3);line-height:1.6;">Facets &middot; QNXT &middot; HealthEdge<br/>Handles: eligibility, basic edits,<br/>duplicate detection, payment</div>
+        </div>
+        <div style="padding:0 20px;text-align:center;">
+          <div style="font-size:.72rem;color:var(--teal);font-family:var(--mono);margin-bottom:4px;">calls</div>
+          <div style="font-size:1.4rem;color:var(--teal);">&rarr;</div>
+        </div>
+        <div style="border:2px solid var(--teal);border-radius:var(--r);padding:16px 18px;background:var(--teal-light);">
+          <div style="font-weight:600;font-size:.9rem;color:var(--navy);margin-bottom:6px;">FHIRFabric PI</div>
+          <div style="font-size:.78rem;color:var(--teal-2);line-height:1.6;">Handles: coding AI, medical necessity,<br/>DRG validation, FWA screening,<br/>cross-signal reasoning</div>
+        </div>
+        <div style="padding:0 20px;text-align:center;">
+          <div style="font-size:.72rem;color:var(--teal);font-family:var(--mono);margin-bottom:4px;">returns</div>
+          <div style="font-size:1.4rem;color:var(--teal);">&rarr;</div>
+        </div>
+        <div style="border:1px solid var(--gray-2);border-radius:var(--r);padding:16px 18px;background:var(--off-white);">
+          <div style="font-weight:600;font-size:.9rem;color:var(--navy);margin-bottom:6px;">Decision</div>
+          <div style="font-size:.78rem;color:var(--text-3);line-height:1.6;">approve &middot; pend &middot; deny<br/>+ findings with citations<br/>+ estimated savings</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:12px 16px;background:var(--gray-1);border-radius:var(--r);font-size:.82rem;color:var(--text-2);font-family:var(--mono);">
+        POST /v1/claims/validate &nbsp;&middot;&nbsp; FHIR R4 JSON or X12 837 &nbsp;&middot;&nbsp; Response in &lt;60s &nbsp;&middot;&nbsp; No change to existing workflow
+      </div>
+    </div>
+
+    <div style="font-family:var(--mono);font-size:.65rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin:32px 0 20px;" class="reveal">Three ways your system calls ours</div>
+    <div style="margin-top:0px;display:grid;grid-template-columns:1fr;gap:32px;">
 
       <!-- Pattern 1 -->
       <div style="border:1px solid var(--gray-2);border-radius:var(--r-lg);overflow:hidden;" class="reveal">

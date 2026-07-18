@@ -107,9 +107,9 @@
   <div class="hero-swoosh"></div>
   <div class="hero-inner">
     <div class="reveal">
-      <div class="hero-eyebrow">Pre-Payment Integrity</div>
-      <h1 class="hero-h1">Stop improper payments<br /><em>before the check goes out.</em></h1>
-      <p class="hero-sub">FHIRFabric Payment Integrity is a FHIR-native, AI-augmented pipeline that validates every claim through 13 stages — eligibility, COB, coding edits, medical necessity, DRG validation, negotiated rates, and FWA screening — before a dollar leaves the plan. One API call. One decision. Full audit trail.</p>
+      <div class="hero-eyebrow">Plug and play payment integrity</div>
+      <h1 class="hero-h1">Your adjudication system stays.<br /><em>We fill the gaps it can't cover.</em></h1>
+      <p class="hero-sub">Facets, QNXT, and HealthEdge handle the mechanical edits they were built for. FHIRFabric handles the clinical reasoning, AI-augmented coding validation, DRG accuracy, and cross-signal FWA detection that no rules engine can do — and returns a decision your existing system acts on. One API call. No workflow change. No rip and replace.</p>
       <div class="hero-actions">
         <a href="contact.html" class="btn-primary">Request a Demo <span class="arr">→</span></a>
         <a href="#pipeline" class="btn-outline">See the Pipeline <span class="arr">→</span></a>
@@ -117,14 +117,14 @@
     </div>
     <div class="reveal d2">
       <div class="hero-card">
-        <div class="hc-label">// Live demo results — knee replacement claim</div>
+        <div class="hc-label">// How it fits — one API call</div>
         <div class="hc-stat-row">
-          <div class="hc-stat"><span class="hc-stat-name">Disposition</span><span class="hc-stat-val" style="color:#F09595">DENIED</span></div>
-          <div class="hc-stat"><span class="hc-stat-name">AI confidence</span><span class="hc-stat-val">91<span>%</span></span></div>
-          <div class="hc-stat"><span class="hc-stat-name">Findings</span><span class="hc-stat-val">26<span> (12 errors)</span></span></div>
-          <div class="hc-stat"><span class="hc-stat-name">Estimated savings</span><span class="hc-stat-val">$<span>16,200</span></span></div>
-          <div class="hc-stat"><span class="hc-stat-name">SIU referral</span><span class="hc-stat-val" style="color:#6FD0D8">Yes</span></div>
-          <div class="hc-stat"><span class="hc-stat-name">Decision latency</span><span class="hc-stat-val">&lt;60<span>s</span></span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Your adjudication system</span><span class="hc-stat-val" style="color:rgba(255,255,255,.5);font-size:.9rem;">Facets · QNXT · HealthEdge</span></div>
+          <div class="hc-stat" style="background:rgba(0,131,143,.15);border-color:rgba(0,131,143,.3);"><span class="hc-stat-name" style="color:#6FD0D8;">calls →  FHIRFabric PI</span><span class="hc-stat-val" style="color:#6FD0D8;font-size:.85rem;">POST /v1/claims/validate</span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Returns decision in &lt;60s</span><span class="hc-stat-val" style="color:#6FD0D8;">approve · pend · deny</span></div>
+          <div class="hc-stat"><span class="hc-stat-name">AI confidence (demo)</span><span class="hc-stat-val">91<span>%</span></span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Estimated savings (demo claim)</span><span class="hc-stat-val">$<span>16,200</span></span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Policy citation on every finding</span><span class="hc-stat-val" style="color:#6FD0D8;font-size:.75rem;">CMS NCCI · LCD · Contract</span></div>
         </div>
       </div>
     </div>
@@ -134,12 +134,32 @@
 <!-- STAT STRIP -->
 <div class="stat-strip">
   <div class="stat-strip-inner">
-    <div class="ss-item reveal"><div class="ss-num">13</div><div class="ss-label">Validation stages<br />per claim</div></div>
-    <div class="ss-item reveal d1"><div class="ss-num">2</div><div class="ss-label">Claim tracks:<br />CPT and DRG</div></div>
+    <div class="ss-item reveal"><div class="ss-num">0</div><div class="ss-label">Changes to your<br />adjudication system</div></div>
+    <div class="ss-item reveal d1"><div class="ss-num">13</div><div class="ss-label">Validation stages<br />per claim</div></div>
     <div class="ss-item reveal d2"><div class="ss-num">91%</div><div class="ss-label">AI confidence<br />on demo denials</div></div>
-    <div class="ss-item reveal d3"><div class="ss-num">&lt;60s</div><div class="ss-label">Pre-pay decision<br />per claim</div></div>
+    <div class="ss-item reveal d3"><div class="ss-num">&lt;60s</div><div class="ss-label">Pre-pay decision<br />returned</div></div>
   </div>
 </div>
+
+<!-- WHAT WE CATCH -->
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">What Gets Caught</div>
+    <h2 class="h2 reveal d1">The things a rules engine<br /><em>can't find on its own.</em></h2>
+    <p class="section-lead reveal d2">Deterministic rules catch what they're written to catch. The AI layer catches what rules miss — clinical reasoning failures, cross-signal fraud patterns, and sequencing issues that only a trained coder or physician would normally flag.</p>
+    <div class="catch-grid">
+      <div class="catch-item reveal"><div class="catch-icon"><i class="ti ti-circle-x" aria-hidden="true"></i></div><div class="catch-title">NCCI bundling violations</div><div class="catch-body">Component procedures billed alongside the parent — with the exact CMS policy chapter cited.</div></div>
+      <div class="catch-item reveal d1"><div class="catch-icon"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div><div class="catch-title">DRG tier upcoding</div><div class="catch-body">MCC/CC diagnoses with POA=N excluded from tier calculation per HAC reduction policy.</div></div>
+      <div class="catch-item reveal d2"><div class="catch-icon"><i class="ti ti-arrows-exchange" aria-hidden="true"></i></div><div class="catch-title">COB payer order errors</div><div class="catch-body">Birthday rule, Medicare secondary, Medicaid last resort — resolved before any financial adjudication.</div></div>
+      <div class="catch-item reveal"><div class="catch-icon"><i class="ti ti-stethoscope" aria-hidden="true"></i></div><div class="catch-title">Diagnosis-procedure mismatch</div><div class="catch-body">Clinical reasoning catches right knee diagnosis billed with right hip procedure — something no NCCI table covers.</div></div>
+      <div class="catch-item reveal d1"><div class="catch-icon"><i class="ti ti-building-hospital" aria-hidden="true"></i></div><div class="catch-title">Inappropriate inpatient admission</div><div class="catch-body">LOS below DRG geometric mean triggers 2-midnight rule review. Short stays flagged for observation reclassification.</div></div>
+      <div class="catch-item reveal d2"><div class="catch-icon"><i class="ti ti-coin" aria-hidden="true"></i></div><div class="catch-title">Above-contract billing</div><div class="catch-body">Billed charges compared to contracted rate with modifier adjustments — bilateral, MPR, assistant surgeon, global surgery.</div></div>
+      <div class="catch-item reveal"><div class="catch-icon"><i class="ti ti-id" aria-hidden="true"></i></div><div class="catch-title">Provider identity gaps</div><div class="catch-body">Group NPI as rendering NPI + missing TIN = potential non-contracted provider billing pattern. Flagged for SIU.</div></div>
+      <div class="catch-item reveal d1"><div class="catch-icon"><i class="ti ti-chart-bar" aria-hidden="true"></i></div><div class="catch-title">FWA outlier patterns</div><div class="catch-body">Provider billing 340% above peer group median. Systematic unbundling across multiple claims. Referred to FWA team.</div></div>
+      <div class="catch-item reveal d2"><div class="catch-icon"><i class="ti ti-repeat" aria-hidden="true"></i></div><div class="catch-title">Duplicate and near-duplicate claims</div><div class="catch-body">Same-day same-service intra-claim duplicates flagged immediately. Cross-claim history match in production.</div></div>
+    </div>
+  </div>
+</section>
 
 <!-- PIPELINE -->
 <section class="section" id="pipeline">
@@ -204,26 +224,6 @@
           <div class="track-row"><span class="track-key">Pricing logic</span><span class="track-val">DRG rate, transfer rule, outlier payment</span></div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- WHAT WE CATCH -->
-<section class="section">
-  <div class="section-inner">
-    <div class="eyebrow reveal">What Gets Caught</div>
-    <h2 class="h2 reveal d1">The things a rules engine<br /><em>can't find on its own.</em></h2>
-    <p class="section-lead reveal d2">Deterministic rules catch what they're written to catch. The AI layer catches what rules miss — clinical reasoning failures, cross-signal fraud patterns, and sequencing issues that only a trained coder or physician would normally flag.</p>
-    <div class="catch-grid">
-      <div class="catch-item reveal"><div class="catch-icon"><i class="ti ti-circle-x" aria-hidden="true"></i></div><div class="catch-title">NCCI bundling violations</div><div class="catch-body">Component procedures billed alongside the parent — with the exact CMS policy chapter cited.</div></div>
-      <div class="catch-item reveal d1"><div class="catch-icon"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div><div class="catch-title">DRG tier upcoding</div><div class="catch-body">MCC/CC diagnoses with POA=N excluded from tier calculation per HAC reduction policy.</div></div>
-      <div class="catch-item reveal d2"><div class="catch-icon"><i class="ti ti-arrows-exchange" aria-hidden="true"></i></div><div class="catch-title">COB payer order errors</div><div class="catch-body">Birthday rule, Medicare secondary, Medicaid last resort — resolved before any financial adjudication.</div></div>
-      <div class="catch-item reveal"><div class="catch-icon"><i class="ti ti-stethoscope" aria-hidden="true"></i></div><div class="catch-title">Diagnosis-procedure mismatch</div><div class="catch-body">Clinical reasoning catches right knee diagnosis billed with right hip procedure — something no NCCI table covers.</div></div>
-      <div class="catch-item reveal d1"><div class="catch-icon"><i class="ti ti-building-hospital" aria-hidden="true"></i></div><div class="catch-title">Inappropriate inpatient admission</div><div class="catch-body">LOS below DRG geometric mean triggers 2-midnight rule review. Short stays flagged for observation reclassification.</div></div>
-      <div class="catch-item reveal d2"><div class="catch-icon"><i class="ti ti-coin" aria-hidden="true"></i></div><div class="catch-title">Above-contract billing</div><div class="catch-body">Billed charges compared to contracted rate with modifier adjustments — bilateral, MPR, assistant surgeon, global surgery.</div></div>
-      <div class="catch-item reveal"><div class="catch-icon"><i class="ti ti-id" aria-hidden="true"></i></div><div class="catch-title">Provider identity gaps</div><div class="catch-body">Group NPI as rendering NPI + missing TIN = potential non-contracted provider billing pattern. Flagged for SIU.</div></div>
-      <div class="catch-item reveal d1"><div class="catch-icon"><i class="ti ti-chart-bar" aria-hidden="true"></i></div><div class="catch-title">FWA outlier patterns</div><div class="catch-body">Provider billing 340% above peer group median. Systematic unbundling across multiple claims. Referred to FWA team.</div></div>
-      <div class="catch-item reveal d2"><div class="catch-icon"><i class="ti ti-repeat" aria-hidden="true"></i></div><div class="catch-title">Duplicate and near-duplicate claims</div><div class="catch-body">Same-day same-service intra-claim duplicates flagged immediately. Cross-claim history match in production.</div></div>
     </div>
   </div>
 </section>
@@ -482,7 +482,6 @@
   const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');obs.unobserve(x.target);}}),{threshold:.1});
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 </script>
+
 </body>
 </html>
-
-<!-- INTEGRATION PATTERNS — inserted before differentiators -->

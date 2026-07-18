@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Platform — FHIRFabric</title>
+  <meta name="description" content="FHIRFabric's modular FHIR platform: payer integration, SMART on FHIR, GovCloud infrastructure, bulk exchange, and data governance." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .ph{padding:120px 40px 80px;background:var(--navy);position:relative;overflow:hidden}
+    .ph::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:rgba(0,131,143,0.18);top:-200px;right:-100px;pointer-events:none}
+    .ph-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;max-width:720px}
+    .ph h1{font-family:var(--serif);font-size:clamp(2.4rem,4vw,3.6rem);color:var(--white);line-height:1.12;margin:16px 0 18px}
+    .ph h1 em{font-style:italic;color:#6FD0D8}
+    .ph p{font-size:1rem;color:rgba(255,255,255,.7);line-height:1.78;max-width:580px}
+    /* arch */
+    .arch-box{background:var(--off-white);border:1px solid var(--gray-2);border-radius:var(--r-lg);overflow:hidden;margin-top:56px}
+    .arch-hdr{padding:13px 18px;background:var(--navy);display:flex;align-items:center;gap:7px}
+    .ad-r{width:10px;height:10px;border-radius:50%;background:#ff5f57}
+    .ad-y{width:10px;height:10px;border-radius:50%;background:#febc2e}
+    .ad-g{width:10px;height:10px;border-radius:50%;background:#28c840}
+    .arch-ttl{font-family:var(--mono);font-size:.68rem;color:rgba(255,255,255,.4);margin-left:8px}
+    .arch-row{display:grid;grid-template-columns:160px 1fr;border-bottom:1px solid var(--gray-2)}
+    .arch-row:last-child{border-bottom:none}
+    .ar-lbl{padding:20px 18px;background:var(--gray-1);border-right:1px solid var(--gray-2);font-family:var(--mono);font-size:.65rem;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center}
+    .ar-chips{padding:16px 20px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .chip{border:1px solid var(--gray-2);border-radius:6px;padding:4px 12px;font-size:.77rem;color:var(--text-2);background:var(--white)}
+    .chip.hi{border-color:rgba(0,131,143,.4);color:var(--teal);background:var(--teal-light)}
+    /* deep dives */
+    .deep-item{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;padding:80px 0;border-bottom:1px solid var(--gray-2)}
+    .deep-item:last-child{border-bottom:none}
+    .deep-item.rev .dc{order:2}
+    .deep-item.rev .dv{order:1}
+    .di-ey{font-family:var(--mono);font-size:.65rem;color:var(--teal);text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+    .di-ey::before{content:'';width:16px;height:1px;background:var(--teal)}
+    .di-h{font-family:var(--serif);font-size:clamp(1.7rem,2.8vw,2.4rem);color:var(--navy);line-height:1.15;margin-bottom:14px}
+    .di-h em{font-style:italic;color:var(--teal)}
+    .di-p{font-size:.9rem;color:var(--text-2);line-height:1.8;margin-bottom:12px}
+    .di-list{list-style:none;margin-top:10px}
+    .di-list li{font-size:.875rem;color:var(--text-2);padding:8px 0;border-bottom:1px solid var(--gray-2);display:flex;align-items:center;gap:10px}
+    .di-list li:last-child{border-bottom:none}
+    .di-list li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0}
+    .metrics-panel{background:var(--off-white);border:1px solid var(--gray-2);border-radius:var(--r-lg);padding:28px}
+    .mp-label{font-family:var(--mono);font-size:.65rem;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
+    .mp-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .mp-name{font-size:.77rem;color:var(--text-2);width:120px;flex-shrink:0}
+    .mp-track{flex:1;height:6px;background:var(--gray-2);border-radius:3px;overflow:hidden}
+    .mp-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--navy));border-radius:3px}
+    .mp-val{font-family:var(--mono);font-size:.72rem;color:var(--teal);min-width:44px;text-align:right}
+    .mp-metric{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-2)}
+    .mp-metric:last-child{border-bottom:none}
+    .mp-ml{font-size:.82rem;color:var(--text-2)}
+    .mp-mv{font-family:var(--mono);font-size:.82rem;color:var(--teal);font-weight:500}
+    /* int table */
+    .int-wrap{overflow-x:auto;margin-top:56px}
+    .int-table{width:100%;border-collapse:collapse;border:1px solid var(--gray-2);border-radius:var(--r-lg);overflow:hidden}
+    .int-table th{text-align:left;padding:12px 16px;font-family:var(--mono);font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);background:var(--gray-1);border-bottom:1px solid var(--gray-2)}
+    .int-table td{padding:13px 16px;border-bottom:1px solid var(--gray-2);font-size:.875rem;color:var(--text-2)}
+    .int-table tr:last-child td{border-bottom:none}
+    .int-table tr:hover td{background:var(--off-white)}
+    .it-live{background:var(--teal-light);color:var(--teal-2);border:1px solid rgba(0,131,143,.25);font-size:.68rem;font-family:var(--mono);padding:2px 8px;border-radius:4px}
+    .it-leg{background:var(--gray-1);color:var(--gray-5);border:1px solid var(--gray-2);font-size:.68rem;font-family:var(--mono);padding:2px 8px;border-radius:4px}
+    @media(max-width:1024px){.ph{padding:110px 32px 64px}.deep-item{grid-template-columns:1fr;gap:36px}.deep-item.rev .dc,.deep-item.rev .dv{order:unset}.arch-row{grid-template-columns:1fr}.ar-lbl{border-right:none;border-bottom:1px solid var(--gray-2)}}
+    @media(max-width:768px){.ph{padding:110px 20px 56px}}
+  </style>
+</head>
+<body>
+<nav class="nav" id="nav"><div class="nav-inner"><a href="index.html" class="nav-logo"><div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div><span class="logo-name">FHIRFabric</span></a><ul class="nav-links" id="navLinks"><li><a href="platform.html" class="active">Platform</a></li><li><a href="compliance.html">Compliance</a></li><li><a href="experience.html">Experience</a></li><li><a href="contact.html" class="nav-cta">Request Demo</a></li></ul><button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button></div></nav>
+
+<div class="ph"><div class="ph-inner"><div class="eyebrow reveal" style="color:rgba(111,208,216,.8)"><span style="width:20px;height:1px;background:rgba(111,208,216,.8);display:block"></span>Platform</div><h1 class="reveal d1">Infrastructure engineered<br />for <em>production FHIR at scale.</em></h1><p class="reveal d2">A modular, production-hardened platform spanning ingestion, translation, governance, and API delivery — designed for the operational complexity of enterprise payers and state Medicaid agencies.</p></div></div>
+
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Architecture</div>
+    <h2 class="h2 reveal d1">Five layers,<br /><em>one coherent system.</em></h2>
+    <div class="arch-box reveal d2">
+      <div class="arch-hdr"><div class="ad-r"></div><div class="ad-y"></div><div class="ad-g"></div><span class="arch-ttl">fhirfabric-platform-architecture</span></div>
+      <div class="arch-row"><div class="ar-lbl">Ingestion</div><div class="ar-chips"><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">HL7 v2.x ADT/ORM/ORU</span><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">X12 837/835/270/271</span><span class="chip">Legacy DMS</span><span class="chip">SFTP / REST API</span><span class="chip">Bulk FHIR ($export)</span><span class="chip">Real-time streaming</span></div></div>
+      <div class="arch-row"><div class="ar-lbl">Translation &amp; Governance</div><div class="ar-chips"><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">FHIR R4 mapper</span><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">US Core 6.1.0</span><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">CARIN BB</span><span class="chip">Dedup engine 99.3%</span><span class="chip">Survivorship rules</span><span class="chip">Golden record</span><span class="chip">Audit lineage</span></div></div>
+      <div class="arch-row"><div class="ar-lbl">Storage &amp; Compute</div><div class="ar-chips"><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">AWS GovCloud</span><span class="chip">FHIR R4 datastore</span><span class="chip">AES-256 at rest</span><span class="chip">TLS 1.3 in transit</span><span class="chip">Multi-region HA</span></div></div>
+      <div class="arch-row"><div class="ar-lbl">API Delivery</div><div class="ar-chips"><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">Patient Access API</span><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">Provider Directory API</span><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">Payer-to-Payer API</span><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">Prior Auth API</span><span class="chip">SMART on FHIR</span><span class="chip">OAuth 2.0 / PKCE</span></div></div>
+      <div class="arch-row"><div class="ar-lbl">Observability</div><div class="ar-chips"><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">Real-time tracing</span><span class="chip hi" style="border-color:rgba(232,85,61,.35);color:var(--coral);background:rgba(232,85,61,.07)">56-min P1 MTTR</span><span class="chip">Compliance dashboards</span><span class="chip">Proactive alerting</span><span class="chip">CMS audit reports</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-off">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Core modules</div>
+    <h2 class="h2 reveal d1">Every capability,<br /><em>production-tested.</em></h2>
+    <div>
+      <div class="deep-item reveal">
+        <div class="dc">
+          <div class="di-ey">Payer integration</div>
+          <div class="di-h">Member identity<br /><em>at enterprise scale</em></div>
+          <p class="di-p">Most payer environments are a patchwork of legacy platforms. FHIRFabric has unified seven disparate payer systems into a single FHIR-native data layer, resolving 387K duplicate records with 99.3% precision.</p>
+          <ul class="di-list"><li>7 disparate payer systems unified in production</li><li>387K duplicate records resolved at 99.3% precision</li><li>Survivorship rules across 2.4M member plans</li><li>Full audit lineage from source to FHIR</li></ul>
+        </div>
+        <div class="dv">
+          <div class="metrics-panel">
+            <div class="mp-label">Deduplication performance</div>
+            <div class="mp-bar-row"><span class="mp-name">Match precision</span><div class="mp-track"><div class="mp-fill" style="width:99.3%"></div></div><span class="mp-val">99.3%</span></div>
+            <div class="mp-bar-row"><span class="mp-name">Records resolved</span><div class="mp-track"><div class="mp-fill" style="width:80%"></div></div><span class="mp-val">387K</span></div>
+            <div class="mp-bar-row"><span class="mp-name">Systems unified</span><div class="mp-track"><div class="mp-fill" style="width:70%"></div></div><span class="mp-val">7</span></div>
+            <div style="margin-top:14px">
+              <div class="mp-metric"><span class="mp-ml">Golden record accuracy</span><span class="mp-mv" style="color:var(--coral)">&gt;99%</span></div>
+              <div class="mp-metric"><span class="mp-ml">Lineage coverage</span><span class="mp-mv" style="color:var(--coral)">100%</span></div>
+              <div class="mp-metric"><span class="mp-ml">Member plan size</span><span class="mp-mv" style="color:var(--coral)">2.4M</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="deep-item rev reveal">
+        <div class="dc">
+          <div class="di-ey">SMART on FHIR</div>
+          <div class="di-h">App authorization<br /><em>at 38M calls/month</em></div>
+          <p class="di-p">Full lifecycle management for SMART on FHIR applications — from registration and scope configuration through performance monitoring and compliance validation.</p>
+          <ul class="di-list"><li>31 SMART on FHIR apps in production</li><li>38M API calls / month</li><li>OAuth 2.0 + PKCE authorization</li><li>Granular scope enforcement per app</li></ul>
+        </div>
+        <div class="dv">
+          <div class="metrics-panel">
+            <div class="mp-label">SMART platform metrics</div>
+            <div class="mp-metric"><span class="mp-ml">Apps onboarded</span><span class="mp-mv" style="color:var(--coral)">31</span></div>
+            <div class="mp-metric"><span class="mp-ml">API calls / month</span><span class="mp-mv" style="color:var(--coral)">38M</span></div>
+            <div class="mp-metric"><span class="mp-ml">Auth protocol</span><span class="mp-mv" style="color:var(--coral)">OAuth 2.0 / PKCE</span></div>
+            <div class="mp-metric"><span class="mp-ml">Scope enforcement</span><span class="mp-mv" style="color:var(--coral)">Per-app</span></div>
+            <div class="mp-metric"><span class="mp-ml">Audit logging</span><span class="mp-mv" style="color:var(--coral)">Every call</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="deep-item reveal">
+        <div class="dc">
+          <div class="di-ey">AWS GovCloud</div>
+          <div class="di-h">3.1M members<br /><em>71M calls/month</em></div>
+          <p class="di-p">Our largest production deployment: FedRAMP-aligned infrastructure on AWS GovCloud with HIPAA-compliant architecture, multi-region HA, and 24/7 SRE coverage.</p>
+          <ul class="di-list"><li>3.1M Medicaid members on GovCloud production</li><li>71M FHIR API calls processed per month</li><li>AES-256 encryption at rest (AWS KMS)</li><li>TLS 1.3 in transit · Multi-region HA</li><li>56-minute P1 MTTR · 24/7 SRE</li></ul>
+        </div>
+        <div class="dv">
+          <div class="metrics-panel">
+            <div class="mp-label">Infrastructure performance</div>
+            <div class="mp-metric"><span class="mp-ml">Members (GovCloud)</span><span class="mp-mv" style="color:var(--coral)">3.1M</span></div>
+            <div class="mp-metric"><span class="mp-ml">FHIR calls / month</span><span class="mp-mv" style="color:var(--coral)">71M</span></div>
+            <div class="mp-metric"><span class="mp-ml">P1 MTTR</span><span class="mp-mv" style="color:var(--coral)">56 min</span></div>
+            <div class="mp-metric"><span class="mp-ml">Encryption</span><span class="mp-mv" style="color:var(--coral)">AES-256 / TLS 1.3</span></div>
+            <div class="mp-metric"><span class="mp-ml">SRE coverage</span><span class="mp-mv" style="color:var(--coral)">24/7</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Integration support</div>
+    <h2 class="h2 reveal d1">What we connect<br /><em>to and from.</em></h2>
+    <div class="int-wrap reveal d2">
+      <table class="int-table">
+        <thead><tr><th>Standard / System</th><th>Type</th><th>Direction</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>HL7 v2.x (ADT, ORM, ORU, SIU)</td><td><span class="it-leg">Legacy</span></td><td>Inbound → FHIR</td><td>All major types; Z-segments preserved</td></tr>
+          <tr><td>X12 837/835 (Claims/Remittance)</td><td><span class="it-leg">Legacy</span></td><td>Inbound → FHIR</td><td>HIPAA 5010 compliant</td></tr>
+          <tr><td>X12 270/271 (Eligibility)</td><td><span class="it-leg">Legacy</span></td><td>Bidirectional</td><td>Real-time eligibility check support</td></tr>
+          <tr><td>FHIR R4 REST API</td><td><span class="it-live">FHIR</span></td><td>Outbound</td><td>JSON + XML; US Core 6.1.0 profiles</td></tr>
+          <tr><td>FHIR Bulk Data ($export)</td><td><span class="it-live">FHIR</span></td><td>Outbound</td><td>NDJSON; Payer-to-Payer and analytics</td></tr>
+          <tr><td>SMART on FHIR</td><td><span class="it-live">FHIR</span></td><td>Outbound</td><td>OAuth 2.0 / PKCE; 31 apps live</td></tr>
+          <tr><td>CARIN BlueButton 2.0</td><td><span class="it-live">FHIR</span></td><td>Outbound</td><td>Consumer-facing claims access</td></tr>
+          <tr><td>Da Vinci PDex / PAS</td><td><span class="it-live">FHIR</span></td><td>Bidirectional</td><td>Payer data exchange + Prior Auth</td></tr>
+          <tr><td>Legacy DMS systems</td><td><span class="it-leg">Legacy</span></td><td>Inbound</td><td>Per-engagement connector development</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="cta-band"><div class="cta-band-inner reveal"><h2>Ready to see the<br /><em>platform in action?</em></h2><p>We'll walk through your environment and show you exactly how FHIRFabric fits — no generic demo.</p><div class="cta-btns"><a href="contact.html" class="btn-primary">Request a Demo <span class="arr">→</span></a><a href="compliance.html" class="btn-outline">Compliance Coverage <span class="arr">→</span></a></div></div></div>
+
+<footer class="footer"><div class="footer-grid"><div class="footer-brand"><a href="index.html" class="nav-logo"><div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div><span class="logo-name">FHIRFabric</span></a><p>Production-grade FHIR interoperability for enterprise healthcare.</p><p class="footer-parent">A <a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix</a> company</p></div><div class="footer-links"><div class="footer-col"><h4>Platform</h4><ul><li><a href="platform.html">Platform Overview</a></li><li><a href="compliance.html">Compliance APIs</a></li><li><a href="experience.html">Track Record</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li><li><a href="contact.html">Contact</a></li></ul></div><div class="footer-col"><h4>Compliance</h4><ul><li><a href="compliance.html">CMS-9115-F</a></li><li><a href="compliance.html">CMS-0057-F</a></li><li><a href="compliance.html">HIPAA</a></li></ul></div></div></div><div class="footer-bottom"><span>© 2026 FHIRFabric · A MyAtrix Company · Downers Grove, IL</span><span>support@fhirfabric.com</span></div></footer>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+<script>const nav=document.getElementById('nav');window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));document.getElementById('hamburger').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');this.classList.toggle('active');});const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');obs.unobserve(x.target);}}),{threshold:.1});document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));</script>
+</body></html>

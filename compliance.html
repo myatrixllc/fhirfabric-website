@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compliance — FHIRFabric</title>
+  <meta name="description" content="CMS-9115-F and CMS-0057-F delivered in production. Full compliance coverage: HIPAA, SMART on FHIR, US Core 6.1.0, CARIN BlueButton, Da Vinci." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .ph{padding:120px 40px 80px;background:var(--navy);position:relative;overflow:hidden}
+    .ph::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:rgba(0,131,143,0.18);top:-200px;right:-100px;pointer-events:none}
+    .ph-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;max-width:720px}
+    .ph h1{font-family:var(--serif);font-size:clamp(2.4rem,4vw,3.6rem);color:var(--white);line-height:1.12;margin:16px 0 18px}
+    .ph h1 em{font-style:italic;color:#6FD0D8}
+    .ph p{font-size:1rem;color:rgba(255,255,255,.7);line-height:1.78;max-width:580px}
+    .mandate-list{margin-top:56px;border:1px solid var(--gray-2);border-radius:var(--r-lg);overflow:hidden}
+    .mandate{background:var(--white);padding:40px 44px;border-bottom:1px solid var(--gray-2);display:grid;grid-template-columns:220px 1fr;gap:40px;align-items:start;transition:background .3s}
+    .mandate:last-child{border-bottom:none}
+    .mandate:hover{background:var(--off-white)}
+    .mc-id{font-family:var(--mono);font-size:.65rem;color:var(--teal);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
+    .mc-title{font-weight:600;font-size:1.05rem;color:var(--navy);margin-bottom:10px}
+    .mc-badge{display:inline-flex;align-items:center;gap:5px;background:#E6F9F0;border:1px solid #9FE1CB;color:#0F6E56;border-radius:100px;padding:4px 12px;font-family:var(--mono);font-size:.65rem}
+    .mc-badge::before{content:'●';font-size:.5rem}
+    .mc-body p{font-size:.875rem;color:var(--text-2);line-height:1.78;margin-bottom:14px}
+    .mc-api{display:flex;align-items:center;gap:9px;font-size:.82rem;color:var(--text-2);padding:8px 0;border-bottom:1px solid var(--gray-2)}
+    .mc-api:last-child{border-bottom:none}
+    .mc-ck{color:var(--teal);font-size:.9rem}
+    .std-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
+    .std-c{background:var(--white);border:1px solid var(--gray-2);border-radius:var(--r-lg);padding:28px;box-shadow:var(--shadow-sm);transition:box-shadow .3s,transform .3s}
+    .std-c:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+    .std-b{font-family:var(--mono);font-size:.68rem;color:var(--teal);border:1px solid rgba(0,131,143,.3);border-radius:4px;padding:3px 10px;display:inline-block;margin-bottom:12px;background:var(--teal-light)}
+    .std-c h3{font-weight:600;font-size:.95rem;color:var(--navy);margin-bottom:8px}
+    .std-c p{font-size:.84rem;color:var(--text-2);line-height:1.72}
+    .sec-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:56px}
+    .sec-c{background:var(--white);border:1px solid var(--gray-2);border-radius:var(--r-lg);padding:30px;box-shadow:var(--shadow-sm)}
+    .sec-icon{font-size:24px;color:var(--teal);margin-bottom:14px}
+    .sec-c h3{font-weight:600;font-size:.95rem;color:var(--navy);margin-bottom:8px}
+    .sec-c p{font-size:.875rem;color:var(--text-2);line-height:1.75}
+    @media(max-width:1024px){.ph{padding:110px 32px 64px}.mandate{grid-template-columns:1fr;gap:16px;padding:28px 24px}.std-grid{grid-template-columns:repeat(2,1fr)}.sec-grid{grid-template-columns:1fr}}
+    @media(max-width:768px){.ph{padding:110px 20px 56px}.std-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<nav class="nav" id="nav"><div class="nav-inner"><a href="index.html" class="nav-logo"><div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div><span class="logo-name">FHIRFabric</span></a><ul class="nav-links" id="navLinks"><li><a href="platform.html">Platform</a></li>
+      <li><a href="payment-integrity.html">Payment Integrity</a></li><li><a href="compliance.html" class="active">Compliance</a></li><li><a href="experience.html">Experience</a></li><li><a href="contact.html" class="nav-cta">Request Demo</a></li></ul><button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button></div></nav>
+
+<div class="ph"><div class="ph-inner"><div class="eyebrow reveal" style="color:rgba(111,208,216,.8)"><span style="width:20px;height:1px;background:rgba(111,208,216,.8);display:block"></span>Compliance</div><h1 class="reveal d1">CMS mandates delivered<br /><em>ahead of deadline.</em></h1><p class="reveal d2">Every major CMS interoperability rule — CMS-9115-F and CMS-0057-F — implemented in production with full audit readiness and HIPAA compliance posture.</p></div></div>
+
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">CMS mandates</div>
+    <h2 class="h2 reveal d1">Every API,<br /><em>live in production.</em></h2>
+    <div class="mandate-list">
+      <div class="mandate reveal">
+        <div><div class="mc-id" style="color:var(--coral)">CMS-9115-F</div><div class="mc-title">Interoperability &amp; Patient Access Final Rule</div><div style="margin-top:8px"><span class="mc-badge" style="background:rgba(232,85,61,.08);border-color:rgba(232,85,61,.3);color:var(--coral)">Delivered 3 days early</span></div></div>
+        <div class="mc-body"><p>Full CMS-9115-F implementation delivered three days ahead of the CMS enforcement date — Patient Access API, Provider Directory API, and Payer-to-Payer API covering 64,300 members and 4.7M FHIR resources.</p><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>Patient Access API — clinical, claims, and formulary data</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>Provider Directory API — FHIR-based network data</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>Payer-to-Payer API — 64,300 members, 4.7M resources</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>SMART on FHIR authorization for third-party app access</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>FHIR R4 + US Core profiles throughout</div></div>
+      </div>
+      <div class="mandate reveal">
+        <div><div class="mc-id" style="color:var(--coral)">CMS-0057-F</div><div class="mc-title">Prior Authorization Final Rule</div><div style="margin-top:8px"><span class="mc-badge" style="background:rgba(232,85,61,.08);border-color:rgba(232,85,61,.3);color:var(--coral)">Production delivered</span></div></div>
+        <div class="mc-body"><p>CMS-0057-F Prior Authorization API implemented across a multi-agency environment requiring coordination across state and federal stakeholders — full Da Vinci PAS with decision transparency and audit trail.</p><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>Prior Authorization API (Da Vinci PAS)</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>Decision transparency — reason codes in FHIR responses</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>Provider-facing PA submission and status API</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>Multi-agency coordination framework</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>Full audit trail for every PA decision</div></div>
+      </div>
+      <div class="mandate reveal">
+        <div><div class="mc-id" style="color:var(--coral)">Medicaid-specific</div><div class="mc-title">State Medicaid Interoperability</div><div style="margin-top:8px"><span class="mc-badge" style="background:rgba(232,85,61,.08);border-color:rgba(232,85,61,.3);color:var(--coral)">7 implementations</span></div></div>
+        <div class="mc-body"><p>Seven Medicaid implementations with zero missed CMS deadlines — building institutional knowledge of state-specific data governance, multi-agency coordination, and beneficiary data sovereignty.</p><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>AWS GovCloud — 3.1M members, 71M calls/month</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>State-specific data governance frameworks</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>CMS audit reporting and compliance dashboards</div><div class="mc-api"><span class="mc-ck" style="color:var(--coral)">✓</span>Zero missed deadlines across all 7 implementations</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-off">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Standards &amp; profiles</div>
+    <h2 class="h2 reveal d1">The full stack of<br /><em>healthcare standards.</em></h2>
+    <div class="std-grid">
+      <div class="std-c reveal"><div class="std-b" style="background:rgba(232,85,61,.08);border-color:rgba(232,85,61,.3);color:var(--coral)">FHIR R4</div><h3>HL7 FHIR R4</h3><p>Full R4 specification — the current required CMS standard. JSON and XML, all core resource types, US Core profiles.</p></div>
+      <div class="std-c reveal d1"><div class="std-b" style="background:rgba(232,85,61,.08);border-color:rgba(232,85,61,.3);color:var(--coral)">US Core 6.1.0</div><h3>US Core Profiles</h3><p>Delivered 3.1.1 → 6.1.0 upgrade in production — onboarding 340+ third-party apps without disruption.</p></div>
+      <div class="std-c reveal d2"><div class="std-b" style="background:rgba(232,85,61,.08);border-color:rgba(232,85,61,.3);color:var(--coral)">CARIN BB</div><h3>CARIN BlueButton 2.0</h3><p>Consumer-directed exchange of payer-held claims and EOB data for member-facing applications.</p></div>
+      <div class="std-c reveal"><div class="std-b" style="background:rgba(232,85,61,.08);border-color:rgba(232,85,61,.3);color:var(--coral)">Da Vinci</div><h3>Da Vinci PDex / PAS</h3><p>PDex for payer data exchange, PAS for prior authorization — implemented in production across multiple deployments.</p></div>
+      <div class="std-c reveal d1"><div class="std-b" style="background:rgba(232,85,61,.08);border-color:rgba(232,85,61,.3);color:var(--coral)">SMART</div><h3>SMART on FHIR</h3><p>OAuth 2.0/PKCE authorization. 31 apps live, 38M API calls/month, granular scope enforcement per app.</p></div>
+      <div class="std-c reveal d2"><div class="std-b" style="background:rgba(232,85,61,.08);border-color:rgba(232,85,61,.3);color:var(--coral)">Bulk FHIR</div><h3>FHIR Bulk Data Access</h3><p>Async bulk export and import for population-level exchange — powering P2P transfer and analytics pipelines.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Delivery history</div>
+    <h2 class="h2 reveal d1">A record of<br /><em>on-time delivery.</em></h2>
+    <div class="timeline reveal d2">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-meta">CMS-9115-F · Patient Access Suite</div><div class="tl-title">Full patient access, provider directory, and payer-to-payer APIs</div><div class="tl-body">Delivered three days ahead of CMS enforcement. 64,300 members covered under Payer-to-Payer exchange, 4.7M FHIR resources transferred. SMART on FHIR and US Core profiles live from day one.</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-meta">US Core Upgrade · 340+ apps</div><div class="tl-title">US Core 3.1.1 → 6.1.0 + CARIN BB upgrade in live production</div><div class="tl-body">Major profile upgrade across a live environment — 340+ third-party apps maintained through the transition. Zero breaking incidents, no enforcement issues.</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-meta">SMART on FHIR · Scale</div><div class="tl-title">31 SMART apps live at 38M calls/month</div><div class="tl-body">Full authorization layer — app registration, OAuth 2.0/PKCE, scope enforcement, monitoring — serving 38 million API calls per month across 31 production applications.</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-meta">CMS-0057-F · Prior Authorization</div><div class="tl-title">Prior Authorization API across multi-agency environment</div><div class="tl-body">Da Vinci PAS implementation with full audit trail, decision transparency, and multi-agency coordination across state and federal stakeholders.</div></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-meta">AWS GovCloud · Medicaid scale</div><div class="tl-title">3.1M members · 71M FHIR calls/month</div><div class="tl-body">Largest production deployment: GovCloud infrastructure for 3.1M Medicaid beneficiaries with 56-minute P1 MTTR and 24/7 SRE.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-off">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Security posture</div>
+    <h2 class="h2 reveal d1">HIPAA-compliant by design,<br /><em>not by checkbox.</em></h2>
+    <div class="sec-grid">
+      <div class="sec-c reveal"><div class="sec-icon"><i class="ti ti-shield-lock" aria-hidden="true"></i></div><h3>Encryption</h3><p>AES-256 at rest via AWS KMS, TLS 1.3 in transit. No PHI in unencrypted channels at any layer of the stack.</p></div>
+      <div class="sec-c reveal d1"><div class="sec-icon"><i class="ti ti-user-check" aria-hidden="true"></i></div><h3>Access Control</h3><p>Role-based access control with MFA for all platform access. SMART on FHIR OAuth 2.0/PKCE for third-party apps. Least privilege enforced at every tier.</p></div>
+      <div class="sec-c reveal"><div class="sec-icon"><i class="ti ti-activity" aria-hidden="true"></i></div><h3>Real-Time Monitoring</h3><p>Continuous monitoring with automated anomaly detection. Every FHIR call traced end-to-end. 56-minute P1 MTTR with 24/7 SRE on-call coverage.</p></div>
+      <div class="sec-c reveal d1"><div class="sec-icon"><i class="ti ti-list-check" aria-hidden="true"></i></div><h3>Audit Logging</h3><p>Tamper-evident audit logs for every data access, API call, and system change. Structured for CMS audit readiness and exportable for federal compliance reporting.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-band"><div class="cta-band-inner reveal"><h2>Questions about your<br /><em>compliance posture?</em></h2><p>We'll walk through your regulatory obligations and show you exactly how FHIRFabric addresses them.</p><div class="cta-btns"><a href="contact.html" class="btn-primary">Talk to an Expert <span class="arr">→</span></a><a href="experience.html" class="btn-outline">See Track Record <span class="arr">→</span></a></div></div></div>
+
+<footer class="footer"><div class="footer-grid"><div class="footer-brand"><a href="index.html" class="nav-logo"><div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div><span class="logo-name">FHIRFabric</span></a><p>Production-grade FHIR interoperability for enterprise healthcare.</p><p class="footer-parent">A <a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix</a> company</p></div><div class="footer-links"><div class="footer-col"><h4>Platform</h4><ul><li><a href="platform.html">Platform Overview</a></li><li><a href="compliance.html">Compliance APIs</a></li><li><a href="experience.html">Track Record</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li><li><a href="contact.html">Contact</a></li></ul></div><div class="footer-col"><h4>Compliance</h4><ul><li><a href="compliance.html">CMS-9115-F</a></li><li><a href="compliance.html">CMS-0057-F</a></li><li><a href="compliance.html">HIPAA</a></li></ul></div></div></div><div class="footer-bottom"><span>© 2026 FHIRFabric · A MyAtrix Company · Downers Grove, IL</span><span>support@fhirfabric.com</span></div></footer>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+<script>const nav=document.getElementById('nav');window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));document.getElementById('hamburger').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');this.classList.toggle('active');});const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');obs.unobserve(x.target);}}),{threshold:.1});document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));</script>
+</body></html>

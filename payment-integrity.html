@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FHIRFabric — Payment Integrity</title>
+  <meta name="description" content="AI-powered pre-payment integrity platform. 13-stage claim validation pipeline covering eligibility, COB, NCCI/MUE, DRG validation, negotiated rates, and FWA screening — before a dollar leaves the plan." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── PIPELINE STAGES ── */
+    .pipeline-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; background: var(--gray-2); border: 1px solid var(--gray-2); border-radius: var(--r-lg); overflow: hidden; margin-top: 48px; }
+    .pipeline-stage { background: var(--white); padding: 20px 24px; display: grid; grid-template-columns: 28px 1fr auto; gap: 14px; align-items: center; transition: background .2s; }
+    .pipeline-stage:hover { background: var(--off-white); }
+    .stage-num { width: 28px; height: 28px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: .6rem; font-weight: 600; color: var(--white); flex-shrink: 0; }
+    .stage-name { font-size: .9rem; font-weight: 500; color: var(--navy); }
+    .stage-sub { font-size: .78rem; color: var(--text-3); margin-top: 2px; }
+    .stage-pill { font-family: var(--mono); font-size: .58rem; font-weight: 600; letter-spacing: .06em; padding: 3px 8px; border-radius: 100px; white-space: nowrap; flex-shrink: 0; }
+    .pill-rule { background: var(--teal-light); color: var(--teal-2); border: 1px solid rgba(0,131,143,.2); }
+    .pill-llm { background: #EEEDFE; color: #3C3489; border: 1px solid rgba(83,74,183,.2); }
+
+    /* ── CLAIM TRACKS ── */
+    .track-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px; }
+    .track-card { border: 1px solid var(--gray-2); border-radius: var(--r-lg); overflow: hidden; }
+    .track-head { padding: 24px 28px; }
+    .track-label { font-family: var(--mono); font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; }
+    .track-title { font-family: var(--serif); font-size: 1.5rem; color: var(--navy); }
+    .track-body { padding: 0 28px 28px; }
+    .track-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gray-2); font-size: .875rem; }
+    .track-row:last-child { border-bottom: none; }
+    .track-key { color: var(--text-3); }
+    .track-val { font-weight: 500; color: var(--navy); }
+
+    /* ── API BLOCK ── */
+    .api-terminal { background: var(--navy); border-radius: var(--r-lg); padding: 32px 36px; margin-top: 48px; }
+    .api-terminal-header { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .api-line { font-family: var(--mono); font-size: .82rem; line-height: 1.9; }
+    .api-comment { color: rgba(255,255,255,.3); }
+    .api-method { color: #6FD0D8; font-weight: 600; }
+    .api-url { color: var(--white); }
+    .api-key { color: #B5D4F4; }
+    .api-val-deny { color: #F09595; }
+    .api-val-approve { color: #97C459; }
+    .api-val-num { color: #FAC775; }
+    .api-val-str { color: #6FD0D8; }
+    .api-divider { border-top: 1px solid rgba(255,255,255,.08); margin: 16px 0; }
+
+    /* ── DIFFERENTIATORS ── */
+    .diff-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; background: var(--gray-2); border: 1px solid var(--gray-2); border-radius: var(--r-lg); overflow: hidden; margin-top: 48px; }
+    .diff-card { background: var(--white); padding: 28px 24px; transition: background .2s; }
+    .diff-card:hover { background: var(--off-white); }
+    .diff-label { font-family: var(--mono); font-size: .62rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin-bottom: 10px; }
+    .diff-title { font-weight: 600; font-size: .95rem; color: var(--navy); margin-bottom: 8px; }
+    .diff-body { font-size: .855rem; color: var(--text-2); line-height: 1.72; }
+
+    /* ── WHAT WE CATCH ── */
+    .catch-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0; border: 1px solid var(--gray-2); border-radius: var(--r-lg); overflow: hidden; margin-top: 48px; }
+    .catch-item { padding: 24px 22px; border-right: 1px solid var(--gray-2); border-bottom: 1px solid var(--gray-2); background: var(--white); transition: background .2s; }
+    .catch-item:hover { background: var(--off-white); }
+    .catch-item:nth-child(3n) { border-right: none; }
+    .catch-item:nth-last-child(-n+3) { border-bottom: none; }
+    .catch-icon { font-size: 18px; color: var(--coral); margin-bottom: 10px; }
+    .catch-title { font-weight: 600; font-size: .875rem; color: var(--navy); margin-bottom: 5px; }
+    .catch-body { font-size: .8rem; color: var(--text-3); line-height: 1.65; }
+
+    /* ── SAVINGS EXAMPLE ── */
+    .savings-example { background: var(--off-white); border: 1px solid var(--gray-2); border-radius: var(--r-lg); padding: 36px; margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+    .savings-finding { padding: 12px 14px; background: var(--white); border: 1px solid var(--gray-2); border-left: 3px solid var(--coral); border-radius: var(--r); margin-bottom: 8px; }
+    .sf-rule { font-family: var(--mono); font-size: .62rem; color: var(--text-3); margin-bottom: 3px; }
+    .sf-msg { font-size: .82rem; color: var(--navy); line-height: 1.4; }
+    .sf-save { font-size: .75rem; font-weight: 600; color: #0F6E56; margin-top: 4px; }
+
+    @media(max-width:1024px){
+      .pipeline-grid,.track-grid,.diff-grid,.catch-grid{ grid-template-columns: 1fr; }
+      .savings-example{ grid-template-columns: 1fr; }
+      .catch-item{ border-right: none !important; }
+    }
+    @media(max-width:768px){
+      .diff-grid{ grid-template-columns: 1fr; }
+      .api-terminal{ padding: 24px 20px; }
+      .api-line{ font-size: .75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg>
+      </div>
+      <span class="logo-name">FHIRFabric</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="platform.html">Platform</a></li>
+      <li><a href="payment-integrity.html" class="active">Payment Integrity</a></li>
+      <li><a href="compliance.html">Compliance</a></li>
+      <li><a href="experience.html">Experience</a></li>
+      <li><a href="contact.html" class="nav-cta">Request a Briefing</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-swoosh"></div>
+  <div class="hero-inner">
+    <div class="reveal">
+      <div class="hero-eyebrow">Pre-Payment Integrity</div>
+      <h1 class="hero-h1">Stop improper payments<br /><em>before the check goes out.</em></h1>
+      <p class="hero-sub">FHIRFabric Payment Integrity is a FHIR-native, AI-augmented pipeline that validates every claim through 13 stages — eligibility, COB, coding edits, medical necessity, DRG validation, negotiated rates, and FWA screening — before a dollar leaves the plan. One API call. One decision. Full audit trail.</p>
+      <div class="hero-actions">
+        <a href="contact.html" class="btn-primary">Request a Demo <span class="arr">→</span></a>
+        <a href="#pipeline" class="btn-outline">See the Pipeline <span class="arr">→</span></a>
+      </div>
+    </div>
+    <div class="reveal d2">
+      <div class="hero-card">
+        <div class="hc-label">// Live demo results — knee replacement claim</div>
+        <div class="hc-stat-row">
+          <div class="hc-stat"><span class="hc-stat-name">Disposition</span><span class="hc-stat-val" style="color:#F09595">DENIED</span></div>
+          <div class="hc-stat"><span class="hc-stat-name">AI confidence</span><span class="hc-stat-val">91<span>%</span></span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Findings</span><span class="hc-stat-val">26<span> (12 errors)</span></span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Estimated savings</span><span class="hc-stat-val">$<span>16,200</span></span></div>
+          <div class="hc-stat"><span class="hc-stat-name">SIU referral</span><span class="hc-stat-val" style="color:#6FD0D8">Yes</span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Decision latency</span><span class="hc-stat-val">&lt;60<span>s</span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STAT STRIP -->
+<div class="stat-strip">
+  <div class="stat-strip-inner">
+    <div class="ss-item reveal"><div class="ss-num">13</div><div class="ss-label">Validation stages<br />per claim</div></div>
+    <div class="ss-item reveal d1"><div class="ss-num">2</div><div class="ss-label">Claim tracks:<br />CPT and DRG</div></div>
+    <div class="ss-item reveal d2"><div class="ss-num">91%</div><div class="ss-label">AI confidence<br />on demo denials</div></div>
+    <div class="ss-item reveal d3"><div class="ss-num">&lt;60s</div><div class="ss-label">Pre-pay decision<br />per claim</div></div>
+  </div>
+</div>
+
+<!-- PIPELINE -->
+<section class="section" id="pipeline">
+  <div class="section-inner">
+    <div class="eyebrow reveal">The Pipeline</div>
+    <h2 class="h2 reveal d1">13 stages. Every claim.<br /><em>Gate failures short-circuit.</em></h2>
+    <p class="section-lead reveal d2">A claim that fails eligibility never reaches FWA screening. Deterministic rules run first at zero LLM cost. The AI layer synthesizes what rules miss and produces a cited, auditable decision.</p>
+    <div class="pipeline-grid">
+      <div class="pipeline-stage reveal"><div class="stage-num">01</div><div><div class="stage-name">Member eligibility validation</div><div class="stage-sub">Active coverage · DOS · effective/term dates</div></div><span class="stage-pill pill-rule">RULE</span></div>
+      <div class="pipeline-stage reveal d1"><div class="stage-num">02</div><div><div class="stage-name">Coordination of benefits</div><div class="stage-sub">Birthday rule · MSP · Medicaid last · TRICARE</div></div><span class="stage-pill pill-rule">RULE</span></div>
+      <div class="pipeline-stage reveal"><div class="stage-num">03</div><div><div class="stage-name">Benefit validation</div><div class="stage-sub">Covered service · exclusions · annual limits</div></div><span class="stage-pill pill-rule">RULE</span></div>
+      <div class="pipeline-stage reveal d1"><div class="stage-num">04</div><div><div class="stage-name">Claim editing</div><div class="stage-sub">NCCI · MUE · CMS · LCD/NCD · POS restrictions</div></div><span class="stage-pill pill-rule">RULE</span></div>
+      <div class="pipeline-stage reveal"><div class="stage-num">05</div><div><div class="stage-name">Coding validation</div><div class="stage-sub">ICD-10 · CPT · HCPCS · modifiers · upcoding</div></div><span class="stage-pill pill-llm">LLM</span></div>
+      <div class="pipeline-stage reveal d1"><div class="stage-num">06</div><div><div class="stage-name">Medical necessity review</div><div class="stage-sub">NCD/LCD · plan medical policy · 2-midnight rule</div></div><span class="stage-pill pill-llm">LLM</span></div>
+      <div class="pipeline-stage reveal"><div class="stage-num">07</div><div><div class="stage-name">Prior authorization validation</div><div class="stage-sub">PA required list · valid auth on file</div></div><span class="stage-pill pill-rule">RULE</span></div>
+      <div class="pipeline-stage reveal d1"><div class="stage-num">08</div><div><div class="stage-name">Provider contract validation</div><div class="stage-sub">NPI · taxonomy · incident-to · HMO referral</div></div><span class="stage-pill pill-llm">LLM</span></div>
+      <div class="pipeline-stage reveal"><div class="stage-num">09</div><div><div class="stage-name">Pricing — negotiated rates</div><div class="stage-sub">Fee schedule · % Medicare · modifier adjustments</div></div><span class="stage-pill pill-rule">RULE</span></div>
+      <div class="pipeline-stage reveal d1"><div class="stage-num">10</div><div><div class="stage-name">Duplicate claim detection</div><div class="stage-sub">Exact match · near-duplicate · cross-claim history</div></div><span class="stage-pill pill-rule">RULE</span></div>
+      <div class="pipeline-stage reveal"><div class="stage-num">11</div><div><div class="stage-name">Fraud, waste and abuse screening</div><div class="stage-sub">Behavioral patterns · outliers · impossible day</div></div><span class="stage-pill pill-llm">LLM</span></div>
+      <div class="pipeline-stage reveal d1"><div class="stage-num">12</div><div><div class="stage-name">AI decision engine</div><div class="stage-sub">Cross-stage synthesis · confidence score · pend queue</div></div><span class="stage-pill pill-llm">LLM</span></div>
+      <div class="pipeline-stage reveal" style="grid-column:1/-1;background:var(--navy)">
+        <div class="stage-num" style="background:var(--teal)">13</div>
+        <div><div class="stage-name" style="color:var(--white)">Final disposition</div><div class="stage-sub" style="color:rgba(255,255,255,.5)">Approve · Pend (with queue assignment) · Deny (with policy citation and appeal path)</div></div>
+        <span class="stage-pill" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15)">OUTPUT</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLAIM TRACKS -->
+<section class="section bg-off">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Two Claim Tracks</div>
+    <h2 class="h2 reveal d1">Professional and institutional.<br /><em>One platform, not two vendors.</em></h2>
+    <p class="section-lead reveal d2">Professional claims route through CPT editing. Institutional claims route through DRG validation — MS-DRG tier accuracy, CC/MCC documentation, HAC exclusions, LOS outliers, and discharge status. Both tracks output the same structured decision.</p>
+    <div class="track-grid">
+      <div class="track-card reveal">
+        <div class="track-head" style="background:var(--teal-light)">
+          <div class="track-label" style="color:var(--teal)">Professional — 837P</div>
+          <div class="track-title">CMS-1500 · CPT-based payment</div>
+        </div>
+        <div class="track-body">
+          <div class="track-row"><span class="track-key">Payment basis</span><span class="track-val">Fee schedule / % Medicare</span></div>
+          <div class="track-row"><span class="track-key">Procedure codes</span><span class="track-val">CPT, HCPCS Level II</span></div>
+          <div class="track-row"><span class="track-key">Diagnosis codes</span><span class="track-val">ICD-10-CM</span></div>
+          <div class="track-row"><span class="track-key">Key integrity checks</span><span class="track-val">NCCI, MUE, modifiers, upcoding</span></div>
+          <div class="track-row"><span class="track-key">Submitters</span><span class="track-val">Physicians, specialists, ancillary</span></div>
+          <div class="track-row"><span class="track-key">Pricing logic</span><span class="track-val">Negotiated rate + modifier adjustments</span></div>
+        </div>
+      </div>
+      <div class="track-card reveal d1">
+        <div class="track-head" style="background:#EEEDFE">
+          <div class="track-label" style="color:#534AB7">Institutional — 837I</div>
+          <div class="track-title">UB-04 · MS-DRG-based payment</div>
+        </div>
+        <div class="track-body">
+          <div class="track-row"><span class="track-key">Payment basis</span><span class="track-val">MS-DRG weight × base rate</span></div>
+          <div class="track-row"><span class="track-key">Procedure codes</span><span class="track-val">ICD-10-PCS, revenue codes</span></div>
+          <div class="track-row"><span class="track-key">Diagnosis codes</span><span class="track-val">ICD-10-CM with POA indicators</span></div>
+          <div class="track-row"><span class="track-key">Key integrity checks</span><span class="track-val">DRG tier, CC/MCC, HAC, LOS, discharge</span></div>
+          <div class="track-row"><span class="track-key">Submitters</span><span class="track-val">Hospitals, facilities, SNFs</span></div>
+          <div class="track-row"><span class="track-key">Pricing logic</span><span class="track-val">DRG rate, transfer rule, outlier payment</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE CATCH -->
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">What Gets Caught</div>
+    <h2 class="h2 reveal d1">The things a rules engine<br /><em>can't find on its own.</em></h2>
+    <p class="section-lead reveal d2">Deterministic rules catch what they're written to catch. The AI layer catches what rules miss — clinical reasoning failures, cross-signal fraud patterns, and sequencing issues that only a trained coder or physician would normally flag.</p>
+    <div class="catch-grid">
+      <div class="catch-item reveal"><div class="catch-icon"><i class="ti ti-circle-x" aria-hidden="true"></i></div><div class="catch-title">NCCI bundling violations</div><div class="catch-body">Component procedures billed alongside the parent — with the exact CMS policy chapter cited.</div></div>
+      <div class="catch-item reveal d1"><div class="catch-icon"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div><div class="catch-title">DRG tier upcoding</div><div class="catch-body">MCC/CC diagnoses with POA=N excluded from tier calculation per HAC reduction policy.</div></div>
+      <div class="catch-item reveal d2"><div class="catch-icon"><i class="ti ti-arrows-exchange" aria-hidden="true"></i></div><div class="catch-title">COB payer order errors</div><div class="catch-body">Birthday rule, Medicare secondary, Medicaid last resort — resolved before any financial adjudication.</div></div>
+      <div class="catch-item reveal"><div class="catch-icon"><i class="ti ti-stethoscope" aria-hidden="true"></i></div><div class="catch-title">Diagnosis-procedure mismatch</div><div class="catch-body">Clinical reasoning catches right knee diagnosis billed with right hip procedure — something no NCCI table covers.</div></div>
+      <div class="catch-item reveal d1"><div class="catch-icon"><i class="ti ti-building-hospital" aria-hidden="true"></i></div><div class="catch-title">Inappropriate inpatient admission</div><div class="catch-body">LOS below DRG geometric mean triggers 2-midnight rule review. Short stays flagged for observation reclassification.</div></div>
+      <div class="catch-item reveal d2"><div class="catch-icon"><i class="ti ti-coin" aria-hidden="true"></i></div><div class="catch-title">Above-contract billing</div><div class="catch-body">Billed charges compared to contracted rate with modifier adjustments — bilateral, MPR, assistant surgeon, global surgery.</div></div>
+      <div class="catch-item reveal"><div class="catch-icon"><i class="ti ti-id" aria-hidden="true"></i></div><div class="catch-title">Provider identity gaps</div><div class="catch-body">Group NPI as rendering NPI + missing TIN = potential non-contracted provider billing pattern. Flagged for SIU.</div></div>
+      <div class="catch-item reveal d1"><div class="catch-icon"><i class="ti ti-chart-bar" aria-hidden="true"></i></div><div class="catch-title">FWA outlier patterns</div><div class="catch-body">Provider billing 340% above peer group median. Systematic unbundling across multiple claims. Referred to FWA team.</div></div>
+      <div class="catch-item reveal d2"><div class="catch-icon"><i class="ti ti-repeat" aria-hidden="true"></i></div><div class="catch-title">Duplicate and near-duplicate claims</div><div class="catch-body">Same-day same-service intra-claim duplicates flagged immediately. Cross-claim history match in production.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- API -->
+<section class="section bg-off">
+  <div class="section-inner">
+    <div class="two-col">
+      <div class="two-col-copy reveal">
+        <div class="eyebrow">How It Deploys</div>
+        <h2 class="h2">One endpoint.<br /><em>No rip and replace.</em></h2>
+        <p>Before your adjudication system pays, it calls one REST endpoint. We return approve, pend, or deny — with a cited policy basis — in under 60 seconds. Plugs into Facets, QNXT, HealthEdge, or any core admin system without touching your existing workflow.</p>
+        <ul class="col-list">
+          <li><span class="col-dot"></span>FHIR R4 JSON or X12 837P/I input — both supported natively</li>
+          <li><span class="col-dot"></span>Every finding includes rule ID, policy citation, and suggested action</li>
+          <li><span class="col-dot"></span>Audit trail built for provider appeals from day one</li>
+          <li><span class="col-dot"></span>LLM provider is client-configurable — Azure, Anthropic, or on-premises Ollama</li>
+          <li><span class="col-dot"></span>Deploy on AWS, your own cloud, or Railway — Dockerfile included</li>
+        </ul>
+        <a href="contact.html" class="btn-navy">Request a Technical Briefing <span class="arr">→</span></a>
+      </div>
+      <div class="two-col-visual reveal d2">
+        <div class="api-terminal">
+          <div class="api-terminal-header">
+            <div class="term-dot" style="background:#E24B4A"></div>
+            <div class="term-dot" style="background:#EF9F27"></div>
+            <div class="term-dot" style="background:#97C459"></div>
+            <span style="font-family:var(--mono);font-size:.65rem;color:rgba(255,255,255,.3);margin-left:8px">fhirfabric-pi-api</span>
+          </div>
+          <div class="api-line"><span class="api-comment"># Before your adjudication system pays</span></div>
+          <div class="api-line"><span class="api-method">POST</span> <span class="api-url">https://api.fhirfabric.com/v1/claims/validate</span></div>
+          <div class="api-line" style="color:rgba(255,255,255,.4)">Content-Type: application/json</div>
+          <div class="api-divider"></div>
+          <div class="api-line"><span class="api-comment"># Response — under 60 seconds</span></div>
+          <div class="api-line">{</div>
+          <div class="api-line">&nbsp;&nbsp;<span class="api-key">"disposition"</span>: <span class="api-val-deny">"deny"</span>,</div>
+          <div class="api-line">&nbsp;&nbsp;<span class="api-key">"confidence"</span>: <span class="api-val-num">0.91</span>,</div>
+          <div class="api-line">&nbsp;&nbsp;<span class="api-key">"findings"</span>: <span class="api-val-num">26</span>,</div>
+          <div class="api-line">&nbsp;&nbsp;<span class="api-key">"error_findings"</span>: <span class="api-val-num">12</span>,</div>
+          <div class="api-line">&nbsp;&nbsp;<span class="api-key">"estimated_savings"</span>: <span class="api-val-num">16200.00</span>,</div>
+          <div class="api-line">&nbsp;&nbsp;<span class="api-key">"siu_referral"</span>: <span class="api-val-deny">true</span>,</div>
+          <div class="api-line">&nbsp;&nbsp;<span class="api-key">"policy_citation"</span>: <span class="api-val-str">"CMS NCCI Manual Ch.1; 42 CFR §412.64(j)"</span>,</div>
+          <div class="api-line">&nbsp;&nbsp;<span class="api-key">"llm_provider"</span>: <span class="api-val-str">"anthropic"</span></div>
+          <div class="api-line">}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFFERENTIATORS -->
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Why FHIRFabric PI</div>
+    <h2 class="h2 reveal d1">What makes this different<br /><em>from a rules engine.</em></h2>
+    <p class="section-lead reveal d2">Cotiviti, Optum, and Lyric are entrenched. The question isn't whether they work — it's whether their model fits yours. FHIRFabric is built for payers who want FHIR-native, AI-augmented integrity without locking into a black box or a legacy vendor's LLM.</p>
+    <div class="diff-grid">
+      <div class="diff-card reveal"><div class="diff-label">FHIR native</div><div class="diff-title">Same data layer as your interoperability platform.</div><div class="diff-body">Built on FHIR R4 and X12 translation that payers already run for CMS-9115-F compliance. One platform, not two data pipelines.</div></div>
+      <div class="diff-card reveal d1"><div class="diff-label">LLM agnostic</div><div class="diff-title">Bring your own AI. No lock-in.</div><div class="diff-body">Anthropic, Azure OpenAI, or open-source Ollama. One environment variable. Your data stays in your environment.</div></div>
+      <div class="diff-card reveal d2"><div class="diff-label">Audit ready</div><div class="diff-title">Every denial cites the policy.</div><div class="diff-body">Every finding includes rule ID, CMS policy chapter, contract clause, and suggested action. Built for provider appeals from day one.</div></div>
+      <div class="diff-card reveal"><div class="diff-label">CPT + DRG</div><div class="diff-title">Professional and institutional in one pipeline.</div><div class="diff-body">Not two vendors. Not two contracts. Professional claims through CPT editing, institutional through DRG validation, same structured output.</div></div>
+      <div class="diff-card reveal d1"><div class="diff-label">API first</div><div class="diff-title">Plugs in without rip and replace.</div><div class="diff-body">One endpoint integrates with Facets, QNXT, or HealthEdge. Implementation in days, not quarters. No change management required.</div></div>
+      <div class="diff-card reveal d2"><div class="diff-label">Outcome pricing</div><div class="diff-title">We win when you win.</div><div class="diff-body">Percentage of validated savings or monthly retainer. No upfront license risk. One payer engagement pays for the platform build.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-band">
+  <div class="cta-band-inner reveal">
+    <div class="eyebrow" style="justify-content:center;color:rgba(255,255,255,.7);margin-bottom:16px"><span style="width:20px;height:1px;background:rgba(255,255,255,.4);display:block"></span>See it live</div>
+    <h2>Watch a claim run through<br /><em>all 13 stages.</em></h2>
+    <p>15 minutes. Your claim data or ours. We'll show a real denial with SIU referral, a real approval, and the full reasoning chain for each. No prep required on your end.</p>
+    <div class="cta-btns">
+      <a href="contact.html" class="btn-primary">Request a Demo <span class="arr">→</span></a>
+      <a href="platform.html" class="btn-outline">Full Platform Overview <span class="arr">→</span></a>
+    </div>
+    <div class="cta-contact">
+      <span>support@fhirfabric.com</span>
+      <span>·</span>
+      <span>fhirfabric.com</span>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div>
+        <span class="logo-name">FHIRFabric</span>
+      </a>
+      <p>FHIR-native interoperability and pre-payment integrity — one platform for payers who can't afford to get either wrong.</p>
+      <p class="footer-parent">A <a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix</a> company</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col"><h4>Platform</h4><ul><li><a href="platform.html">Interoperability</a></li><li><a href="payment-integrity.html">Payment Integrity</a></li><li><a href="compliance.html">Compliance</a></li><li><a href="experience.html">Evidence</a></li></ul></div>
+      <div class="footer-col"><h4>Integrity</h4><ul><li><a href="payment-integrity.html#pipeline">13-Stage Pipeline</a></li><li><a href="payment-integrity.html">CPT Track</a></li><li><a href="payment-integrity.html">DRG Track</a></li><li><a href="payment-integrity.html">FWA &amp; SIU</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li><li><a href="contact.html">Contact</a></li><li><a href="contact.html">Request Demo</a></li></ul></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 FHIRFabric · A MyAtrix Company · Downers Grove, IL</span>
+    <span>support@fhirfabric.com</span>
+  </div>
+</footer>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+<script>
+  const nav=document.getElementById('nav');
+  window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));
+  document.getElementById('hamburger').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');this.classList.toggle('active');});
+  const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');obs.unobserve(x.target);}}),{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

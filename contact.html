@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — FHIRFabric</title>
+  <meta name="description" content="Request a demo or get in touch. We'll come prepared with experience relevant to your FHIR compliance environment." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .ph{padding:120px 40px 80px;background:var(--navy);position:relative;overflow:hidden}
+    .ph::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:rgba(0,131,143,0.18);top:-200px;right:-100px;pointer-events:none}
+    .ph-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;max-width:720px}
+    .ph h1{font-family:var(--serif);font-size:clamp(2.4rem,4vw,3.6rem);color:var(--white);line-height:1.12;margin:16px 0 18px}
+    .ph h1 em{font-style:italic;color:#6FD0D8}
+    .ph p{font-size:1rem;color:rgba(255,255,255,.7);line-height:1.78;max-width:580px}
+    .contact-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:64px;align-items:start;margin-top:0}
+    .ci{display:flex;align-items:flex-start;gap:14px;margin-bottom:24px}
+    .ci-icon{width:38px;height:38px;border-radius:8px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--teal);font-size:18px}
+    .ci-lbl{font-family:var(--mono);font-size:.62rem;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
+    .ci-val{font-size:.9rem;color:var(--text)}
+    .ci-val a{color:var(--navy);text-decoration:none;transition:color .2s}
+    .ci-val a:hover{color:var(--teal)}
+    .expect-box{background:var(--off-white);border:1px solid var(--gray-2);border-radius:var(--r-lg);padding:24px;margin-top:28px}
+    .expect-box h4{font-weight:600;font-size:.875rem;color:var(--navy);margin-bottom:12px}
+    .expect-box ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+    .expect-box ul li{font-size:.84rem;color:var(--text-2);display:flex;align-items:flex-start;gap:9px}
+    .expect-box ul li::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-top:6px}
+    .form-box{background:var(--white);border:1px solid var(--gray-2);border-radius:var(--r-lg);padding:40px;box-shadow:var(--shadow)}
+    .form-box::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--teal),var(--navy));border-radius:var(--r-lg) var(--r-lg) 0 0;margin:-40px -40px 32px}
+    .form-title{font-family:var(--serif);font-size:1.5rem;color:var(--navy);margin-bottom:4px}
+    .form-sub{font-size:.84rem;color:var(--text-3);margin-bottom:28px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .fg{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+    .fg label{font-size:.75rem;font-weight:500;color:var(--text-2);letter-spacing:.02em}
+    .fg input,.fg select,.fg textarea{background:var(--off-white);border:1px solid var(--gray-2);border-radius:var(--r);padding:10px 13px;color:var(--text);font-family:var(--sans);font-size:.875rem;transition:border-color .2s,background .2s;outline:none;width:100%}
+    .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal);background:var(--white)}
+    .fg input::placeholder,.fg textarea::placeholder{color:var(--gray-3)}
+    .fg select{appearance:none;cursor:pointer}
+    .fg textarea{resize:vertical;min-height:100px}
+    .form-submit{width:100%;background:var(--teal);color:var(--white);font-weight:500;font-size:.9rem;padding:13px;border-radius:var(--r);border:none;cursor:pointer;font-family:var(--sans);transition:background .2s,transform .2s;letter-spacing:.01em}
+    .form-submit:hover{background:var(--teal-2);transform:translateY(-1px)}
+    .form-note{font-size:.72rem;color:var(--text-3);margin-top:10px;text-align:center;font-family:var(--mono)}
+    .form-success{display:none;text-align:center;padding:40px 20px}
+    .form-success.show{display:block}
+    .fs-icon{font-size:40px;color:var(--teal);margin-bottom:14px}
+    .form-success h3{font-family:var(--serif);font-size:1.5rem;color:var(--navy);margin-bottom:8px}
+    .form-success p{font-size:.875rem;color:var(--text-2)}
+    .mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
+    .mini-c{text-align:center;padding:36px 20px;border:1px solid var(--gray-2);border-radius:var(--r-lg);background:var(--white);box-shadow:var(--shadow-sm);transition:box-shadow .3s}
+    .mini-c:hover{box-shadow:var(--shadow)}
+    .mini-num{font-family:var(--serif);font-size:2.6rem;color:var(--navy);line-height:1;margin-bottom:6px}
+    .mini-num em{font-style:normal;color:var(--teal)}
+    .mini-lbl{font-size:.78rem;color:var(--text-3)}
+    @media(max-width:1024px){.ph{padding:110px 32px 64px}.contact-grid{grid-template-columns:1fr;gap:40px}.mini-grid{grid-template-columns:1fr}}
+    @media(max-width:768px){.ph{padding:110px 20px 56px}.form-box{padding:28px 20px}.form-box::before{margin:-28px -20px 24px}.form-row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<nav class="nav" id="nav"><div class="nav-inner"><a href="index.html" class="nav-logo"><div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div><span class="logo-name">FHIRFabric</span></a><ul class="nav-links" id="navLinks"><li><a href="platform.html">Platform</a></li>
+      <li><a href="payment-integrity.html">Payment Integrity</a></li><li><a href="compliance.html">Compliance</a></li><li><a href="experience.html">Experience</a></li><li><a href="contact.html" class="nav-cta active">Request Demo</a></li></ul><button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button></div></nav>
+
+<div class="ph"><div class="ph-inner"><div class="eyebrow reveal" style="color:rgba(111,208,216,.8)"><span style="width:20px;height:1px;background:rgba(111,208,216,.8);display:block"></span>Get in touch</div><h1 class="reveal d1">Let's talk about<br /><em>your environment.</em></h1><p class="reveal d2">Tell us about your compliance timeline, data landscape, and constraints. We'll come to the first conversation prepared with relevant experience — not a generic pitch.</p></div></div>
+
+<section class="section">
+  <div class="section-inner">
+    <div class="contact-grid">
+      <div class="reveal">
+        <div class="ci"><div class="ci-icon"><i class="ti ti-mail" aria-hidden="true"></i></div><div><div class="ci-lbl">Email</div><div class="ci-val"><a href="mailto:support@fhirfabric.com">support@fhirfabric.com</a></div></div></div>
+        <div class="ci"><div class="ci-icon"><i class="ti ti-phone" aria-hidden="true"></i></div><div><div class="ci-lbl">Phone</div><div class="ci-val"><a href="tel:+13129856684">+1 (312) 985-6684</a></div></div></div>
+        <div class="ci"><div class="ci-icon"><i class="ti ti-map-pin" aria-hidden="true"></i></div><div><div class="ci-lbl">Location</div><div class="ci-val">Downers Grove, IL</div></div></div>
+        <div class="ci"><div class="ci-icon"><i class="ti ti-clock" aria-hidden="true"></i></div><div><div class="ci-lbl">Response time</div><div class="ci-val">Within one business day</div></div></div>
+        <div class="expect-box">
+          <h4>What to expect</h4>
+          <ul>
+            <li>Response within one business day — often same day</li>
+            <li>First call is a conversation, not a sales pitch</li>
+            <li>We arrive prepared with relevant implementation experience</li>
+            <li>Demo tailored to your environment and compliance timeline</li>
+            <li>No commitment required at any stage</li>
+          </ul>
+        </div>
+        <div style="margin-top:24px">
+          <div class="eyebrow">Parent company</div>
+          <p style="font-size:.84rem;color:var(--text-2);line-height:1.75">FHIRFabric is a <a href="https://myatrix.com" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none">MyAtrix</a> company — a technology holding company based in Downers Grove, IL with ventures in healthcare AI, hiring intelligence, and AI governance.</p>
+        </div>
+      </div>
+      <div class="reveal d2">
+        <div class="form-box">
+          <div class="form-title">Request a Demo</div>
+          <div class="form-sub">Tell us about your organization and what you're working on.</div>
+          <form id="contactForm" action="https://api.web3forms.com/submit" method="POST">
+            <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_KEY_HERE" />
+            <input type="hidden" name="subject" value="FHIRFabric Demo Request" />
+            <input type="hidden" name="from_name" value="FHIRFabric Website" />
+            <div class="form-row">
+              <div class="fg"><label>First name *</label><input type="text" name="first_name" placeholder="Jane" required /></div>
+              <div class="fg"><label>Last name *</label><input type="text" name="last_name" placeholder="Smith" required /></div>
+            </div>
+            <div class="fg"><label>Work email *</label><input type="email" name="email" placeholder="jane@yourorg.com" required /></div>
+            <div class="fg"><label>Organization *</label><input type="text" name="organization" placeholder="Health plan, state agency, health system…" required /></div>
+            <div class="fg"><label>Organization type</label><select name="org_type"><option value="" disabled selected>Select one</option><option>Commercial payer / health plan</option><option>State Medicaid agency</option><option>Provider / health system</option><option>Federal agency</option><option>Technology vendor / integrator</option><option>Other</option></select></div>
+            <div class="fg"><label>What are you working on?</label><select name="topic"><option value="" disabled selected>Select one</option><option>CMS-9115-F compliance (Patient Access, Provider Directory, P2P)</option><option>CMS-0057-F compliance (Prior Authorization API)</option><option>Medicaid FHIR implementation</option><option>Member identity / deduplication</option><option>SMART on FHIR app platform</option><option>US Core profile upgrade</option><option>AWS GovCloud FHIR infrastructure</option><option>Something else</option></select></div>
+            <div class="fg"><label>Anything else we should know?</label><textarea name="message" placeholder="CMS deadline, current tech stack, specific challenges…"></textarea></div>
+            <button type="submit" class="form-submit" id="subBtn">Send Message →</button>
+            <p class="form-note">Your information is kept confidential and never shared with third parties.</p>
+          </form>
+          <div class="form-success" id="formSuccess">
+            <div class="fs-icon"><i class="ti ti-circle-check" aria-hidden="true"></i></div>
+            <h3>Message received.</h3>
+            <p>We'll be in touch within one business day. Check your inbox at the email address you provided.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-off">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Why FHIRFabric</div>
+    <div class="mini-grid">
+      <div class="mini-c reveal"><div class="mini-num">7</div><div class="mini-lbl">Medicaid implementations completed</div></div>
+      <div class="mini-c reveal d1"><div class="mini-num" style="color:var(--coral)">0</div><div class="mini-lbl">Missed CMS enforcement deadlines</div></div>
+      <div class="mini-c reveal d2"><div class="mini-num">71<em>M</em></div><div class="mini-lbl">FHIR API calls processed per month</div></div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer"><div class="footer-grid"><div class="footer-brand"><a href="index.html" class="nav-logo"><div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div><span class="logo-name">FHIRFabric</span></a><p>Production-grade FHIR interoperability for enterprise healthcare.</p><p class="footer-parent">A <a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix</a> company</p></div><div class="footer-links"><div class="footer-col"><h4>Platform</h4><ul><li><a href="platform.html">Platform Overview</a></li><li><a href="compliance.html">Compliance APIs</a></li><li><a href="experience.html">Track Record</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li><li><a href="contact.html">Contact</a></li></ul></div><div class="footer-col"><h4>Compliance</h4><ul><li><a href="compliance.html">CMS-9115-F</a></li><li><a href="compliance.html">CMS-0057-F</a></li><li><a href="compliance.html">HIPAA</a></li></ul></div></div></div><div class="footer-bottom"><span>© 2026 FHIRFabric · A MyAtrix Company · Downers Grove, IL</span><span>support@fhirfabric.com</span></div></footer>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+<script>
+  const nav=document.getElementById('nav');
+  window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));
+  document.getElementById('hamburger').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');this.classList.toggle('active');});
+  const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');obs.unobserve(x.target);}}),{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+  const form=document.getElementById('contactForm');
+  const btn=document.getElementById('subBtn');
+  const suc=document.getElementById('formSuccess');
+  form.addEventListener('submit',async function(e){
+    e.preventDefault();btn.textContent='Sending…';btn.disabled=true;
+    try{const r=await fetch('https://api.web3forms.com/submit',{method:'POST',body:new FormData(form)});
+    if(r.ok){form.style.display='none';suc.classList.add('show');}else throw new Error();}
+    catch{btn.textContent='Something went wrong — please email us directly';btn.disabled=false;}
+  });
+</script>
+</body></html>

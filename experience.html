@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Experience — FHIRFabric</title>
+  <meta name="description" content="FHIRFabric's production track record: 71M FHIR calls/month, 387K records resolved, 7 Medicaid implementations, 0 missed deadlines." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .ph{padding:120px 40px 80px;background:var(--navy);position:relative;overflow:hidden}
+    .ph::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:rgba(0,131,143,0.18);top:-200px;right:-100px;pointer-events:none}
+    .ph-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;max-width:720px}
+    .ph h1{font-family:var(--serif);font-size:clamp(2.4rem,4vw,3.6rem);color:var(--white);line-height:1.12;margin:16px 0 18px}
+    .ph h1 em{font-style:italic;color:#6FD0D8}
+    .ph p{font-size:1rem;color:rgba(255,255,255,.7);line-height:1.78;max-width:580px}
+    .big-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--gray-2);border-radius:var(--r-lg);overflow:hidden;margin-top:56px}
+    .bg-card{padding:36px 28px;border-right:1px solid var(--gray-2);border-bottom:1px solid var(--gray-2);background:var(--white);transition:background .3s}
+    .bg-card:nth-child(4n){border-right:none}
+    .bg-card:nth-child(n+5){border-bottom:none}
+    .bg-card:hover{background:var(--off-white)}
+    .bn{font-family:var(--serif);font-size:clamp(2.2rem,3.5vw,3rem);color:var(--navy);line-height:1;margin-bottom:8px}
+    .bn em{font-style:normal;color:var(--teal)}
+    .bl{font-size:.8rem;color:var(--text-3);line-height:1.5}
+    .case-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--gray-2);border-radius:var(--r-lg);overflow:hidden;margin-top:56px}
+    .case{background:var(--white);padding:40px 44px;border-bottom:1px solid var(--gray-2);display:grid;grid-template-columns:1fr 240px;gap:48px;align-items:start;transition:background .3s}
+    .case:last-child{border-bottom:none}
+    .case:hover{background:var(--off-white)}
+    .ct{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.64rem;color:var(--teal);border:1px solid rgba(0,131,143,.3);border-radius:100px;padding:3px 10px;background:var(--teal-light);margin-bottom:12px}
+    .ch{font-weight:600;font-size:1.1rem;color:var(--navy);margin-bottom:10px;line-height:1.3}
+    .cb p{font-size:.875rem;color:var(--text-2);line-height:1.78}
+    .cs{display:flex;flex-direction:column;gap:0}
+    .cs-row{padding:14px 0;border-bottom:1px solid var(--gray-2)}
+    .cs-row:last-child{border-bottom:none;padding-bottom:0}
+    .cs-num{font-family:var(--serif);font-size:1.8rem;color:var(--navy);line-height:1}
+    .cs-num em{font-style:normal;color:var(--teal)}
+    .cs-lbl{font-size:.72rem;color:var(--text-3);margin-top:2px}
+    .les-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
+    .les-c{background:var(--white);border:1px solid var(--gray-2);border-radius:var(--r-lg);padding:30px;box-shadow:var(--shadow-sm)}
+    .les-n{font-family:var(--serif);font-size:2.6rem;color:var(--gray-2);line-height:1;margin-bottom:10px}
+    .les-c h3{font-weight:600;font-size:.95rem;color:var(--navy);margin-bottom:8px}
+    .les-c p{font-size:.84rem;color:var(--text-2);line-height:1.75}
+    .serve-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
+    .serve-c{background:var(--white);border:1px solid var(--gray-2);border-radius:var(--r-lg);padding:28px;box-shadow:var(--shadow-sm);border-top:3px solid var(--teal)}
+    .serve-c h3{font-weight:600;font-size:.95rem;color:var(--navy);margin-bottom:8px}
+    .serve-c p{font-size:.84rem;color:var(--text-2);line-height:1.75}
+    @media(max-width:1024px){.ph{padding:110px 32px 64px}.big-grid{grid-template-columns:repeat(2,1fr)}.bg-card:nth-child(4n){border-right:1px solid var(--gray-2)}.bg-card:nth-child(2n){border-right:none}.case{grid-template-columns:1fr;gap:24px;padding:28px 24px}.les-grid,.serve-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:768px){.ph{padding:110px 20px 56px}.big-grid{grid-template-columns:repeat(2,1fr)}.les-grid,.serve-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<nav class="nav" id="nav"><div class="nav-inner"><a href="index.html" class="nav-logo"><div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div><span class="logo-name">FHIRFabric</span></a><ul class="nav-links" id="navLinks"><li><a href="platform.html">Platform</a></li>
+      <li><a href="payment-integrity.html">Payment Integrity</a></li><li><a href="compliance.html">Compliance</a></li><li><a href="experience.html" class="active">Experience</a></li><li><a href="contact.html" class="nav-cta">Request Demo</a></li></ul><button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button></div></nav>
+
+<div class="ph"><div class="ph-inner"><div class="eyebrow reveal" style="color:rgba(111,208,216,.8)"><span style="width:20px;height:1px;background:rgba(111,208,216,.8);display:block"></span>Production experience</div><h1 class="reveal d1">Real implementations.<br /><em>Real numbers.</em></h1><p class="reveal d2">Every figure on this page comes from production systems FHIRFabric designed, built, and operates. Not benchmarks. Not projections.</p></div></div>
+
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">By the numbers</div>
+    <div class="big-grid">
+      <div class="bg-card reveal"><div class="bn">71<em style="color:var(--coral)">M</em></div><div class="bl">FHIR API calls per month on AWS GovCloud</div></div>
+      <div class="bg-card reveal d1"><div class="bn">99<em style="color:var(--coral)">.3%</em></div><div class="bl">Member match precision across payer systems</div></div>
+      <div class="bg-card reveal d2"><div class="bn">38<em style="color:var(--coral)">M</em></div><div class="bl">SMART on FHIR API calls per month</div></div>
+      <div class="bg-card reveal d3"><div class="bn">56<em style="color:var(--coral)">m</em></div><div class="bl">Mean time to resolve P1 incidents</div></div>
+      <div class="bg-card reveal"><div class="bn">387<em style="color:var(--coral)">K</em></div><div class="bl">Duplicate member records resolved</div></div>
+      <div class="bg-card reveal d1"><div class="bn">3.1<em style="color:var(--coral)">M</em></div><div class="bl">Members on AWS GovCloud production</div></div>
+      <div class="bg-card reveal d2"><div class="bn">340<em style="color:var(--coral)">+</em></div><div class="bl">Third-party apps onboarded post-upgrade</div></div>
+      <div class="bg-card reveal d3"><div class="bn">4.7<em style="color:var(--coral)">M</em></div><div class="bl">FHIR resources in Payer-to-Payer exchange</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-off">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Implementation highlights</div>
+    <h2 class="h2 reveal d1">Seven implementations.<br /><em>Each one harder.</em></h2>
+    <div class="case-list">
+      <div class="case reveal"><div class="cb"><span class="ct">Payer · Member Identity</span><div class="ch">Multi-system payer unification with 387K record resolution</div><p>A large payer operating across seven legacy systems needed a unified FHIR-native member identity layer before CMS-9115-F enforcement. FHIRFabric built a deterministic deduplication engine with configurable survivorship rules — resolving 387K duplicate records across 2.4M members with 99.3% precision.</p></div><div class="cs"><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">7</div><div class="cs-lbl">Payer systems unified</div></div><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">387<em style="font-style:normal;color:var(--teal)">K</em></div><div class="cs-lbl">Duplicate records resolved</div></div><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">99<em style="font-style:normal;color:var(--teal)">.3%</em></div><div class="cs-lbl">Match precision</div></div></div></div>
+      <div class="case reveal"><div class="cb"><span class="ct">CMS Compliance · Early Delivery</span><div class="ch">CMS-9115-F delivered 3 days ahead of enforcement</div><p>FHIRFabric delivered the full Patient Access API, Provider Directory API, and Payer-to-Payer API suite three days before the CMS enforcement date — SMART on FHIR authorization, US Core R4 profiles, and audit logging live from day one.</p></div><div class="cs"><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">3 <em style="font-style:normal;color:var(--teal)">days</em></div><div class="cs-lbl">Ahead of CMS deadline</div></div><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">3</div><div class="cs-lbl">CMS APIs delivered</div></div><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">0</div><div class="cs-lbl">Enforcement actions</div></div></div></div>
+      <div class="case reveal"><div class="cb"><span class="ct">Payer-to-Payer · Bulk Exchange</span><div class="ch">P2P bulk exchange — 64,300 members, 4.7M resources</div><p>End-to-end Payer-to-Payer implementation: FHIR Bulk Data export from the old payer, secure transfer, import at the new payer, and member consent management — covering 64,300 members and 4.7M FHIR resources with full CMS audit documentation.</p></div><div class="cs"><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">64<em style="font-style:normal;color:var(--teal)">.3K</em></div><div class="cs-lbl">Members in P2P exchange</div></div><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">4.7<em style="font-style:normal;color:var(--teal)">M</em></div><div class="cs-lbl">FHIR resources transferred</div></div></div></div>
+      <div class="case reveal"><div class="cb"><span class="ct">US Core Upgrade · App Ecosystem</span><div class="ch">US Core 3.1.1 → 6.1.0 + 340+ apps onboarded</div><p>Managed a major profile upgrade across a live production environment — migrating US Core versions, upgrading CARIN BlueButton, and onboarding 340+ third-party applications through the transition. Zero app-breaking incidents.</p></div><div class="cs"><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">340<em style="font-style:normal;color:var(--teal)">+</em></div><div class="cs-lbl">Apps onboarded</div></div><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">0</div><div class="cs-lbl">Breaking incidents</div></div></div></div>
+      <div class="case reveal"><div class="cb"><span class="ct">Medicaid · AWS GovCloud · Scale</span><div class="ch">GovCloud Medicaid — 3.1M members at 71M calls/month</div><p>FedRAMP-aligned infrastructure for 3.1M Medicaid beneficiaries, processing 71M FHIR API calls per month. P1 incidents resolve in 56 minutes. CMS compliance reporting fully automated. 24/7 SRE coverage.</p></div><div class="cs"><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">3.1<em style="font-style:normal;color:var(--teal)">M</em></div><div class="cs-lbl">Medicaid members</div></div><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">71<em style="font-style:normal;color:var(--teal)">M</em></div><div class="cs-lbl">FHIR calls / month</div></div><div class="cs-row"><div class="cs-num" style="color:var(--navy)" style="color:var(--coral)">56<em style="font-style:normal;color:var(--teal)">m</em></div><div class="cs-lbl">P1 MTTR</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Institutional knowledge</div>
+    <h2 class="h2 reveal d1">Seven implementations<br /><em>build a playbook.</em></h2>
+    <div class="les-grid">
+      <div class="les-c reveal"><div class="les-n" style="color:rgba(232,85,61,.25)">01</div><h3>Member identity is the hardest problem</h3><p>Before any CMS API works correctly, member identity has to be clean. We build deduplication and golden record governance before API development begins — not during.</p></div>
+      <div class="les-c reveal d1"><div class="les-n" style="color:rgba(232,85,61,.25)">02</div><h3>CMS deadlines are non-negotiable</h3><p>Civil monetary penalties are real. We build every implementation on a deadline-first schedule — working backwards from enforcement with hard gates and no-slip milestones.</p></div>
+      <div class="les-c reveal d2"><div class="les-n" style="color:rgba(232,85,61,.25)">03</div><h3>Multi-agency needs a different model</h3><p>Medicaid environments have stakeholders whose approval you need but whose timelines you don't control. We've learned how to maintain momentum regardless of external dependencies.</p></div>
+      <div class="les-c reveal"><div class="les-n" style="color:rgba(232,85,61,.25)">04</div><h3>Observability is a compliance requirement</h3><p>CMS requires audit logs. HIPAA requires access logs. State agencies want dashboards. We instrument every deployment for compliance reporting from day one — not as an afterthought.</p></div>
+      <div class="les-c reveal d1"><div class="les-n" style="color:rgba(232,85,61,.25)">05</div><h3>App onboarding is a long tail problem</h3><p>Every major upgrade surfaces a long tail of third-party apps with varying maturity. We've built onboarding playbooks that handle 80% efficiently while providing white-glove support for complex integrations.</p></div>
+      <div class="les-c reveal d2"><div class="les-n" style="color:rgba(232,85,61,.25)">06</div><h3>GovCloud is not just regular AWS</h3><p>Real operational differences in service availability, IAM constraints, and networking affect architecture decisions. Seven Medicaid deployments have taught us what works before it hits production.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section bg-off">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Who we serve</div>
+    <h2 class="h2 reveal d1">Built for regulated<br /><em>healthcare organizations.</em></h2>
+    <div class="serve-grid">
+      <div class="serve-c reveal" style="border-top:3px solid var(--coral)"><h3>Commercial Payers</h3><p>Health plans navigating CMS-9115-F and CMS-0057-F with complex legacy data environments. We bring the FHIR engineering depth so your team focuses on member outcomes, not infrastructure.</p></div>
+      <div class="serve-c reveal d1" style="border-top:3px solid var(--coral)"><h3>State Medicaid Agencies</h3><p>State agencies with federal CMS oversight and complex beneficiary populations. Seven prior Medicaid implementations mean we understand your constraints before the kickoff call.</p></div>
+      <div class="serve-c reveal d2" style="border-top:3px solid var(--coral)"><h3>Providers &amp; Health Systems</h3><p>Hospitals modernizing legacy HL7 v2 infrastructure toward FHIR R4 — enabling SMART on FHIR apps, analytics, and interoperability without replacing existing workflows.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-band"><div class="cta-band-inner reveal"><h2>Tell us about your<br /><em>implementation.</em></h2><p>We'll come prepared with experience relevant to your environment, your deadlines, and your constraints.</p><div class="cta-btns"><a href="contact.html" class="btn-primary">Schedule a Conversation <span class="arr">→</span></a><a href="platform.html" class="btn-outline">Explore the Platform <span class="arr">→</span></a></div><div class="cta-contact"><span>support@fhirfabric.com · +1 (312) 985-6684</span></div></div></div>
+
+<footer class="footer"><div class="footer-grid"><div class="footer-brand"><a href="index.html" class="nav-logo"><div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div><span class="logo-name">FHIRFabric</span></a><p>Production-grade FHIR interoperability for enterprise healthcare.</p><p class="footer-parent">A <a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix</a> company</p></div><div class="footer-links"><div class="footer-col"><h4>Platform</h4><ul><li><a href="platform.html">Platform Overview</a></li><li><a href="compliance.html">Compliance APIs</a></li><li><a href="experience.html">Track Record</a></li></ul></div><div class="footer-col"><h4>Company</h4><ul><li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li><li><a href="contact.html">Contact</a></li></ul></div><div class="footer-col"><h4>Compliance</h4><ul><li><a href="compliance.html">CMS-9115-F</a></li><li><a href="compliance.html">CMS-0057-F</a></li><li><a href="compliance.html">HIPAA</a></li></ul></div></div></div><div class="footer-bottom"><span>© 2026 FHIRFabric · A MyAtrix Company · Downers Grove, IL</span><span>support@fhirfabric.com</span></div></footer>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+<script>const nav=document.getElementById('nav');window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));document.getElementById('hamburger').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');this.classList.toggle('active');});const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');obs.unobserve(x.target);}}),{threshold:.1});document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));</script>
+</body></html>

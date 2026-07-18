@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FHIRFabric — Healthcare Interoperability at Scale</title>
+  <meta name="description" content="Production-grade FHIR R4 interoperability for payers and providers. CMS-9115-F · CMS-0057-F · TEFCA · AWS GovCloud · 71M API calls/month." />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── AUDIENCE SPLIT ── */
+    .audience-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--gray-2); border: 1px solid var(--gray-2); border-radius: var(--r-lg); overflow: hidden; margin-top: 56px; }
+    .aud-card { background: var(--white); padding: 56px 48px; transition: background .3s; }
+    .aud-card:hover { background: var(--off-white); }
+    .aud-tag { font-family: var(--mono); font-size: .65rem; letter-spacing: .18em; text-transform: uppercase; color: var(--teal); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+    .aud-tag::before { content: ''; width: 20px; height: 1px; background: var(--teal); }
+    .aud-card h3 { font-family: var(--serif); font-size: clamp(1.5rem,2.5vw,2rem); font-weight: 400; line-height: 1.2; letter-spacing: -.02em; margin-bottom: 14px; color: var(--navy); }
+    .aud-card h3 em { font-style: italic; color: var(--teal); }
+    .aud-card .lede { font-size: .93rem; color: var(--text-2); line-height: 1.75; margin-bottom: 24px; }
+    .aud-bullets { list-style: none; }
+    .aud-bullets li { padding: 12px 0; border-top: 1px solid var(--gray-2); display: grid; grid-template-columns: 16px 1fr; gap: 12px; align-items: start; font-size: .875rem; color: var(--text-2); line-height: 1.55; }
+    .aud-bullets li:last-child { border-bottom: 1px solid var(--gray-2); }
+    .aud-bullets li::before { content: '→'; color: var(--teal); font-family: var(--mono); font-size: .75rem; line-height: 1.6; }
+    .aud-bullets strong { color: var(--navy); font-weight: 600; }
+    .aud-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 28px; font-weight: 500; font-size: .875rem; color: var(--navy); border-bottom: 1.5px solid var(--navy); padding-bottom: 3px; transition: color .2s, border-color .2s; }
+    .aud-link:hover { color: var(--teal); border-color: var(--teal); }
+
+    /* ── CMS RULES ── */
+    .cms-section { background: var(--off-white); border-top: 1px solid var(--gray-2); position: relative; overflow: hidden; }
+    .cms-section::before { content: 'CMS'; position: absolute; top: 40px; right: -40px; font-family: var(--serif); font-size: 260px; color: var(--navy); opacity: .03; line-height: .8; letter-spacing: -.05em; pointer-events: none; }
+    .cms-rules { margin-top: 48px; }
+    .cms-rule { display: grid; grid-template-columns: 220px 1fr; gap: 48px; padding: 44px 0; border-top: 1px solid var(--gray-2); align-items: start; }
+    .cms-rule:last-of-type { border-bottom: 1px solid var(--gray-2); }
+    .crm-code { font-family: var(--mono); font-size: .7rem; font-weight: 600; letter-spacing: .1em; color: var(--teal); text-transform: uppercase; margin-bottom: 10px; }
+    .crm-badge { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; padding: 5px 12px; border-radius: 100px; border: 1px solid var(--gray-2); background: var(--white); color: var(--text-2); margin-bottom: 6px; }
+    .crm-badge.live::before { content: ''; width: 6px; height: 6px; background: #0F6E56; border-radius: 50%; box-shadow: 0 0 0 3px rgba(15,110,86,.15); }
+    .crm-badge.upcoming::before { content: ''; width: 6px; height: 6px; background: #BA7517; border-radius: 50%; box-shadow: 0 0 0 3px rgba(186,117,23,.15); }
+    .crm-status { font-family: var(--mono); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+    .crm-h { font-family: var(--serif); font-size: clamp(1.3rem,2vw,1.7rem); font-weight: 400; line-height: 1.2; letter-spacing: -.02em; margin-bottom: 12px; color: var(--navy); }
+    .crm-h em { font-style: italic; color: var(--teal); }
+    .crm-summary { font-size: .9rem; line-height: 1.75; color: var(--text-2); margin-bottom: 20px; max-width: 680px; }
+    .api-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+    .api-card { background: var(--white); border: 1px solid var(--gray-2); padding: 18px 20px; border-radius: var(--r); transition: border-color .2s, transform .2s, box-shadow .2s; }
+    .api-card:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: var(--shadow); }
+    .api-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .api-name { font-weight: 600; font-size: .875rem; color: var(--navy); }
+    .api-method { font-family: var(--mono); font-size: .6rem; font-weight: 600; letter-spacing: .08em; padding: 2px 7px; border-radius: 3px; background: var(--navy); color: var(--white); }
+    .api-ig { font-family: var(--mono); font-size: .72rem; color: var(--text-3); line-height: 1.5; }
+    .api-ig strong { color: var(--teal); font-weight: 600; }
+    .cms-callout { margin-top: 48px; background: var(--navy); border-radius: var(--r-lg); padding: 40px 44px; display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center; }
+    .cms-callout h4 { font-family: var(--serif); font-size: 1.3rem; font-weight: 400; color: var(--white); margin-bottom: 8px; }
+    .cms-callout h4 em { font-style: italic; color: #6FD0D8; }
+    .cms-callout p { font-size: .875rem; color: rgba(255,255,255,.65); line-height: 1.65; max-width: 480px; }
+    .btn-primary-sm { display: inline-flex; align-items: center; gap: 8px; background: var(--teal); color: var(--white); font-family: var(--sans); font-weight: 500; font-size: .875rem; padding: 12px 22px; border-radius: var(--r); text-decoration: none; white-space: nowrap; transition: background .2s; }
+    .btn-primary-sm:hover { background: var(--teal-2); }
+
+    /* ── CAPABILITIES ── */
+    .cap-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--gray-2); border: 1px solid var(--gray-2); border-radius: var(--r-lg); overflow: hidden; margin-top: 56px; }
+    .cap-card { background: var(--white); padding: 32px 28px; transition: background .3s; position: relative; overflow: hidden; }
+    .cap-card:hover { background: var(--off-white); }
+    .cap-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--teal); transform: scaleX(0); transform-origin: left; transition: transform .4s var(--ease); }
+    .cap-card:hover::before { transform: scaleX(1); }
+    .cap-num { font-family: var(--mono); font-size: .6rem; color: var(--gray-3); margin-bottom: 16px; }
+    .cap-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--teal-light); display: flex; align-items: center; justify-content: center; color: var(--teal); font-size: 17px; margin-bottom: 14px; }
+    .cap-title { font-weight: 600; font-size: .9rem; color: var(--navy); margin-bottom: 8px; }
+    .cap-body { font-size: .82rem; color: var(--text-2); line-height: 1.72; }
+
+    /* ── TRUST / METRICS ── */
+    .trust-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; margin-top: 56px; }
+    .trust-cell { padding: 0 32px; border-left: 1px solid var(--gray-2); }
+    .trust-cell:first-child { border-left: none; padding-left: 0; }
+    .trust-val { font-family: var(--serif); font-size: clamp(2.4rem,4vw,3.8rem); color: var(--navy); line-height: 1; margin-bottom: 12px; letter-spacing: -.03em; }
+    .trust-val em { font-style: italic; color: var(--teal); }
+    .trust-lbl { font-family: var(--mono); font-size: .65rem; text-transform: uppercase; letter-spacing: .12em; color: var(--text-3); line-height: 1.5; }
+
+    /* ── PILLARS ── */
+    .pillar-row { display: grid; grid-template-columns: 240px 1fr 1fr; gap: 64px; padding: 48px 0; border-top: 1px solid var(--gray-2); align-items: start; }
+    .pillar-row:last-of-type { border-bottom: 1px solid var(--gray-2); }
+    .pillar-label { font-family: var(--mono); font-size: .65rem; letter-spacing: .18em; text-transform: uppercase; color: var(--teal); }
+    .pillar-title { font-family: var(--serif); font-size: clamp(1.1rem,1.8vw,1.4rem); font-weight: 400; letter-spacing: -.01em; line-height: 1.2; color: var(--navy); }
+    .pillar-body { font-size: .875rem; color: var(--text-2); line-height: 1.72; }
+
+    /* ── MARQUEE ── */
+    .marquee-wrap { overflow: hidden; background: var(--navy); padding: 20px 0; }
+    .marquee-label-txt { text-align: center; font-family: var(--mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .2em; color: rgba(255,255,255,.35); margin-bottom: 14px; }
+    .marquee-track { display: flex; gap: 0; animation: mq 36s linear infinite; white-space: nowrap; }
+    .marquee-track:hover { animation-play-state: paused; }
+    @keyframes mq { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    .mq-item { display: inline-flex; align-items: center; gap: 32px; padding: 0 32px; font-family: var(--serif); font-style: italic; font-size: 1.1rem; color: rgba(255,255,255,.55); }
+    .mq-item::after { content: '✦'; font-style: normal; font-size: .7rem; color: var(--teal); }
+
+    /* ── ARCH SVG ── */
+    .arch-wrap { background: var(--white); border: 1px solid var(--gray-2); border-radius: var(--r-lg); padding: 36px; box-shadow: var(--shadow); }
+    .arch-wrap svg { width: 100%; height: auto; display: block; }
+
+    @media(max-width:1024px){
+      .audience-grid,.cap-grid{grid-template-columns:1fr}
+      .cms-rule{grid-template-columns:1fr;gap:24px;padding:32px 0}
+      .trust-grid{grid-template-columns:repeat(2,1fr);gap:32px 0}
+      .trust-cell:nth-child(3){border-left:none}
+      .pillar-row{grid-template-columns:1fr;gap:20px;padding:36px 0}
+      .api-grid{grid-template-columns:1fr}
+      .cms-callout{grid-template-columns:1fr;gap:24px}
+    }
+    @media(max-width:768px){
+      .aud-card{padding:40px 24px}
+      .trust-grid{grid-template-columns:1fr;gap:32px}
+      .trust-cell{border-left:none !important;padding-left:0 !important}
+      .cap-grid{grid-template-columns:repeat(2,1fr)}
+      .cms-callout{padding:28px 20px}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg>
+      </div>
+      <span class="logo-name">FHIRFabric</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="platform.html">Platform</a></li>
+      <li><a href="payment-integrity.html">Payment Integrity</a></li>
+      <li><a href="compliance.html">Compliance</a></li>
+      <li><a href="experience.html">Experience</a></li>
+      <li><a href="contact.html" class="nav-cta">Request a Briefing</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-swoosh"></div>
+  <div class="hero-inner">
+    <div class="reveal">
+      <div class="hero-eyebrow">Healthcare Interoperability Platform</div>
+      <h1 class="hero-h1">The fabric beneath every<br /><em>compliant FHIR exchange.</em></h1>
+      <p class="hero-sub">FHIRFabric is the production-grade interoperability platform that turns CMS rules, prior authorization mandates, and clinical data exchange into a calm, observable, governable operating layer — for payers and providers alike.</p>
+      <div class="hero-actions">
+        <a href="contact.html" class="btn-primary">Request a Briefing <span class="arr">→</span></a>
+        <a href="experience.html" class="btn-outline">See Production Evidence <span class="arr">→</span></a>
+      </div>
+    </div>
+    <div class="reveal d2">
+      <div class="hero-card">
+        <div class="hc-label">// Production Footprint</div>
+        <div class="hc-stat-row">
+          <div class="hc-stat"><span class="hc-stat-name">FHIR API calls / month, sustained</span><span class="hc-stat-val">71<span>M</span></span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Lives on largest live deployment</span><span class="hc-stat-val">3.1<span>M</span></span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Bulk exchange ingest success rate</span><span class="hc-stat-val">99<span>.6%</span></span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Patient duplicate rate post-EMPI</span><span class="hc-stat-val">0.4<span>%</span></span></div>
+          <div class="hc-stat"><span class="hc-stat-name">Missed CMS enforcement deadlines</span><span class="hc-stat-val">0</span></div>
+          <div class="hc-stat"><span class="hc-stat-name">P1 incident MTTR</span><span class="hc-stat-val">56<span>m</span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-label-txt">Implementation Guides &amp; Mandates Supported</div>
+  <div class="marquee-track">
+    <div class="mq-item">CMS-9115-F</div><div class="mq-item">CARIN Blue Button 2.0</div><div class="mq-item">Da Vinci PDex</div><div class="mq-item">US Core 6.1.0</div><div class="mq-item">SMART App Launch 2.0</div><div class="mq-item">Da Vinci PAS</div><div class="mq-item">CRD &amp; DTR</div><div class="mq-item">CMS-0057-F</div><div class="mq-item">USCDI v3</div><div class="mq-item">Bulk FHIR / Flat FHIR</div><div class="mq-item">TEFCA</div><div class="mq-item">QHIN Exchange</div>
+    <div class="mq-item">CMS-9115-F</div><div class="mq-item">CARIN Blue Button 2.0</div><div class="mq-item">Da Vinci PDex</div><div class="mq-item">US Core 6.1.0</div><div class="mq-item">SMART App Launch 2.0</div><div class="mq-item">Da Vinci PAS</div><div class="mq-item">CRD &amp; DTR</div><div class="mq-item">CMS-0057-F</div><div class="mq-item">USCDI v3</div><div class="mq-item">Bulk FHIR / Flat FHIR</div><div class="mq-item">TEFCA</div><div class="mq-item">QHIN Exchange</div>
+  </div>
+</div>
+
+<!-- AUDIENCE SPLIT -->
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Built for both sides of the exchange</div>
+    <h2 class="h2 reveal d1">One fabric. <em>Two operating realities</em>,<br />served natively.</h2>
+    <p class="section-lead reveal d2">Payers and providers live on opposite ends of the same data flows — different mandates, different stakes, different risk surfaces. FHIRFabric speaks both languages without forcing either side into the other's workflow.</p>
+    <div class="audience-grid">
+      <div class="aud-card reveal">
+        <div class="aud-tag">For Payers</div>
+        <h3>Compliance that <em>runs itself</em>,<br />not a perpetual fire drill.</h3>
+        <p class="lede">Patient Access, Provider Directory, Provider Access, Payer-to-Payer, and Prior Authorization APIs — operated as a single observable platform with the governance auditors expect to see.</p>
+        <ul class="aud-bullets">
+          <li><span><strong>Patient Access &amp; Provider Directory APIs</strong> — CARIN Blue Button 2.0 and US Core 6.1.0 endpoints with version-pinning so onboarded apps don't break on IG upgrades.</span></li>
+          <li><span><strong>Prior Authorization API</strong> — Da Vinci PAS, CRD, and DTR with the orchestration to reach CMS-0057-F compliance ahead of January 2027.</span></li>
+          <li><span><strong>Payer-to-Payer exchange</strong> — Bulk FHIR over mutually authenticated TLS with consent verification and resource-level provenance.</span></li>
+          <li><span><strong>Member identity resolution</strong> — Enterprise Master Person Index with deterministic and probabilistic matching, plus historical identifier crosswalks for transitioning lives.</span></li>
+          <li><span><strong>Third-party app governance</strong> — Attestation-gated SMART on FHIR onboarding with behavioral telemetry to catch misuse before regulators do.</span></li>
+        </ul>
+        <a href="platform.html" class="aud-link">Explore payer capabilities <span class="arr">→</span></a>
+      </div>
+      <div class="aud-card reveal d1">
+        <div class="aud-tag">For Providers</div>
+        <h3>The data layer your EHR was <em>never built to be</em>.</h3>
+        <p class="lede">USCDI v3 compliance, payer Prior Auth interoperability, patient access endpoints, and bulk clinical data exchange — wired into your EHR without forcing a clinical workflow rebuild.</p>
+        <ul class="aud-bullets">
+          <li><span><strong>USCDI v3 &amp; US Core compliance</strong> — Profile-conformant Patient, Encounter, Condition, Observation, and Medication resources sourced directly from your clinical systems.</span></li>
+          <li><span><strong>CRD &amp; DTR integration</strong> — CDS Hooks 2.0 cards delivered to the ordering clinician at the moment of care, with documentation templates that auto-populate from the chart.</span></li>
+          <li><span><strong>Bulk clinical exchange</strong> — Flat FHIR exports for payer Provider Access requests, ACO reporting, and quality measure submissions.</span></li>
+          <li><span><strong>Patient identity reconciliation</strong> — EMPI across EHR, registration, billing, and ancillary systems so the longitudinal record is finally one record.</span></li>
+          <li><span><strong>SMART on FHIR app launch</strong> — App Launch 2.0 with the IAM, consent, and governance that lets clinicians safely use third-party tools at the point of care.</span></li>
+        </ul>
+        <a href="platform.html" class="aud-link">Explore provider capabilities <span class="arr">→</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STAT STRIP -->
+<div class="stat-strip">
+  <div class="stat-strip-inner">
+    <div class="ss-item reveal"><div class="ss-num">71M</div><div class="ss-label">FHIR API calls<br />per month</div></div>
+    <div class="ss-item reveal d1"><div class="ss-num">99.6%</div><div class="ss-label">Bulk exchange<br />ingest success rate</div></div>
+    <div class="ss-item reveal d2"><div class="ss-num">387K</div><div class="ss-label">Duplicate member<br />records resolved</div></div>
+    <div class="ss-item reveal d3"><div class="ss-num">56 min</div><div class="ss-label">P1 incident<br />MTTR</div></div>
+  </div>
+</div>
+
+<!-- CMS COMPLIANCE RULES -->
+<section class="section cms-section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">CMS Compliance Rules &amp; APIs</div>
+    <h2 class="h2 reveal d1">Every mandate. Every API.<br /><em>Operationalized.</em></h2>
+    <p class="section-lead reveal d2">FHIRFabric ships native support for every CMS interoperability rule in force or on the horizon — with the IG versions, governance, and observability that turn a "compliance project" into a steady-state operating capability.</p>
+
+    <div class="cms-rules">
+
+      <article class="cms-rule reveal">
+        <div>
+          <div class="crm-code" style="color:var(--coral)">CMS-9115-F</div>
+          <div class="crm-badge live">Enforced July 1, 2021</div>
+          <div class="crm-status">Status: In Production</div>
+        </div>
+        <div>
+          <div class="crm-h">Interoperability &amp; Patient Access <em>Final Rule</em></div>
+          <p class="crm-summary">The foundational CMS interoperability mandate. Requires impacted payers to expose claims, encounter, clinical, formulary, and provider directory data through standards-based FHIR APIs to members and the public.</p>
+          <div class="api-grid">
+            <div class="api-card"><div class="api-hdr"><span class="api-name">Patient Access API</span><span class="api-method">FHIR R4</span></div><div class="api-ig"><strong>CARIN BB 2.0.0</strong> · US Core 6.1.0 · SMART App Launch 2.0 · USCDI v3</div></div>
+            <div class="api-card"><div class="api-hdr"><span class="api-name">Provider Directory API</span><span class="api-method">FHIR R4</span></div><div class="api-ig"><strong>Da Vinci PDex Plan Net</strong> · Public unauthenticated · Refreshed daily</div></div>
+            <div class="api-card"><div class="api-hdr"><span class="api-name">Formulary &amp; Drug Pricing</span><span class="api-method">FHIR R4</span></div><div class="api-ig"><strong>Da Vinci US Drug Formulary</strong> · RxNorm-bound · Per-plan tier mapping</div></div>
+            <div class="api-card"><div class="api-hdr"><span class="api-name">Payer-to-Payer Exchange</span><span class="api-method">BULK</span></div><div class="api-ig"><strong>Da Vinci PDex</strong> · Bulk FHIR · Member-authorized · 5-year history</div></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="cms-rule reveal">
+        <div>
+          <div class="crm-code" style="color:var(--coral)">CMS-0057-F</div>
+          <div class="crm-badge upcoming">Compliance Jan 1, 2027</div>
+          <div class="crm-status">Status: Implementation Ready</div>
+        </div>
+        <div>
+          <div class="crm-h">Interoperability &amp; <em>Prior Authorization</em> Final Rule</div>
+          <p class="crm-summary">Finalized January 17, 2024. Expands CMS-9115-F with a Prior Authorization API and stricter Patient Access response requirements — applying to Medicare Advantage, state Medicaid and CHIP FFS, and QHP issuers.</p>
+          <div class="api-grid">
+            <div class="api-card"><div class="api-hdr"><span class="api-name">Prior Authorization API</span><span class="api-method">FHIR R4</span></div><div class="api-ig"><strong>Da Vinci PAS 2.0.1</strong> · X12 278 wrapping · Status &amp; decision endpoints</div></div>
+            <div class="api-card"><div class="api-hdr"><span class="api-name">Coverage Requirements Discovery</span><span class="api-method">CRD</span></div><div class="api-ig"><strong>Da Vinci CRD 2.0.1</strong> · CDS Hooks 2.0 · EHR-embedded at point of order</div></div>
+            <div class="api-card"><div class="api-hdr"><span class="api-name">Documentation Templates &amp; Rules</span><span class="api-method">DTR</span></div><div class="api-ig"><strong>Da Vinci DTR 2.0.0</strong> · SMART App + FHIR Questionnaire · Auto-populates from chart</div></div>
+            <div class="api-card"><div class="api-hdr"><span class="api-name">Provider Access API</span><span class="api-method">FHIR R4</span></div><div class="api-ig"><strong>Da Vinci PDex</strong> · In-network provider access to member data · Consent-gated</div></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="cms-rule reveal">
+        <div>
+          <div class="crm-code" style="color:var(--coral)">ONC / 21st Century Cures</div>
+          <div class="crm-badge live">USCDI v3 in effect</div>
+          <div class="crm-status">Status: In Production</div>
+        </div>
+        <div>
+          <div class="crm-h">Information Blocking &amp; <em>USCDI v3</em></div>
+          <p class="crm-summary">ONC Cures Act Final Rule prohibits information blocking and establishes USCDI as the minimum data set for certified health IT. FHIRFabric exposes USCDI v3 data classes through US Core 6.1.0 profiles with full audit trails to demonstrate non-blocking.</p>
+          <div class="api-grid">
+            <div class="api-card"><div class="api-hdr"><span class="api-name">USCDI v3 Data Access</span><span class="api-method">FHIR R4</span></div><div class="api-ig"><strong>US Core 6.1.0</strong> · All v3 classes · SDOH · Gender Identity · Sexual Orientation</div></div>
+            <div class="api-card"><div class="api-hdr"><span class="api-name">EHI Export</span><span class="api-method">BULK</span></div><div class="api-ig"><strong>EHI Export</strong> · Single-patient electronic health info export</div></div>
+            <div class="api-card"><div class="api-hdr"><span class="api-name">Information Blocking Audit</span><span class="api-method">AUDIT</span></div><div class="api-ig"><strong>FHIR AuditEvent</strong> · Every denial logged · Exception attestation</div></div>
+            <div class="api-card"><div class="api-hdr"><span class="api-name">SMART App Launch</span><span class="api-method">OAUTH</span></div><div class="api-ig"><strong>SMART App Launch 2.0.0</strong> · PKCE · Granular Scopes · Refresh tokens</div></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="cms-rule reveal">
+        <div>
+          <div class="crm-code" style="color:var(--coral)">TEFCA</div>
+          <div class="crm-badge live">QHIN Exchange Live</div>
+          <div class="crm-status">Status: In Production</div>
+        </div>
+        <div>
+          <div class="crm-h">Trusted Exchange Framework &amp; <em>Common Agreement</em></div>
+          <p class="crm-summary">The national trust framework for nationwide health information exchange. FHIRFabric brokers TEFCA Exchange Purposes through QHIN connectivity with full provenance, consent, and treatment-purpose attestation.</p>
+          <div class="api-grid">
+            <div class="api-card"><div class="api-hdr"><span class="api-name">QHIN FHIR Exchange</span><span class="api-method">FHIR R4</span></div><div class="api-ig"><strong>TEFCA FHIR IG</strong> · Treatment · Payment · Healthcare Ops · Public Health</div></div>
+            <div class="api-card"><div class="api-hdr"><span class="api-name">Individual Access Service</span><span class="api-method">IAS</span></div><div class="api-ig"><strong>TEFCA IAS</strong> · Identity-proofed individual access via QHIN intermediaries</div></div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="cms-callout reveal">
+      <div>
+        <h4>Want the full <em>CMS readiness matrix</em>?</h4>
+        <p>Capability-by-capability mapping of every rule to FHIRFabric components, IG versions, validator coverage, and our production attestation evidence. Available on request.</p>
+      </div>
+      <a href="contact.html" class="btn-primary-sm">Request the matrix <span class="arr">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORM CAPABILITIES -->
+<section class="section bg-off">
+  <div class="section-inner">
+    <div class="eyebrow reveal">The Platform</div>
+    <h2 class="h2 reveal d1">Eight operating capabilities,<br /><em>woven together.</em></h2>
+    <p class="section-lead reveal d2">Not a FHIR server with marketing around it. The operating substrate — identity resolution, source integration, governance, observability, regulatory change management — that determines whether your interoperability program survives the next audit.</p>
+    <div class="cap-grid">
+      <div class="cap-card reveal"><div class="cap-num">01 / Identity</div><div class="cap-icon"><i class="ti ti-users" aria-hidden="true"></i></div><div class="cap-title">Enterprise Identity Resolution</div><div class="cap-body">Deterministic + probabilistic EMPI with historical crosswalks. Duplicate rate below 0.4% required before Patient Access goes live.</div></div>
+      <div class="cap-card reveal d1"><div class="cap-num">02 / Ingest</div><div class="cap-icon"><i class="ti ti-database-import" aria-hidden="true"></i></div><div class="cap-title">Source Integration &amp; Normalization</div><div class="cap-body">Claims, eligibility, EHR ADT, PBM, ancillary, directory — normalized through JSON Schema contracts and dbt transformations.</div></div>
+      <div class="cap-card reveal d2"><div class="cap-num">03 / FHIR</div><div class="cap-icon"><i class="ti ti-flame" aria-hidden="true"></i></div><div class="cap-title">FHIR R4 API Layer</div><div class="cap-body">US Core 6.1.0 native. CARIN BB, Da Vinci PDex, PAS, CRD, DTR. SMART App Launch 2.0. Version-pinned so upgrades don't break onboarded apps.</div></div>
+      <div class="cap-card reveal d3"><div class="cap-num">04 / Auth</div><div class="cap-icon"><i class="ti ti-lock" aria-hidden="true"></i></div><div class="cap-title">Authorization &amp; App Governance</div><div class="cap-body">Attestation-gated SMART on FHIR onboarding. Behavioral telemetry, per-app scope enforcement, and Privacy Officer SLA workflows.</div></div>
+      <div class="cap-card reveal"><div class="cap-num">05 / Bulk</div><div class="cap-icon"><i class="ti ti-transfer" aria-hidden="true"></i></div><div class="cap-title">Bulk &amp; Payer-to-Payer Exchange</div><div class="cap-body">FHIR Bulk Data ($export/$import), Flat FHIR, mutually authenticated TLS, consent verification, and resource-level provenance tracking.</div></div>
+      <div class="cap-card reveal d1"><div class="cap-num">06 / Obs</div><div class="cap-icon"><i class="ti ti-activity" aria-hidden="true"></i></div><div class="cap-title">Observability &amp; SRE</div><div class="cap-body">Synthetic monitors that mirror real third-party app behavior. 14 compliance KPIs. 56-minute P1 MTTR. CMS audit reporting automated.</div></div>
+      <div class="cap-card reveal d2"><div class="cap-num">07 / Gov</div><div class="cap-icon"><i class="ti ti-shield-check" aria-hidden="true"></i></div><div class="cap-title">Data Governance &amp; Quality</div><div class="cap-body">95% IG conformance required before FHIR UAT. Data quality as a P0 gating workstream. Survivorship rules across 2.4M+ member plans.</div></div>
+      <div class="cap-card reveal d3"><div class="cap-num">08 / Reg</div><div class="cap-icon"><i class="ti ti-news" aria-hidden="true"></i></div><div class="cap-title">Regulatory Change Management</div><div class="cap-body">Dedicated Regulatory Affairs from contract signing. Federal Register notices, sub-regulatory guidance, and IG version updates tracked as steady-state operations.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST / OPERATIONAL METRICS -->
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">By the Numbers</div>
+    <h2 class="h2 reveal d1">Operational metrics that<br /><em>auditors ask about.</em></h2>
+    <div class="trust-grid">
+      <div class="trust-cell reveal">
+        <div class="trust-val"><em>FedRAMP</em></div>
+        <div class="trust-lbl">Moderate ATO maintained with continuous monitoring artifacts available under NDA</div>
+      </div>
+      <div class="trust-cell reveal d1">
+        <div class="trust-val">47<em>s</em> / 19<em>m</em></div>
+        <div class="trust-lbl">Measured RPO / RTO from the most recent quarterly DR exercise</div>
+      </div>
+      <div class="trust-cell reveal d2">
+        <div class="trust-val"><em>56</em>min</div>
+        <div class="trust-lbl">P1 incident MTTR, beating the 60-minute SLA target on a real production outage</div>
+      </div>
+      <div class="trust-cell reveal d3">
+        <div class="trust-val"><em>1.2%</em></div>
+        <div class="trust-lbl">Residual data-quality exception rate at CMS-9115-F go-live, disclosed proactively</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PILLARS -->
+<section class="section bg-off">
+  <div class="section-inner">
+    <div class="eyebrow reveal">Why FHIRFabric</div>
+    <h2 class="h2 reveal d1">Five things our clients say<br /><em>changed everything.</em></h2>
+    <p class="section-lead reveal d2">Not capability claims — lessons earned across seven prior interoperability implementations on both the payer and provider side, now baked into how every engagement starts.</p>
+    <div class="reveal d3">
+      <div class="pillar-row">
+        <div class="pillar-label" style="color:var(--coral)">01 — Critical Path</div>
+        <div class="pillar-title">Source data quality before FHIR APIs, always.</div>
+        <p class="pillar-body">One early implementation discovered 41% of resources failing IG validation at UAT — caused by upstream gaps. Now data quality is a P0 gating workstream from week one. 95% IG conformance required before FHIR UAT begins.</p>
+      </div>
+      <div class="pillar-row">
+        <div class="pillar-label" style="color:var(--coral)">02 — Onboarding</div>
+        <div class="pillar-title">Third-party governance live before the first sandbox endpoint.</div>
+        <p class="pillar-body">One client launched APIs without the attestation workflow operational — a 14-week review backlog and a regulatory inquiry followed. We won't expose a sandbox until the Privacy Officer SLA, attestation pack, and credential workflow are documented and running.</p>
+      </div>
+      <div class="pillar-row">
+        <div class="pillar-label" style="color:var(--coral)">03 — Monitoring</div>
+        <div class="pillar-title">Synthetic monitors that mirror real third-party behavior.</div>
+        <p class="pillar-body">Idealized API calls don't catch retry storms, large-bundle pagination failures, or refresh-token defects. Every onboarded app contributes a call pattern that our monitors replay in production-shadow mode — without exposing real patient data.</p>
+      </div>
+      <div class="pillar-row">
+        <div class="pillar-label" style="color:var(--coral)">04 — Identity First</div>
+        <div class="pillar-title">EMPI completion is a prerequisite to FHIR exposure.</div>
+        <p class="pillar-body">When patients see fragmented records, the support center absorbs the cost. We require duplicate rate below 1% on the active population before Patient Access goes live. Non-negotiable.</p>
+      </div>
+      <div class="pillar-row">
+        <div class="pillar-label" style="color:var(--coral)">05 — Regulatory Cadence</div>
+        <div class="pillar-title">Regulatory change is continuous. Staff for it.</div>
+        <p class="pillar-body">Federal Register notices, CMS sub-regulatory guidance, IG version updates, state overlays — the cadence never stops. Dedicated Regulatory Affairs from contract signing, treating readiness as steady-state operations, not a project.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="section">
+  <div class="section-inner">
+    <div class="two-col">
+      <div class="two-col-copy reveal">
+        <div class="eyebrow">Architecture</div>
+        <h2 class="h2">Six layers,<br /><em>one observable system.</em></h2>
+        <p>FHIRFabric's architecture is built bottom-up from source systems through to API delivery — with observability, governance, and regulatory change management woven across every layer.</p>
+        <ul class="col-list">
+          <li><span class="col-dot"></span>Source systems: Claims, Eligibility, EHR, ADT, PBM, Ancillary, Directory</li>
+          <li><span class="col-dot"></span>Ingest: AWS DMS · Kafka · dbt · JSON Schema contracts</li>
+          <li><span class="col-dot"></span>EMPI: Deterministic + probabilistic matching · Stewardship queue</li>
+          <li><span class="col-dot"></span>FHIR R4 API layer: US Core 6.1.0 · Da Vinci suite · SMART 2.0</li>
+          <li><span class="col-dot"></span>Consumer layer: Patient, Provider, Payer, and Public APIs</li>
+          <li><span class="col-dot"></span>Cross-cutting: 14 KPIs · Compliance Attestation Packs · FedRAMP ATO</li>
+        </ul>
+        <a href="platform.html" class="btn-navy">Full Platform Overview <span class="arr">→</span></a>
+      </div>
+      <div class="two-col-visual reveal d2">
+        <div class="arch-wrap">
+          <svg viewBox="0 0 480 540" xmlns="http://www.w3.org/2000/svg" font-family="DM Sans, system-ui, sans-serif" font-size="13">
+            <defs>
+              <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#E6F4F5"/>
+                <stop offset="100%" stop-color="#F0F2F5"/>
+              </linearGradient>
+            </defs>
+            <!-- Layer 6: Consumer APIs -->
+            <rect x="20" y="20" width="440" height="56" rx="4" fill="#0B1F3A" stroke="#0B1F3A" stroke-width="1"/>
+            <text x="32" y="42" font-weight="600" fill="#F7F4F0" font-size="12">06 / CONSUMER APIS</text>
+            <text x="32" y="60" fill="#6FD0D8" font-size="11">Patient · Provider · Payer-to-Payer · Public · Prior Auth</text>
+            <!-- Arrow -->
+            <line x1="240" y1="76" x2="240" y2="88" stroke="#00838F" stroke-width="1.5"/>
+            <polygon points="240,92 236,86 244,86" fill="#00838F"/>
+            <!-- Layer 5: FHIR R4 -->
+            <rect x="20" y="96" width="440" height="56" rx="4" fill="url(#lg)" stroke="#E2E6ED" stroke-width="1"/>
+            <text x="32" y="118" font-weight="600" fill="#0B1F3A" font-size="12">05 / FHIR R4 API LAYER</text>
+            <text x="32" y="136" fill="#3D4856" font-size="11">US Core 6.1.0 · Da Vinci PDex/PAS/CRD/DTR · SMART App Launch 2.0</text>
+            <!-- Arrow -->
+            <line x1="240" y1="152" x2="240" y2="164" stroke="#00838F" stroke-width="1.5"/>
+            <polygon points="240,168 236,162 244,162" fill="#00838F"/>
+            <!-- Layer 4: Auth -->
+            <rect x="20" y="172" width="440" height="56" rx="4" fill="url(#lg)" stroke="#E2E6ED" stroke-width="1"/>
+            <text x="32" y="194" font-weight="600" fill="#0B1F3A" font-size="12">04 / AUTH · GOVERNANCE · APP MANAGEMENT</text>
+            <text x="32" y="212" fill="#3D4856" font-size="11">Attestation-gated SMART · Behavioral telemetry · Privacy Officer SLA</text>
+            <!-- Arrow -->
+            <line x1="240" y1="228" x2="240" y2="240" stroke="#00838F" stroke-width="1.5"/>
+            <polygon points="240,244 236,238 244,238" fill="#00838F"/>
+            <!-- Layer 3: EMPI -->
+            <rect x="20" y="248" width="440" height="56" rx="4" fill="url(#lg)" stroke="#E2E6ED" stroke-width="1"/>
+            <text x="32" y="270" font-weight="600" fill="#0B1F3A" font-size="12">03 / EMPI · GOLDEN RECORDS · LINEAGE</text>
+            <text x="32" y="288" fill="#3D4856" font-size="11">Deterministic + probabilistic matching · Stewardship queue · &lt;0.4% dup rate</text>
+            <!-- Arrow -->
+            <line x1="240" y1="304" x2="240" y2="316" stroke="#00838F" stroke-width="1.5"/>
+            <polygon points="240,320 236,314 244,314" fill="#00838F"/>
+            <!-- Layer 2: Ingest -->
+            <rect x="20" y="324" width="440" height="56" rx="4" fill="url(#lg)" stroke="#E2E6ED" stroke-width="1"/>
+            <text x="32" y="346" font-weight="600" fill="#0B1F3A" font-size="12">02 / INGEST · NORMALIZATION · SURVIVORSHIP</text>
+            <text x="32" y="364" fill="#3D4856" font-size="11">AWS DMS · Kafka · dbt · JSON Schema contracts · Quality gates</text>
+            <!-- Arrow -->
+            <line x1="240" y1="380" x2="240" y2="392" stroke="#00838F" stroke-width="1.5"/>
+            <polygon points="240,396 236,390 244,390" fill="#00838F"/>
+            <!-- Layer 1: Sources -->
+            <rect x="20" y="400" width="440" height="56" rx="4" fill="url(#lg)" stroke="#E2E6ED" stroke-width="1"/>
+            <text x="32" y="422" font-weight="600" fill="#0B1F3A" font-size="12">01 / SOURCE SYSTEMS</text>
+            <text x="32" y="440" fill="#3D4856" font-size="11">Claims · Eligibility · EHR · ADT · PBM · Ancillary · Directory</text>
+            <!-- Cross-cutting observability -->
+            <rect x="20" y="476" width="440" height="48" rx="4" fill="none" stroke="#00838F" stroke-width="1" stroke-dasharray="4 3"/>
+            <text x="32" y="496" font-weight="600" fill="#00838F" font-size="11">⊕ OBSERVABILITY · GOVERNANCE · REGULATORY CHANGE</text>
+            <text x="32" y="514" fill="#6B7685" font-size="11">Cuts across every layer · 14 KPIs · Compliance Attestation Packs · FedRAMP ATO</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <div class="cta-band-inner reveal">
+    <div class="eyebrow" style="justify-content:center;color:#6FD0D8;margin-bottom:16px"><span style="width:20px;height:1px;background:#6FD0D8;display:block"></span>Talk to us</div>
+    <h2>Talk to the people who would<br /><em>actually run it.</em></h2>
+    <p>A 30-minute briefing with the implementation team, not a sales rep. Bring your worst data-quality problem, your most-feared audit question, or your shakiest vendor.</p>
+    <div class="cta-btns">
+      <a href="contact.html" class="btn-primary" style="padding:14px 32px">Request a Briefing <span class="arr">→</span></a>
+      <a href="platform.html" class="btn-outline">Explore the Platform <span class="arr">→</span></a>
+    </div>
+    <div class="cta-contact">
+      <span>support@fhirfabric.com</span>
+      <span>·</span>
+      <span>+1 (312) 985-6684</span>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div>
+        <span class="logo-name">FHIRFabric</span>
+      </a>
+      <p>The operating layer for healthcare interoperability — production-grade, governable, and built for the long compliance run.</p>
+      <p class="footer-parent">A <a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix</a> company</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col"><h4>Solutions</h4><ul><li><a href="index.html#audience">For Payers</a></li><li><a href="index.html#audience">For Providers</a></li><li><a href="platform.html">Platform</a></li>
+      <li><a href="payment-integrity.html">Payment Integrity</a></li><li><a href="experience.html">Evidence</a></li></ul></div>
+      <div class="footer-col"><h4>Compliance</h4><ul><li><a href="compliance.html">CMS-9115-F</a></li><li><a href="compliance.html">CMS-0057-F</a></li><li><a href="compliance.html">TEFCA</a></li><li><a href="compliance.html">HIPAA</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li><li><a href="contact.html">Contact</a></li><li><a href="contact.html">Request Demo</a></li></ul></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 FHIRFabric · A MyAtrix Company · Downers Grove, IL</span>
+    <span>support@fhirfabric.com</span>
+  </div>
+</footer>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+<script>
+  const nav=document.getElementById('nav');
+  window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));
+  document.getElementById('hamburger').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');this.classList.toggle('active');});
+  const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');obs.unobserve(x.target);}}),{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

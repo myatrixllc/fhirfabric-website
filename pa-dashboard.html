@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FHIRFabric — Prior Authorization Dashboard</title>
+  <meta name="description" content="Real-time prior authorization tracking — received, in review, approved, denied, more info needed, appealed." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    body { background: #F0F2F5; }
+    .dash-wrap { max-width: 1200px; margin: 0 auto; padding: 88px 40px 60px; }
+
+    /* Header */
+    .dash-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .dash-title { font-size:1.1rem; font-weight:600; color:var(--navy); }
+    .dash-sub { font-size:.8rem; color:var(--text-3); margin-top:2px; }
+    .live-badge { display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.62rem; color:#0F6E56; background:#E1F5EE; border:1px solid rgba(15,110,86,.2); border-radius:100px; padding:5px 12px; }
+    .live-dot { width:6px; height:6px; border-radius:50%; background:#1D9E75; animation:pulse 2s infinite; }
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+    /* Breadcrumb */
+    .breadcrumb { display:flex; align-items:center; gap:8px; font-size:.78rem; color:var(--text-3); margin-bottom:20px; }
+    .breadcrumb a { color:var(--teal); text-decoration:none; }
+    .breadcrumb a:hover { text-decoration:underline; }
+    .breadcrumb-sep { color:var(--gray-2); }
+
+    /* KPI strip */
+    .kpi-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:20px; }
+    .kpi { background:white; border:1px solid #E2E6ED; border-radius:12px; padding:14px 16px; cursor:pointer; transition:all .15s; position:relative; overflow:hidden; }
+    .kpi::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:3px 3px 0 0; }
+    .kpi:hover { box-shadow:0 2px 8px rgba(0,0,0,.06); }
+    .kpi.active { border-color:var(--navy); }
+    .kpi-total::after   { background:var(--navy); }
+    .kpi-review::after  { background:#854F0B; }
+    .kpi-approved::after{ background:#3B6D11; }
+    .kpi-denied::after  { background:#A32D2D; }
+    .kpi-moreinfo::after{ background:#534AB7; }
+    .kpi-appealed::after{ background:#72243E; }
+    .kpi-expired::after { background:#6B7685; }
+    .kpi-label { font-family:var(--mono); font-size:.58rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.1em; margin-bottom:6px; }
+    .kpi-val { font-family:var(--serif); font-size:1.6rem; line-height:1; }
+    .kpi-delta { font-size:.7rem; color:var(--text-3); margin-top:4px; }
+    .kpi-bar { height:3px; background:#E2E6ED; border-radius:2px; margin-top:8px; overflow:hidden; }
+    .kpi-fill { height:3px; border-radius:2px; }
+
+    /* Turnaround banner */
+    .tat-banner { background:white; border:1px solid #E2E6ED; border-radius:12px; padding:14px 20px; margin-bottom:16px; display:grid; grid-template-columns:repeat(5,1fr); gap:0; }
+    .tat-item { padding:0 16px; border-right:1px solid #E2E6ED; }
+    .tat-item:first-child { padding-left:0; }
+    .tat-item:last-child { border-right:none; }
+    .tat-label { font-size:.62rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.08em; font-family:var(--mono); margin-bottom:4px; }
+    .tat-val { font-size:1.1rem; font-weight:600; color:var(--navy); }
+    .tat-sub { font-size:.68rem; color:var(--text-3); margin-top:2px; }
+
+    /* Main layout */
+    .dash-cols { display:grid; grid-template-columns:1fr 300px; gap:14px; align-items:start; }
+
+    /* PA table */
+    .panel { background:white; border:1px solid #E2E6ED; border-radius:12px; overflow:hidden; }
+    .panel-head { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid #E2E6ED; }
+    .panel-title { font-weight:600; font-size:.875rem; color:var(--navy); }
+    .filter-tabs { display:flex; gap:4px; flex-wrap:wrap; }
+    .ftab { font-size:.72rem; padding:4px 10px; border:1px solid #E2E6ED; border-radius:100px; background:transparent; color:var(--text-3); cursor:pointer; font-family:var(--sans); transition:all .12s; }
+    .ftab:hover { color:var(--navy); border-color:#9BA8B6; }
+    .ftab.on { background:var(--navy); color:white; border-color:var(--navy); }
+
+    table { width:100%; border-collapse:collapse; font-size:.8rem; }
+    thead th { padding:9px 14px; text-align:left; font-size:.6rem; font-weight:600; color:var(--text-3); text-transform:uppercase; letter-spacing:.06em; background:#F7F8FA; border-bottom:1px solid #E2E6ED; white-space:nowrap; }
+    tbody tr { border-bottom:1px solid #F0F2F5; cursor:pointer; transition:background .1s; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:#F7F8FA; }
+    tbody tr.selected { background:#EEF3FF; }
+    tbody td { padding:9px 14px; color:var(--text); vertical-align:middle; }
+    .pa-id { font-family:var(--mono); font-size:.68rem; color:var(--text-3); }
+    .urgency-high { color:#A32D2D; font-weight:600; font-size:.72rem; }
+    .urgency-std { color:var(--text-3); font-size:.72rem; }
+
+    /* Status badges */
+    .badge { display:inline-flex; align-items:center; gap:4px; font-size:.68rem; font-weight:600; padding:3px 8px; border-radius:100px; white-space:nowrap; }
+    .b-received  { background:#F0F2F5; color:#1A2B3C; border:1px solid #D0D7E1; }
+    .b-review    { background:#FAEEDA; color:#412402; border:1px solid #FAC775; }
+    .b-approved  { background:#EAF3DE; color:#27500A; border:1px solid #C0DD97; }
+    .b-denied    { background:#FCEBEB; color:#501313; border:1px solid #F7C1C1; }
+    .b-moreinfo  { background:#EEEDFE; color:#26215C; border:1px solid #CECBF6; }
+    .b-appealed  { background:#FBEAF0; color:#4B1528; border:1px solid #F4C0D1; }
+    .b-expired   { background:#F0F2F5; color:#6B7685; border:1px solid #D0D7E1; }
+    .b-cancelled { background:#F0F2F5; color:#6B7685; border:1px solid #D0D7E1; }
+
+    /* Drawer */
+    .drawer { background:white; border:1px solid #E2E6ED; border-radius:12px; margin-top:12px; display:none; }
+    .drawer.open { display:block; }
+    .drawer-head { padding:14px 20px; border-bottom:1px solid #E2E6ED; display:flex; justify-content:space-between; align-items:flex-start; }
+    .drawer-close { background:none; border:none; font-size:18px; color:var(--text-3); cursor:pointer; border-radius:4px; padding:2px 6px; }
+    .drawer-close:hover { background:#F0F2F5; }
+    .drawer-body { padding:16px 20px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .detail-section { }
+    .detail-label { font-family:var(--mono); font-size:.6rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; }
+    .detail-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #F0F2F5; font-size:.8rem; }
+    .detail-row:last-child { border-bottom:none; }
+    .detail-key { color:var(--text-3); }
+    .detail-val { font-weight:500; color:var(--navy); text-align:right; max-width:60%; }
+    .timeline { display:flex; flex-direction:column; gap:0; }
+    .tl-item { display:flex; gap:12px; align-items:flex-start; }
+    .tl-dot-wrap { display:flex; flex-direction:column; align-items:center; }
+    .tl-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:3px; }
+    .tl-line { width:2px; flex:1; background:#E2E6ED; margin:4px 0; min-height:20px; }
+    .tl-content { padding-bottom:16px; }
+    .tl-status { font-size:.8rem; font-weight:600; color:var(--navy); }
+    .tl-date { font-size:.7rem; color:var(--text-3); margin-top:2px; }
+    .tl-note { font-size:.75rem; color:var(--text-2); margin-top:3px; line-height:1.4; }
+    .action-box { background:#F7F8FA; border-radius:8px; padding:12px 14px; margin-top:12px; }
+    .action-label { font-size:.68rem; font-weight:600; color:var(--navy); margin-bottom:6px; text-transform:uppercase; letter-spacing:.06em; }
+    .action-text { font-size:.78rem; color:var(--text-2); line-height:1.6; }
+
+    /* Right column */
+    .right-col { display:flex; flex-direction:column; gap:12px; }
+    .bucket { background:white; border:1px solid #E2E6ED; border-radius:12px; overflow:hidden; }
+    .bucket-head { padding:12px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #F0F2F5; }
+    .bucket-icon { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; }
+    .bucket-title { font-weight:600; font-size:.82rem; color:var(--navy); }
+    .bucket-sub { font-size:.7rem; color:var(--text-3); margin-top:1px; }
+    .bucket-body { padding:10px 16px; }
+    .brow { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #F0F2F5; font-size:.78rem; }
+    .brow:last-child { border-bottom:none; }
+    .brow-label { color:var(--text-3); }
+    .brow-val { font-weight:600; color:var(--navy); }
+    .bbar { height:4px; background:#F0F2F5; border-radius:2px; margin-top:8px; }
+    .bbar-fill { height:4px; border-radius:2px; }
+
+    /* PI link banner */
+    .pi-link { background:var(--navy); border-radius:12px; padding:16px 20px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
+    .pi-link-text { color:rgba(255,255,255,.7); font-size:.82rem; }
+    .pi-link-val { color:#6FD0D8; font-size:1.4rem; font-weight:700; font-family:var(--serif); }
+    .pi-link-label { color:rgba(255,255,255,.5); font-size:.65rem; margin-top:2px; }
+
+    @keyframes flash { 0%{background:#E1F5EE} 100%{background:transparent} }
+    .new-row { animation:flash 1.5s ease-out; }
+
+    @media(max-width:1024px){
+      .kpi-grid{grid-template-columns:repeat(4,1fr)}
+      .dash-cols{grid-template-columns:1fr}
+      .tat-banner{grid-template-columns:repeat(3,1fr)}
+      .drawer-body{grid-template-columns:1fr}
+    }
+    @media(max-width:768px){
+      .dash-wrap{padding:88px 16px 40px}
+      .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg>
+      </div>
+      <span class="logo-name">FHIRFabric</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="platform.html">Platform</a></li>
+      <li><a href="payment-integrity.html">Payment Integrity</a></li>
+      <li><a href="dashboard.html">PI Dashboard</a></li>
+      <li><a href="pa-dashboard.html" class="active">PA Dashboard</a></li>
+      <li><a href="compliance.html">Compliance</a></li>
+      <li><a href="experience.html">Experience</a></li>
+      <li><a href="contact.html" class="nav-cta">Request a Briefing</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="dash-wrap">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="dashboard.html"><i class="ti ti-shield-check" aria-hidden="true"></i> PI Dashboard</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Prior Authorization</span>
+  </div>
+
+  <!-- Header -->
+  <div class="dash-header">
+    <div>
+      <div class="dash-title">Prior Authorization Dashboard</div>
+      <div class="dash-sub">Today, July 18 2026 · All plans · Real-time</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="live-badge"><div class="live-dot"></div>Live</div>
+      <button class="dash-btn" onclick="addPA()" style="font-size:.8rem;padding:7px 14px;border:1px solid #D0D7E1;border-radius:8px;background:white;cursor:pointer;font-family:var(--sans);font-weight:500;color:var(--navy);">
+        <i class="ti ti-plus" aria-hidden="true"></i> New PA request
+      </button>
+      <button onclick="window.location='contact.html'" style="font-size:.8rem;padding:7px 14px;border:1px solid var(--navy);border-radius:8px;background:var(--navy);cursor:pointer;font-family:var(--sans);font-weight:500;color:white;">Request demo</button>
+    </div>
+  </div>
+
+  <!-- PI link banner -->
+  <div class="pi-link">
+    <div>
+      <div class="pi-link-text">Claims in PI pipeline flagged — no PA on file</div>
+      <div class="pi-link-label">From PI Dashboard · Stage 7 findings</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="pi-link-val" id="pi-flag-count">3</div>
+      <div class="pi-link-label">claims pending auth</div>
+    </div>
+    <a href="dashboard.html" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);font-size:.78rem;padding:8px 16px;border-radius:8px;text-decoration:none;white-space:nowrap;font-weight:500;">
+      View in PI Dashboard <span style="margin-left:4px;">→</span>
+    </a>
+  </div>
+
+  <!-- KPI strip -->
+  <div class="kpi-grid">
+    <div class="kpi kpi-total active" onclick="filterPA('all',this)">
+      <div class="kpi-label">Total received</div>
+      <div class="kpi-val" id="k-total" style="color:var(--navy);">0</div>
+      <div class="kpi-delta">All time today</div>
+      <div class="kpi-bar"><div class="kpi-fill" id="kf-total" style="background:var(--navy);width:100%"></div></div>
+    </div>
+    <div class="kpi kpi-review" onclick="filterPA('review',this)">
+      <div class="kpi-label">In review</div>
+      <div class="kpi-val" id="k-review" style="color:#854F0B;">0</div>
+      <div class="kpi-delta">Clinical review</div>
+      <div class="kpi-bar"><div class="kpi-fill" id="kf-review" style="background:#EF9F27;width:0%"></div></div>
+    </div>
+    <div class="kpi kpi-approved" onclick="filterPA('approved',this)">
+      <div class="kpi-label">Approved</div>
+      <div class="kpi-val" id="k-approved" style="color:#3B6D11;">0</div>
+      <div class="kpi-delta" id="kd-approved">—</div>
+      <div class="kpi-bar"><div class="kpi-fill" id="kf-approved" style="background:#3B6D11;width:0%"></div></div>
+    </div>
+    <div class="kpi kpi-denied" onclick="filterPA('denied',this)">
+      <div class="kpi-label">Denied</div>
+      <div class="kpi-val" id="k-denied" style="color:#A32D2D;">0</div>
+      <div class="kpi-delta" id="kd-denied">—</div>
+      <div class="kpi-bar"><div class="kpi-fill" id="kf-denied" style="background:#A32D2D;width:0%"></div></div>
+    </div>
+    <div class="kpi kpi-moreinfo" onclick="filterPA('moreinfo',this)">
+      <div class="kpi-label">More info needed</div>
+      <div class="kpi-val" id="k-moreinfo" style="color:#534AB7;">0</div>
+      <div class="kpi-delta">Pending provider docs</div>
+      <div class="kpi-bar"><div class="kpi-fill" id="kf-moreinfo" style="background:#534AB7;width:0%"></div></div>
+    </div>
+    <div class="kpi kpi-appealed" onclick="filterPA('appealed',this)">
+      <div class="kpi-label">Appealed</div>
+      <div class="kpi-val" id="k-appealed" style="color:#72243E;">0</div>
+      <div class="kpi-delta">Under appeal review</div>
+      <div class="kpi-bar"><div class="kpi-fill" id="kf-appealed" style="background:#D4537E;width:0%"></div></div>
+    </div>
+    <div class="kpi kpi-expired" onclick="filterPA('expired',this)">
+      <div class="kpi-label">Expired / cancelled</div>
+      <div class="kpi-val" id="k-expired" style="color:#6B7685;">0</div>
+      <div class="kpi-delta">Auth not used</div>
+      <div class="kpi-bar"><div class="kpi-fill" id="kf-expired" style="background:#9BA8B6;width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- TAT banner -->
+  <div class="tat-banner">
+    <div class="tat-item">
+      <div class="tat-label">Avg turnaround</div>
+      <div class="tat-val">2.4 <span style="font-size:.75rem;font-weight:400;color:var(--text-3);">days</span></div>
+      <div class="tat-sub">All PA types</div>
+    </div>
+    <div class="tat-item">
+      <div class="tat-label">Urgent TAT</div>
+      <div class="tat-val">4.2 <span style="font-size:.75rem;font-weight:400;color:var(--text-3);">hrs</span></div>
+      <div class="tat-sub">Expedited requests</div>
+    </div>
+    <div class="tat-item">
+      <div class="tat-label">Auto-approved</div>
+      <div class="tat-val" id="tat-auto">0<span style="font-size:.75rem;font-weight:400;color:var(--text-3);">%</span></div>
+      <div class="tat-sub">No clinical review needed</div>
+    </div>
+    <div class="tat-item">
+      <div class="tat-label">Approval rate</div>
+      <div class="tat-val" id="tat-apprate">0<span style="font-size:.75rem;font-weight:400;color:var(--text-3);">%</span></div>
+      <div class="tat-sub">Of processed requests</div>
+    </div>
+    <div class="tat-item">
+      <div class="tat-label">CMS §1557 compliance</div>
+      <div class="tat-val" style="color:#3B6D11;">✓</div>
+      <div class="tat-sub">72hr / 24hr urgent met</div>
+    </div>
+  </div>
+
+  <!-- Main two-column -->
+  <div class="dash-cols">
+
+    <!-- Left: table + drawer -->
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">PA Requests</span>
+          <div class="filter-tabs">
+            <button class="ftab on" onclick="filterPA('all',null,this)">All</button>
+            <button class="ftab" onclick="filterPA('review',null,this)">In Review</button>
+            <button class="ftab" onclick="filterPA('approved',null,this)">Approved</button>
+            <button class="ftab" onclick="filterPA('denied',null,this)">Denied</button>
+            <button class="ftab" onclick="filterPA('moreinfo',null,this)">More Info</button>
+            <button class="ftab" onclick="filterPA('appealed',null,this)">Appealed</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>PA ID</th>
+              <th>Member</th>
+              <th>Provider</th>
+              <th>CPT / Service</th>
+              <th>Submitted</th>
+              <th>Days open</th>
+              <th>Urgency</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="pa-tbody"></tbody>
+        </table>
+        <div id="empty-msg" style="display:none;padding:32px;text-align:center;color:var(--text-3);font-size:.875rem;">No requests match this filter</div>
+      </div>
+
+      <!-- Detail drawer -->
+      <div class="drawer" id="drawer">
+        <div class="drawer-head">
+          <div>
+            <div style="font-weight:600;font-size:.9rem;color:var(--navy);" id="d-title">PA detail</div>
+            <div style="font-size:.75rem;color:var(--text-3);margin-top:2px;" id="d-sub"></div>
+          </div>
+          <button class="drawer-close" onclick="closeDrawer()">×</button>
+        </div>
+        <div class="drawer-body">
+          <!-- Left: details -->
+          <div>
+            <div class="detail-label">Request details</div>
+            <div id="d-details"></div>
+            <div class="action-box" id="d-action" style="margin-top:12px;"></div>
+          </div>
+          <!-- Right: timeline -->
+          <div>
+            <div class="detail-label">Status timeline</div>
+            <div class="timeline" id="d-timeline"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="right-col">
+
+      <!-- Top denial reasons -->
+      <div class="bucket">
+        <div class="bucket-head" style="background:#FCEBEB;">
+          <div class="bucket-icon" style="background:#A32D2D;color:white;"><i class="ti ti-circle-x" aria-hidden="true"></i></div>
+          <div>
+            <div class="bucket-title">Top denial reasons</div>
+            <div class="bucket-sub">Why PAs were denied</div>
+          </div>
+        </div>
+        <div class="bucket-body" id="b-denial"></div>
+      </div>
+
+      <!-- By procedure category -->
+      <div class="bucket">
+        <div class="bucket-head" style="background:#E1F5EE;">
+          <div class="bucket-icon" style="background:#0F6E56;color:white;"><i class="ti ti-stethoscope" aria-hidden="true"></i></div>
+          <div>
+            <div class="bucket-title">By procedure category</div>
+            <div class="bucket-sub">Volume by service type</div>
+          </div>
+        </div>
+        <div class="bucket-body" id="b-category"></div>
+      </div>
+
+      <!-- More info needed -->
+      <div class="bucket">
+        <div class="bucket-head" style="background:#EEEDFE;">
+          <div class="bucket-icon" style="background:#534AB7;color:white;"><i class="ti ti-file-text" aria-hidden="true"></i></div>
+          <div>
+            <div class="bucket-title">More info needed</div>
+            <div class="bucket-sub">What providers owe us</div>
+          </div>
+        </div>
+        <div class="bucket-body" id="b-moreinfo-detail"></div>
+      </div>
+
+      <!-- CMS compliance -->
+      <div class="bucket">
+        <div class="bucket-head" style="background:#FAEEDA;">
+          <div class="bucket-icon" style="background:#854F0B;color:white;"><i class="ti ti-certificate" aria-hidden="true"></i></div>
+          <div>
+            <div class="bucket-title">CMS PA compliance</div>
+            <div class="bucket-sub">§1557 turnaround requirements</div>
+          </div>
+        </div>
+        <div class="bucket-body">
+          <div class="brow"><span class="brow-label">Standard (72hr) — met</span><span class="brow-val" style="color:#3B6D11;" id="cms-std">—</span></div>
+          <div class="brow"><span class="brow-label">Urgent (24hr) — met</span><span class="brow-val" style="color:#3B6D11;" id="cms-urg">—</span></div>
+          <div class="brow"><span class="brow-label">Overdue</span><span class="brow-val" style="color:#A32D2D;" id="cms-over">—</span></div>
+          <div class="brow"><span class="brow-label">278 transactions today</span><span class="brow-val" id="cms-278">—</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom banner -->
+  <div style="background:var(--navy);border-radius:12px;padding:24px 28px;margin-top:20px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;">
+    <div>
+      <div style="font-family:var(--mono);font-size:.62rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Plug and play</div>
+      <div style="font-size:1.1rem;font-weight:600;color:white;margin-bottom:6px;">PA decisions feed directly into the PI pipeline.</div>
+      <div style="font-size:.82rem;color:rgba(255,255,255,.6);line-height:1.65;">When a PA is approved here, Stage 7 of the payment integrity pipeline automatically clears the prior auth flag on any matching claim. No manual reconciliation. No separate system check.</div>
+    </div>
+    <a href="payment-integrity.html" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);font-size:.78rem;padding:10px 18px;border-radius:8px;text-decoration:none;white-space:nowrap;font-weight:500;">View PI pipeline →</a>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div>
+        <span class="logo-name">FHIRFabric</span>
+      </a>
+      <p>FHIR-native interoperability, pre-payment integrity, and prior authorization — one platform.</p>
+      <p class="footer-parent">A <a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix</a> company</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col"><h4>Dashboards</h4><ul><li><a href="dashboard.html">PI Dashboard</a></li><li><a href="pa-dashboard.html">PA Dashboard</a></li></ul></div>
+      <div class="footer-col"><h4>Platform</h4><ul><li><a href="platform.html">Interoperability</a></li><li><a href="payment-integrity.html">Payment Integrity</a></li><li><a href="compliance.html">Compliance</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 FHIRFabric · A MyAtrix Company · Downers Grove, IL</span>
+    <span>support@fhirfabric.com</span>
+  </div>
+</footer>
+
+<script>
+const PA_DATA = [
+  { id:'PA-2024-00101', member:'MBR-2024-88821', provider:'Riverside Orthopaedics', cpt:'27447', service:'Total knee arthroplasty', submitted:'Jul 18', daysOpen:0, urgency:'urgent', status:'review',
+    icd10:'M17.11', plan:'BCBSA-PPO-GOLD', authRequired:true,
+    details:{ 'Requesting provider':'Riverside Orthopaedics NPI 1234567890', 'Rendering provider':'Dr. James Mills MD', 'Service requested':'CPT 27447 — Total knee arthroplasty', 'Diagnosis':'M17.11 — Primary osteoarthritis, right knee', 'Units requested':'1', 'Facility':'Riverside Medical Center', 'Requested dates':'Jul 22–24, 2026', 'Clinical basis':'Severe osteoarthritis, failed conservative therapy 6 months' },
+    timeline:[
+      {status:'Received',date:'Jul 18, 9:04 AM',note:'278 transaction received from Riverside Orthopaedics',color:'#6B7685'},
+      {status:'In Review',date:'Jul 18, 9:06 AM',note:'Routed to clinical review — CPT 27447 requires InterQual criteria',color:'#854F0B'},
+    ],
+    action:'Urgent PA — CMS 24hr turnaround required by Jul 19, 9:06 AM. Clinical reviewer to apply InterQual criteria for total knee arthroplasty. Request operative plan and recent X-rays from provider.',
+    denialReason:null, category:'Orthopaedic Surgery' },
+
+  { id:'PA-2024-00102', member:'MBR-2024-55102', provider:'Clearwater Primary Care', cpt:'99213', service:'Office visit E&M', submitted:'Jul 17', daysOpen:1, urgency:'standard', status:'approved',
+    icd10:'I10', plan:'BCBSA-HMO-SILVER', authRequired:false,
+    details:{ 'Requesting provider':'Clearwater Primary Care NPI 9876543210', 'Rendering provider':'Dr. Sarah Chen MD', 'Service requested':'CPT 99213 — Office visit, established patient', 'Diagnosis':'I10 — Essential hypertension', 'Units requested':'1', 'Facility':'POS 11 — Office', 'Requested dates':'Jul 20, 2026', 'Auth decision':'Auto-approved — E&M not on PA-required list for HMO Silver' },
+    timeline:[
+      {status:'Received',date:'Jul 17, 2:15 PM',note:'278 transaction received',color:'#6B7685'},
+      {status:'Auto-approved',date:'Jul 17, 2:15 PM',note:'CPT 99213 not on PA-required list for BCBSA-HMO-SILVER plan. Auto-approved at receipt.',color:'#3B6D11'},
+    ],
+    action:'Auth number FF-2024-00102 issued. Valid Jul 20–Jul 20, 2026. Transmitted to provider via 278 response.',
+    denialReason:null, category:'Primary Care' },
+
+  { id:'PA-2024-00103', member:'MBR-2024-71103', provider:'Metro Cardiology Group', cpt:'93306', service:'Echocardiography', submitted:'Jul 16', daysOpen:2, urgency:'standard', status:'moreinfo',
+    icd10:'I50.9', plan:'BCBSA-PPO-GOLD', authRequired:true,
+    details:{ 'Requesting provider':'Metro Cardiology Group NPI 2233445566', 'Rendering provider':'Dr. Robert Kim MD FACC', 'Service requested':'CPT 93306 — Echocardiography with Doppler', 'Diagnosis':'I50.9 — Heart failure, unspecified', 'Units requested':'1', 'Facility':'Metro Cardiology Group Outpatient Lab', 'Requested dates':'Jul 22, 2026', 'Missing documentation':'Clinical notes supporting medical necessity, recent EKG, LVEF measurement' },
+    timeline:[
+      {status:'Received',date:'Jul 16, 11:30 AM',note:'278 transaction received',color:'#6B7685'},
+      {status:'In Review',date:'Jul 16, 11:32 AM',note:'Routed to clinical review — echocardiography requires LCD L33822 criteria',color:'#854F0B'},
+      {status:'More info needed',date:'Jul 16, 3:45 PM',note:'Clinical reviewer requested: LVEF documentation, recent EKG, and clinical notes supporting heart failure severity',color:'#534AB7'},
+    ],
+    action:'Waiting on provider response since Jul 16. Standard PA clock paused pending documentation. Provider has until Jul 23 to submit. Request: (1) LVEF measurement from most recent echo or cath, (2) EKG within 90 days, (3) clinical notes documenting HF class.',
+    denialReason:null, category:'Cardiology' },
+
+  { id:'PA-2024-00104', member:'MBR-2024-33291', provider:'Northside Gastro LLC', cpt:'43239', service:'Upper GI endoscopy with biopsy', submitted:'Jul 15', daysOpen:3, urgency:'standard', status:'denied',
+    icd10:'K21.0', plan:'BCBSA-HMO-SILVER', authRequired:true,
+    details:{ 'Requesting provider':'Northside Gastro LLC NPI 3344556677', 'Rendering provider':'Dr. Priya Patel MD', 'Service requested':'CPT 43239 — EGD with biopsy', 'Diagnosis':'K21.0 — GERD with esophagitis', 'Units requested':'1', 'Facility':'Northside Endoscopy Center ASC', 'Requested dates':'Jul 21, 2026', 'Denial reason':'Medical necessity not established — GERD with esophagitis does not meet LCD L35062 criteria for diagnostic upper endoscopy without documented failure of 8-week PPI trial' },
+    timeline:[
+      {status:'Received',date:'Jul 15, 10:00 AM',note:'278 transaction received',color:'#6B7685'},
+      {status:'In Review',date:'Jul 15, 10:03 AM',note:'Routed to clinical review — LCD L35062 applies',color:'#854F0B'},
+      {status:'Denied',date:'Jul 17, 2:20 PM',note:'Medical necessity not established. LCD L35062 requires documented 8-week PPI trial failure prior to diagnostic upper endoscopy for GERD.',color:'#A32D2D'},
+    ],
+    action:'Denial issued Jul 17. Provider may appeal within 60 days with: (1) documentation of completed 8-week PPI trial, (2) symptom persistence records, (3) alternative diagnosis codes if Barrett\'s or malignancy suspected. Appeal contact: pi-appeals@fhirfabric.com',
+    denialReason:'Medical necessity not met — LCD L35062', category:'Gastroenterology' },
+
+  { id:'PA-2024-00105', member:'MBR-2024-19982', provider:'Midwest Spine Center', cpt:'22612', service:'Lumbar spinal fusion', submitted:'Jul 14', daysOpen:4, urgency:'standard', status:'appealed',
+    icd10:'M51.16', plan:'BCBSA-PPO-GOLD', authRequired:true,
+    details:{ 'Requesting provider':'Midwest Spine Center NPI 4455667788', 'Rendering provider':'Dr. David Lee MD FACS', 'Service requested':'CPT 22612 — Lumbar fusion, posterior technique', 'Diagnosis':'M51.16 — Intervertebral disc degeneration, lumbar', 'Units requested':'1', 'Facility':'Midwest Medical Center OR', 'Requested dates':'Aug 5, 2026', 'Appeal basis':'Provider submitted additional documentation including failed conservative therapy records, MRI showing Grade III degeneration, and functional impairment scale' },
+    timeline:[
+      {status:'Received',date:'Jul 14, 9:00 AM',note:'278 transaction received',color:'#6B7685'},
+      {status:'In Review',date:'Jul 14, 9:05 AM',note:'Routed to clinical review — spinal fusion requires InterQual criteria',color:'#854F0B'},
+      {status:'Denied',date:'Jul 15, 4:30 PM',note:'Conservative therapy duration insufficient — InterQual requires 6 weeks PT documentation',color:'#A32D2D'},
+      {status:'Appealed',date:'Jul 17, 11:00 AM',note:'Provider submitted appeal with 8-week PT records, MRI report, and functional impairment scale documentation',color:'#72243E'},
+    ],
+    action:'Appeal under physician advisor review. Additional documentation received July 17: 8-week PT records, MRI lumbar spine showing Grade III degeneration at L4-L5, Oswestry Disability Index score 62%. Physician advisor to issue determination within 72 hours per CMS §1557.',
+    denialReason:'Conservative therapy duration insufficient', category:'Spine Surgery' },
+
+  { id:'PA-2024-00106', member:'MBR-2024-55899', provider:'Midwest Heart & Vascular', cpt:'93458', service:'Left heart catheterization', submitted:'Jul 13', daysOpen:5, urgency:'urgent', status:'approved',
+    icd10:'I25.10', plan:'BCBSA-PPO-GOLD', authRequired:true,
+    details:{ 'Requesting provider':'Midwest Heart & Vascular NPI 2233445566', 'Rendering provider':'Dr. Angela Torres MD FACC', 'Service requested':'CPT 93458 — Left heart cath with coronary angiography', 'Diagnosis':'I25.10 — Atherosclerotic heart disease', 'Units requested':'1', 'Facility':'Midwest Heart & Vascular Cath Lab', 'Auth number':'FF-2024-00106', 'Valid dates':'Jul 13–Aug 13, 2026' },
+    timeline:[
+      {status:'Received',date:'Jul 13, 7:45 AM',note:'Urgent 278 received — patient admitted with chest pain',color:'#6B7685'},
+      {status:'In Review',date:'Jul 13, 7:47 AM',note:'Expedited review initiated — urgent clinical presentation',color:'#854F0B'},
+      {status:'Approved',date:'Jul 13, 11:30 AM',note:'Approved — 3.75 hours TAT. ICD I25.10 with acute chest pain meets InterQual criteria for left heart catheterization.',color:'#3B6D11'},
+    ],
+    action:'Auth FF-2024-00106 active. Valid Jul 13–Aug 13, 2026. Procedure completed Jul 14. Claim CLM-2024-00292 received and passed Stage 7 PA validation.',
+    denialReason:null, category:'Cardiology' },
+];
+
+let allPA=[...PA_DATA], filteredPA=[...PA_DATA], selectedPA=null, paCounter=107;
+
+function badge(d){
+  const map={
+    received:'<span class="badge b-received"><i class="ti ti-inbox" aria-hidden="true"></i> Received</span>',
+    review:'<span class="badge b-review"><i class="ti ti-clock" aria-hidden="true"></i> In Review</span>',
+    approved:'<span class="badge b-approved"><i class="ti ti-circle-check" aria-hidden="true"></i> Approved</span>',
+    denied:'<span class="badge b-denied"><i class="ti ti-circle-x" aria-hidden="true"></i> Denied</span>',
+    moreinfo:'<span class="badge b-moreinfo"><i class="ti ti-file-text" aria-hidden="true"></i> More Info Needed</span>',
+    appealed:'<span class="badge b-appealed"><i class="ti ti-gavel" aria-hidden="true"></i> Appealed</span>',
+    expired:'<span class="badge b-expired"><i class="ti ti-calendar-x" aria-hidden="true"></i> Expired</span>',
+    cancelled:'<span class="badge b-cancelled"><i class="ti ti-x" aria-hidden="true"></i> Cancelled</span>',
+  };
+  return map[d.status]||'';
+}
+
+function renderTable(){
+  const tbody=document.getElementById('pa-tbody');
+  const empty=document.getElementById('empty-msg');
+  if(!filteredPA.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  tbody.innerHTML=filteredPA.map(d=>`
+    <tr onclick="openDrawer('${d.id}')" class="${selectedPA===d.id?'selected':''}" id="row-${d.id}">
+      <td><span class="pa-id">${d.id}</span></td>
+      <td style="font-size:.78rem;">${d.member}</td>
+      <td style="font-size:.78rem;">${d.provider}</td>
+      <td><span style="font-family:var(--mono);font-size:.68rem;background:#F0F2F5;border-radius:4px;padding:1px 5px;">${d.cpt}</span> <span style="font-size:.75rem;color:var(--text-3);">${d.service}</span></td>
+      <td style="font-size:.78rem;color:var(--text-3);">${d.submitted}</td>
+      <td style="font-size:.78rem;${d.daysOpen>2?'color:#A32D2D;font-weight:600;':''}">${d.daysOpen}d</td>
+      <td><span class="${d.urgency==='urgent'?'urgency-high':'urgency-std'}">${d.urgency==='urgent'?'⚡ Urgent':'Standard'}</span></td>
+      <td>${badge(d)}</td>
+    </tr>`).join('');
+}
+
+function updateKPIs(){
+  const t=allPA.length;
+  const counts={review:0,approved:0,denied:0,moreinfo:0,appealed:0,expired:0};
+  allPA.forEach(d=>{ if(counts[d.status]!==undefined) counts[d.status]++; });
+  document.getElementById('k-total').textContent=t;
+  document.getElementById('k-review').textContent=counts.review;
+  document.getElementById('k-approved').textContent=counts.approved;
+  document.getElementById('kd-approved').textContent=t?Math.round(counts.approved/t*100)+'% approval rate':'—';
+  document.getElementById('kf-approved').style.width=(t?counts.approved/t*100:0)+'%';
+  document.getElementById('k-denied').textContent=counts.denied;
+  document.getElementById('kd-denied').textContent=t?Math.round(counts.denied/t*100)+'% denial rate':'—';
+  document.getElementById('kf-denied').style.width=(t?counts.denied/t*100:0)+'%';
+  document.getElementById('k-moreinfo').textContent=counts.moreinfo;
+  document.getElementById('kf-moreinfo').style.width=(t?counts.moreinfo/t*100:0)+'%';
+  document.getElementById('k-appealed').textContent=counts.appealed;
+  document.getElementById('kf-appealed').style.width=(t?counts.appealed/t*100:0)+'%';
+  document.getElementById('k-expired').textContent=counts.expired;
+  document.getElementById('kf-expired').style.width=(t?counts.expired/t*100:0)+'%';
+  document.getElementById('kf-review').style.width=(t?counts.review/t*100:0)+'%';
+  const appRate=t?Math.round(counts.approved/t*100):0;
+  document.getElementById('tat-apprate').innerHTML=appRate+'<span style="font-size:.75rem;font-weight:400;color:var(--text-3);">%</span>';
+  document.getElementById('tat-auto').innerHTML='33<span style="font-size:.75rem;font-weight:400;color:var(--text-3);">%</span>';
+  document.getElementById('cms-std').textContent=counts.approved+counts.denied+' / '+(counts.approved+counts.denied);
+  document.getElementById('cms-urg').textContent='2 / 2';
+  document.getElementById('cms-over').textContent='0';
+  document.getElementById('cms-278').textContent=t;
+
+  // Denial reasons
+  const reasons={};
+  allPA.filter(d=>d.denialReason).forEach(d=>{reasons[d.denialReason]=(reasons[d.denialReason]||0)+1;});
+  const db=document.getElementById('b-denial');
+  const re=Object.entries(reasons).sort((a,b)=>b[1]-a[1]);
+  db.innerHTML=re.length?re.map(([r,n])=>`<div class="brow"><span class="brow-label">${r}</span><span class="brow-val">${n}</span></div>`).join('')
+    :'<div style="font-size:.78rem;color:var(--text-3);padding:6px 0;">No denials yet</div>';
+
+  // By category
+  const cats={};
+  allPA.forEach(d=>{cats[d.category]=(cats[d.category]||0)+1;});
+  const catEntries=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const mx=Math.max(...catEntries.map(e=>e[1]));
+  document.getElementById('b-category').innerHTML=catEntries.map(([c,n])=>`
+    <div style="margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px;">
+        <span style="color:var(--text-3);">${c}</span>
+        <span style="font-weight:600;color:var(--navy);">${n}</span>
+      </div>
+      <div class="bbar"><div class="bbar-fill" style="background:var(--teal);width:${Math.round(n/mx*100)}%"></div></div>
+    </div>`).join('');
+
+  // More info needed detail
+  const mi=allPA.filter(d=>d.status==='moreinfo');
+  document.getElementById('b-moreinfo-detail').innerHTML=mi.length?mi.map(d=>`
+    <div class="brow" style="flex-direction:column;align-items:flex-start;gap:2px;">
+      <span style="font-family:var(--mono);font-size:.65rem;color:var(--text-3);">${d.id}</span>
+      <span style="font-size:.75rem;color:var(--navy);">${d.provider}</span>
+      <span style="font-size:.72rem;color:#534AB7;">${d.daysOpen}d waiting · ${d.cpt}</span>
+    </div>`).join('')
+    :'<div style="font-size:.78rem;color:var(--text-3);padding:6px 0;">No pending requests</div>';
+
+  // PI flag count
+  document.getElementById('pi-flag-count').textContent=allPA.filter(d=>d.status==='review'||d.status==='moreinfo').length;
+}
+
+function filterPA(type,kpiEl,btnEl){
+  document.querySelectorAll('.kpi').forEach(k=>k.classList.remove('active'));
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('on'));
+  if(kpiEl)kpiEl.classList.add('active');
+  if(btnEl)btnEl.classList.add('on');
+  filteredPA=type==='all'?[...allPA]:allPA.filter(d=>d.status===type);
+  closeDrawer();renderTable();
+}
+
+const dotColor={received:'#6B7685',review:'#EF9F27',approved:'#3B6D11',denied:'#A32D2D',moreinfo:'#534AB7',appealed:'#D4537E'};
+
+function openDrawer(id){
+  const d=allPA.find(p=>p.id===id); if(!d)return;
+  selectedPA=id;
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('d-title').textContent=d.id+' — '+d.service;
+  document.getElementById('d-sub').textContent=d.member+' · '+d.provider+' · CPT '+d.cpt;
+  document.getElementById('d-details').innerHTML=Object.entries(d.details).map(([k,v])=>`
+    <div class="detail-row"><span class="detail-key">${k}</span><span class="detail-val">${v}</span></div>`).join('');
+  document.getElementById('d-action').innerHTML=`
+    <div class="action-label">${d.status==='approved'?'Authorization issued':d.status==='denied'?'Denial notice':d.status==='moreinfo'?'Information requested':d.status==='appealed'?'Appeal in progress':'Next action'}</div>
+    <div class="action-text">${d.action}</div>`;
+  document.getElementById('d-timeline').innerHTML=d.timeline.map((t,i)=>`
+    <div class="tl-item">
+      <div class="tl-dot-wrap">
+        <div class="tl-dot" style="background:${t.color||'#6B7685'};"></div>
+        ${i<d.timeline.length-1?'<div class="tl-line"></div>':''}
+      </div>
+      <div class="tl-content">
+        <div class="tl-status">${t.status}</div>
+        <div class="tl-date">${t.date}</div>
+        <div class="tl-note">${t.note}</div>
+      </div>
+    </div>`).join('');
+  renderTable();
+}
+
+function closeDrawer(){selectedPA=null;document.getElementById('drawer').classList.remove('open');renderTable();}
+
+function addPA(){
+  const templates=[
+    {member:'MBR-2024-'+Math.floor(Math.random()*90000+10000),provider:'Northwestern Orthopedics',cpt:'23472',service:'Total shoulder arthroplasty',submitted:'Jul 18',daysOpen:0,urgency:'standard',status:'review',icd10:'M19.011',plan:'BCBSA-PPO-GOLD',authRequired:true,details:{'Service requested':'CPT 23472 — Total shoulder replacement','Diagnosis':'M19.011 — Primary OA right shoulder','Submitted':'Jul 18 via 278'},timeline:[{status:'Received',date:'Jul 18',note:'278 received — routed to clinical review',color:'#6B7685'},{status:'In Review',date:'Jul 18',note:'InterQual criteria apply for shoulder replacement',color:'#854F0B'}],action:'New request — clinical review pending.',denialReason:null,category:'Orthopaedic Surgery'},
+    {member:'MBR-2024-'+Math.floor(Math.random()*90000+10000),provider:'Chicago Eye Institute',cpt:'66984',service:'Cataract surgery',submitted:'Jul 18',daysOpen:0,urgency:'standard',status:'approved',icd10:'H26.009',plan:'BCBSA-HMO-SILVER',authRequired:true,details:{'Service requested':'CPT 66984 — Cataract removal with IOL','Diagnosis':'H26.009 — Unspecified cataract, both eyes','Auth issued':'FF-2024-00'+paCounter},timeline:[{status:'Received',date:'Jul 18',note:'278 received',color:'#6B7685'},{status:'Approved',date:'Jul 18',note:'ICD H26.009 meets criteria for cataract surgery. Auto-approved at receipt.',color:'#3B6D11'}],action:'Auth FF-2024-00'+paCounter+' issued. Valid 30 days.',denialReason:null,category:'Ophthalmology'},
+  ];
+  const t=templates[Math.floor(Math.random()*templates.length)];
+  const nc={...t,id:'PA-2024-00'+paCounter++,timeline:[...t.timeline],details:{...t.details}};
+  allPA.unshift(nc);filteredPA=[...allPA];
+  updateKPIs();renderTable();
+  setTimeout(()=>{
+    const row=document.getElementById('row-'+nc.id);
+    if(row)row.classList.add('new-row');
+    openDrawer(nc.id);
+  },100);
+}
+
+updateKPIs();renderTable();
+
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));
+document.getElementById('hamburger').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');this.classList.toggle('active');});
+</script>
+</body>
+</html>

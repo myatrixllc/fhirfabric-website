@@ -2,116 +2,160 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FHIRFabric — Workflow Intelligence Dashboard</title>
+  <title>FHIRFabric — Payment Integrity Workflow</title>
   <link rel="stylesheet" href="style.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
   <style>
-    body{background:#F0F2F5}
-    .wrap{max-width:1280px;margin:0 auto;padding:88px 32px 60px}
+    body{background:#F0F2F5;font-size:13px}
+    .wrap{max-width:1400px;margin:0 auto;padding:80px 24px 48px}
 
     /* Header */
-    .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-    .hdr-title{font-size:1.1rem;font-weight:600;color:var(--navy)}
-    .hdr-sub{font-size:.78rem;color:var(--text-3);margin-top:2px}
-    .live-badge{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.62rem;color:#0F6E56;background:#E1F5EE;border:1px solid rgba(15,110,86,.2);border-radius:100px;padding:5px 12px}
-    .ldot{width:6px;height:6px;border-radius:50%;background:#1D9E75;animation:pulse 2s infinite}
+    .hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .hdr-title{font-size:1rem;font-weight:600;color:var(--navy)}
+    .hdr-sub{font-size:.75rem;color:var(--text-3);margin-top:1px}
+    .live-badge{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.6rem;color:#0F6E56;background:#E1F5EE;border:1px solid rgba(15,110,86,.2);border-radius:100px;padding:4px 10px}
+    .ldot{width:5px;height:5px;border-radius:50%;background:#1D9E75;animation:pulse 2s infinite}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-    /* Date filter */
-    .date-strip{display:flex;gap:6px;margin-bottom:20px;align-items:center}
-    .dfilter{font-size:.75rem;padding:5px 14px;border:1px solid #D0D7E1;border-radius:100px;background:white;color:var(--text-3);cursor:pointer;font-family:var(--sans);transition:all .12s}
-    .dfilter.on{background:var(--navy);color:white;border-color:var(--navy)}
-    .dfilter:hover:not(.on){border-color:#9BA8B6;color:var(--navy)}
-
     /* Summary strip */
-    .summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
-    .sum-card{background:white;border:1px solid #E2E6ED;border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
-    .sum-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
+    .summary{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px}
+    .sc{background:white;border:1px solid #E2E6ED;border-radius:10px;padding:10px 12px;position:relative;overflow:hidden;cursor:pointer;transition:all .12s}
+    .sc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:2px 2px 0 0}
+    .sc.active{box-shadow:0 0 0 2px var(--navy)}
     .sc-total::after{background:var(--navy)}
-    .sc-approved::after{background:#3B6D11}
-    .sc-denied::after{background:#A32D2D}
-    .sc-pended::after{background:#854F0B}
+    .sc-pass::after{background:#3B6D11}
+    .sc-deny::after{background:#A32D2D}
+    .sc-pend::after{background:#854F0B}
+    .sc-fwa::after{background:#72243E}
+    .sc-siu::after{background:#534AB7}
     .sc-savings::after{background:#00838F}
-    .sum-label{font-family:var(--mono);font-size:.58rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
-    .sum-val{font-family:var(--serif);font-size:1.8rem;line-height:1}
-    .sum-sub{font-size:.7rem;color:var(--text-3);margin-top:4px}
+    .sc-label{font-family:var(--mono);font-size:.55rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+    .sc-val{font-family:var(--serif);font-size:1.5rem;line-height:1}
+    .sc-sub{font-size:.65rem;color:var(--text-3);margin-top:2px}
 
-    /* ── WORKFLOW FUNNEL ── */
-    .funnel-section{background:white;border:1px solid #E2E6ED;border-radius:14px;overflow:hidden;margin-bottom:16px}
-    .funnel-header{background:var(--navy);padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
-    .funnel-title{font-size:.9rem;font-weight:600;color:white}
-    .funnel-sub{font-size:.72rem;color:rgba(255,255,255,.5)}
-    .funnel-body{padding:20px}
+    /* Period filter */
+    .period-bar{display:flex;gap:4px;margin-bottom:16px;align-items:center}
+    .pf{font-size:.72rem;padding:4px 12px;border:1px solid #D0D7E1;border-radius:100px;background:white;color:var(--text-3);cursor:pointer;font-family:var(--sans);transition:all .12s}
+    .pf.on{background:var(--navy);color:white;border-color:var(--navy)}
 
-    /* Stage row */
-    .stage-row{display:grid;grid-template-columns:200px 1fr 180px;gap:0;align-items:stretch;border-bottom:1px solid #F0F2F5;cursor:pointer;transition:background .1s}
-    .stage-row:last-child{border-bottom:none}
-    .stage-row:hover{background:#F7F8FA}
-    .stage-row.active-row{background:#EEF3FF}
+    /* Main layout */
+    .main{display:grid;grid-template-columns:420px 1fr;gap:14px;align-items:start}
 
-    /* Stage label */
-    .stage-label{padding:14px 16px;display:flex;align-items:center;gap:10px;border-right:1px solid #F0F2F5}
-    .stage-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.7rem;font-weight:600;color:white;flex-shrink:0}
-    .stage-name{font-size:.8rem;font-weight:600;color:var(--navy)}
-    .stage-type{font-family:var(--mono);font-size:.55rem;color:var(--text-3);margin-top:2px}
+    /* ── TREE PANEL ── */
+    .tree-panel{background:white;border:1px solid #E2E6ED;border-radius:12px;overflow:hidden}
+    .tree-header{background:var(--navy);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+    .tree-header-title{font-size:.82rem;font-weight:600;color:white}
+    .tree-header-sub{font-size:.65rem;color:rgba(255,255,255,.45)}
+    .tree-body{padding:8px 0;max-height:calc(100vh - 280px);overflow-y:auto}
 
-    /* Bar area */
-    .stage-bars{padding:14px 16px;display:flex;flex-direction:column;gap:5px;justify-content:center}
-    .bar-row{display:flex;align-items:center;gap:8px}
-    .bar-label{font-size:.7rem;color:var(--text-3);width:80px;flex-shrink:0;text-align:right}
-    .bar-track{flex:1;height:18px;background:#F0F2F5;border-radius:4px;overflow:hidden;position:relative}
-    .bar-fill{height:100%;border-radius:4px;transition:width .6s;display:flex;align-items:center;padding-left:6px}
-    .bar-fill span{font-size:.65rem;font-weight:600;color:white;white-space:nowrap}
-    .bar-count{font-size:.72rem;font-weight:600;color:var(--navy);width:28px;text-align:right}
+    /* Intake node */
+    .intake-node{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#F7F8FA;border-bottom:2px solid #E2E6ED;cursor:default}
+    .intake-icon{width:28px;height:28px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:12px;color:white;flex-shrink:0}
+    .intake-label{font-weight:600;font-size:.82rem;color:var(--navy)}
+    .intake-sub{font-size:.68rem;color:var(--text-3)}
+    .intake-count{margin-left:auto;background:var(--navy);color:white;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:100px;font-family:var(--mono)}
 
-    /* Stage outcome */
-    .stage-outcome{padding:14px 16px;border-left:1px solid #F0F2F5;display:flex;flex-direction:column;gap:4px;justify-content:center}
-    .outcome-item{display:flex;align-items:center;justify-content:space-between;font-size:.72rem}
-    .outcome-label{color:var(--text-3)}
-    .outcome-val{font-weight:600}
+    /* Connector line from intake */
+    .connector{width:2px;height:12px;background:#D0D7E1;margin-left:27px}
 
-    /* Drop-off detail panel */
-    .detail-panel{background:#F7F8FA;border:1px solid #E2E6ED;border-radius:10px;margin-top:10px;padding:14px 16px;display:none}
-    .detail-panel.open{display:block}
-    .dp-title{font-size:.75rem;font-weight:600;color:var(--navy);margin-bottom:10px}
-    .dp-claims{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    .dp-claim{background:white;border:1px solid #E2E6ED;border-radius:8px;padding:10px 12px;border-left:3px solid transparent}
-    .dp-claim.err{border-left-color:#A32D2D}
-    .dp-claim.pend{border-left-color:#854F0B}
-    .dp-claim.siu{border-left-color:#534AB7}
-    .dp-claim-id{font-family:var(--mono);font-size:.65rem;color:var(--text-3);margin-bottom:3px}
-    .dp-claim-issue{font-size:.75rem;color:var(--navy);font-weight:500;margin-bottom:2px}
-    .dp-claim-rule{font-size:.68rem;color:var(--text-3)}
-    .dp-claim-badge{display:inline-flex;align-items:center;gap:3px;font-size:.6rem;font-weight:600;padding:2px 6px;border-radius:100px;margin-top:4px}
+    /* Stage node */
+    .stage-node{position:relative;padding:0 8px 0 12px}
+    .stage-node::before{content:'';position:absolute;left:26px;top:0;bottom:0;width:2px;background:#E2E6ED}
+    .stage-node:last-child::before{height:22px}
 
-    /* Right panel */
-    .main-cols{display:grid;grid-template-columns:1fr 280px;gap:14px;align-items:start}
-    .right-col{display:flex;flex-direction:column;gap:12px}
-    .panel{background:white;border:1px solid #E2E6ED;border-radius:12px;overflow:hidden}
-    .panel-head{padding:12px 16px;border-bottom:1px solid #F0F2F5;display:flex;align-items:center;gap:8px}
-    .panel-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
-    .panel-title{font-size:.82rem;font-weight:600;color:var(--navy)}
-    .panel-body{padding:10px 16px}
-    .prow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #F0F2F5;font-size:.78rem}
-    .prow:last-child{border-bottom:none}
-    .prow-label{color:var(--text-3)}
-    .prow-val{font-weight:600;color:var(--navy)}
-    .mini-bar{height:4px;background:#F0F2F5;border-radius:2px;margin-top:3px}
-    .mini-fill{height:4px;border-radius:2px}
+    .stage-header{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;transition:background .1s;position:relative}
+    .stage-header:hover{background:#F7F8FA}
+    .stage-header.selected{background:#EEF3FF}
 
-    @media(max-width:1024px){
-      .main-cols{grid-template-columns:1fr}
-      .summary{grid-template-columns:repeat(3,1fr)}
-      .dp-claims{grid-template-columns:1fr 1fr}
-      .stage-row{grid-template-columns:160px 1fr 140px}
-    }
-    @media(max-width:768px){
-      .wrap{padding:88px 16px 40px}
-      .summary{grid-template-columns:1fr 1fr}
-      .stage-row{grid-template-columns:1fr;border-bottom:2px solid #E2E6ED}
-      .stage-label,.stage-outcome{border:none}
-      .dp-claims{grid-template-columns:1fr}
-    }
+    /* Tree line connector */
+    .stage-header::before{content:'';position:absolute;left:-14px;top:50%;width:14px;height:2px;background:#D0D7E1}
+    .stage-header::after{content:'';position:absolute;left:-14px;top:0;width:2px;height:50%;background:#E2E6ED}
+
+    .stage-bullet{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.58rem;font-weight:700;color:white;flex-shrink:0;position:relative;z-index:1}
+    .stage-info{flex:1;min-width:0}
+    .stage-name{font-size:.78rem;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .stage-type-tag{font-size:.58rem;color:var(--text-3);margin-top:1px}
+
+    /* Status chips on each stage */
+    .stage-chips{display:flex;gap:3px;flex-shrink:0}
+    .chip{font-size:.58rem;font-weight:700;padding:2px 5px;border-radius:4px;font-family:var(--mono)}
+    .chip-pass{background:#EAF3DE;color:#3B6D11}
+    .chip-deny{background:#FCEBEB;color:#A32D2D}
+    .chip-pend{background:#FAEEDA;color:#854F0B}
+    .chip-fwa{background:#FBEAF0;color:#72243E}
+    .chip-ok{background:#F0F2F5;color:#6B7685}
+
+    /* Expand toggle */
+    .expand-btn{font-size:10px;color:var(--text-3);padding:2px 4px;flex-shrink:0;transition:transform .2s}
+    .expand-btn.open{transform:rotate(90deg)}
+
+    /* Sub-validation tree */
+    .sub-tree{display:none;padding-left:16px;border-left:2px solid #F0F2F5;margin-left:11px}
+    .sub-tree.open{display:block}
+    .sub-item{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;cursor:pointer;transition:background .1s;position:relative}
+    .sub-item::before{content:'';position:absolute;left:-16px;top:50%;width:16px;height:1px;background:#E2E6ED}
+    .sub-item:hover{background:#F7F8FA}
+    .sub-item.selected{background:#EEF3FF}
+    .sub-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .sub-name{font-size:.72rem;color:var(--text-2);flex:1}
+    .sub-chips{display:flex;gap:2px}
+
+    /* ── RIGHT: DETAIL + FLOW ── */
+    .right-panel{display:flex;flex-direction:column;gap:12px}
+
+    /* Flow diagram */
+    .flow-card{background:white;border:1px solid #E2E6ED;border-radius:12px;overflow:hidden}
+    .flow-header{padding:12px 16px;border-bottom:1px solid #F0F2F5;display:flex;align-items:center;gap:8px}
+    .flow-title{font-weight:600;font-size:.82rem;color:var(--navy)}
+    .flow-body{padding:16px}
+
+    /* Flow nodes */
+    .flow-diagram{display:flex;align-items:flex-start;gap:0}
+    .flow-col{display:flex;flex-direction:column;align-items:center;min-width:0}
+    .flow-arrow{display:flex;align-items:center;padding-top:20px;flex-shrink:0}
+    .flow-arrow svg{color:#D0D7E1}
+    .flow-box{border:1px solid #E2E6ED;border-radius:8px;padding:8px 10px;text-align:center;font-size:.7rem;width:100px;position:relative}
+    .flow-box.highlight{border-color:var(--teal);border-width:2px;background:#F2FBFC}
+    .flow-box.denied{border-color:#A32D2D;background:#FFF5F5}
+    .flow-box.pended{border-color:#854F0B;background:#FFFBF5}
+    .flow-box-title{font-weight:600;color:var(--navy);margin-bottom:3px}
+    .flow-box-sub{color:var(--text-3);font-size:.62rem}
+    .flow-decision{width:70px;height:70px;background:white;border:2px solid #D0D7E1;transform:rotate(45deg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .flow-decision-inner{transform:rotate(-45deg);text-align:center;font-size:.62rem;font-weight:600;color:var(--navy)}
+    .flow-branch{display:flex;flex-direction:column;gap:6px}
+    .flow-branch-item{display:flex;align-items:center;gap:6px}
+    .branch-label{font-size:.65rem;font-weight:600;padding:2px 6px;border-radius:4px}
+    .branch-yes{background:#EAF3DE;color:#3B6D11}
+    .branch-no{background:#FCEBEB;color:#A32D2D}
+
+    /* Claims in this stage */
+    .claims-card{background:white;border:1px solid #E2E6ED;border-radius:12px;overflow:hidden}
+    .claims-header{padding:12px 16px;border-bottom:1px solid #F0F2F5;display:flex;align-items:center;justify-content:space-between}
+    .claims-title{font-weight:600;font-size:.82rem;color:var(--navy)}
+    .claims-body{padding:0}
+    .claim-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid #F0F2F5;font-size:.75rem}
+    .claim-row:last-child{border-bottom:none}
+    .claim-id{font-family:var(--mono);font-size:.65rem;color:var(--text-3)}
+    .claim-issue{color:var(--navy)}
+    .claim-rule{font-size:.65rem;color:var(--text-3)}
+    .badge{display:inline-flex;align-items:center;gap:3px;font-size:.62rem;font-weight:600;padding:2px 6px;border-radius:100px;white-space:nowrap}
+    .b-pass{background:#EAF3DE;color:#27500A;border:1px solid #C0DD97}
+    .b-deny{background:#FCEBEB;color:#501313;border:1px solid #F7C1C1}
+    .b-pend{background:#FAEEDA;color:#412402;border:1px solid #FAC775}
+    .b-fwa{background:#FBEAF0;color:#4B1528;border:1px solid #F4C0D1}
+    .b-siu{background:#EEEDFE;color:#26215C;border:1px solid #CECBF6}
+
+    /* Sub-validation detail */
+    .sub-detail{background:#F7F8FA;border-radius:8px;padding:10px 12px;margin:8px 16px}
+    .sub-detail-title{font-size:.7rem;font-weight:600;color:var(--navy);margin-bottom:6px}
+    .sub-check{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:.7rem}
+    .sub-check-icon{font-size:10px;flex-shrink:0}
+
+    /* Empty state */
+    .empty-state{padding:32px;text-align:center;color:var(--text-3);font-size:.82rem}
+
+    @media(max-width:1100px){.main{grid-template-columns:1fr}.tree-body{max-height:400px}}
+    @media(max-width:768px){.summary{grid-template-columns:repeat(4,1fr)}.wrap{padding:80px 12px 32px}}
   </style>
 </head>
 <body>
@@ -134,7 +178,7 @@
       <li><a href="experience.html">Experience</a></li>
       <li><a href="contact.html" class="nav-cta">Request a Briefing</a></li>
     </ul>
-    <button class="hamburger" id="hamburger" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
   </div>
 </nav>
 
@@ -143,122 +187,71 @@
   <!-- Header -->
   <div class="hdr">
     <div>
-      <div class="hdr-title">Workflow Intelligence Dashboard</div>
-      <div class="hdr-sub">Where every claim is in the pipeline — and exactly why it stopped</div>
+      <div class="hdr-title">Payment Integrity Workflow</div>
+      <div class="hdr-sub">17-stage claim processing tree · Click any stage or sub-validation to see claims and data flow</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:8px;">
       <div class="live-badge"><div class="ldot"></div>Live</div>
-      <a href="dashboard.html" style="font-size:.78rem;padding:7px 14px;border:1px solid #D0D7E1;border-radius:8px;background:white;color:var(--navy);text-decoration:none;font-weight:500;">← PI Dashboard</a>
+      <a href="dashboard.html" style="font-size:.72rem;padding:6px 12px;border:1px solid #D0D7E1;border-radius:8px;background:white;color:var(--navy);text-decoration:none;font-weight:500;">← PI Dashboard</a>
     </div>
   </div>
 
-  <!-- Date filter -->
-  <div class="date-strip">
-    <span style="font-size:.75rem;color:var(--text-3);">Period:</span>
-    <button class="dfilter on" onclick="setPeriod('today',this)">Today</button>
-    <button class="dfilter" onclick="setPeriod('week',this)">This week</button>
-    <button class="dfilter" onclick="setPeriod('month',this)">This month</button>
-    <button class="dfilter" onclick="setPeriod('ytd',this)">YTD</button>
+  <!-- Period filter -->
+  <div class="period-bar">
+    <span style="font-size:.72rem;color:var(--text-3);">Period:</span>
+    <button class="pf on" onclick="setPeriod('today',this)">Today</button>
+    <button class="pf" onclick="setPeriod('week',this)">This week</button>
+    <button class="pf" onclick="setPeriod('month',this)">This month</button>
+    <button class="pf" onclick="setPeriod('ytd',this)">YTD</button>
   </div>
 
-  <!-- Summary strip -->
+  <!-- Summary KPIs -->
   <div class="summary">
-    <div class="sum-card sc-total">
-      <div class="sum-label">Received</div>
-      <div class="sum-val" id="s-total" style="color:var(--navy)">0</div>
-      <div class="sum-sub">Claims entered pipeline</div>
-    </div>
-    <div class="sum-card sc-approved">
-      <div class="sum-label">Approved</div>
-      <div class="sum-val" id="s-approved" style="color:#3B6D11">0</div>
-      <div class="sum-sub" id="s-approved-pct">—</div>
-    </div>
-    <div class="sum-card sc-denied">
-      <div class="sum-label">Denied</div>
-      <div class="sum-val" id="s-denied" style="color:#A32D2D">0</div>
-      <div class="sum-sub" id="s-denied-pct">—</div>
-    </div>
-    <div class="sum-card sc-pended">
-      <div class="sum-label">Pended</div>
-      <div class="sum-val" id="s-pended" style="color:#854F0B">0</div>
-      <div class="sum-sub">Awaiting review</div>
-    </div>
-    <div class="sum-card sc-savings">
-      <div class="sum-label">Est. savings</div>
-      <div class="sum-val" id="s-savings" style="color:#00838F">$0</div>
-      <div class="sum-sub">Pre-payment</div>
-    </div>
+    <div class="sc sc-total"><div class="sc-label">Received</div><div class="sc-val" id="s-total" style="color:var(--navy)">0</div><div class="sc-sub">Entered pipeline</div></div>
+    <div class="sc sc-pass"><div class="sc-label">Approved</div><div class="sc-val" id="s-pass" style="color:#3B6D11">0</div><div class="sc-sub" id="s-pass-pct">—</div></div>
+    <div class="sc sc-deny"><div class="sc-label">Denied</div><div class="sc-val" id="s-deny" style="color:#A32D2D">0</div><div class="sc-sub" id="s-deny-pct">—</div></div>
+    <div class="sc sc-pend"><div class="sc-label">Pended</div><div class="sc-val" id="s-pend" style="color:#854F0B">0</div><div class="sc-sub">Awaiting review</div></div>
+    <div class="sc sc-fwa"><div class="sc-label">FWA flagged</div><div class="sc-val" id="s-fwa" style="color:#72243E">0</div><div class="sc-sub">Fraud/Waste/Abuse</div></div>
+    <div class="sc sc-siu"><div class="sc-label">SIU referred</div><div class="sc-val" id="s-siu" style="color:#534AB7">0</div><div class="sc-sub">Investigations</div></div>
+    <div class="sc sc-savings"><div class="sc-label">Est. savings</div><div class="sc-val" id="s-sav" style="color:#00838F">$0</div><div class="sc-sub">Pre-payment</div></div>
   </div>
 
-  <div class="main-cols">
+  <!-- Main: tree + detail -->
+  <div class="main">
 
-    <!-- Left: workflow funnel -->
-    <div>
-      <div class="funnel-section">
-        <div class="funnel-header">
+    <!-- Left: tree -->
+    <div class="tree-panel">
+      <div class="tree-header">
+        <div>
+          <div class="tree-header-title">PI Processing Tree</div>
+          <div class="tree-header-sub">Click stage to expand · Click sub-validation for detail</div>
+        </div>
+      </div>
+      <div class="tree-body">
+        <!-- Intake node -->
+        <div class="intake-node">
+          <div class="intake-icon"><i class="ti ti-inbox" aria-hidden="true"></i></div>
           <div>
-            <div class="funnel-title">Payment Integrity Workflow — Stage-by-Stage Funnel</div>
-            <div class="funnel-sub">Click any stage to see which claims dropped and why</div>
+            <div class="intake-label">Claim Intake</div>
+            <div class="intake-sub">Provider / Clearinghouse · X12 837P / 837I · FHIR R4</div>
           </div>
-          <div style="font-family:var(--mono);font-size:.65rem;color:rgba(255,255,255,.4);">Today · July 18 2026</div>
+          <div class="intake-count" id="intake-count">0 claims</div>
         </div>
-        <div class="funnel-body" id="funnel-body"></div>
-      </div>
-
-      <!-- Detail panel -->
-      <div class="detail-panel" id="detail-panel">
-        <div class="dp-title" id="dp-title">Stage detail</div>
-        <div class="dp-claims" id="dp-claims"></div>
+        <div class="connector"></div>
+        <!-- Stage tree rendered by JS -->
+        <div id="stage-tree"></div>
       </div>
     </div>
 
-    <!-- Right: insight panels -->
-    <div class="right-col">
-
-      <!-- Top drop-off stages -->
-      <div class="panel">
-        <div class="panel-head">
-          <div class="panel-icon" style="background:#FCEBEB;color:#A32D2D;"><i class="ti ti-alert-circle" aria-hidden="true"></i></div>
-          <div class="panel-title">Top drop-off stages</div>
-        </div>
-        <div class="panel-body" id="top-dropoff"></div>
+    <!-- Right: detail -->
+    <div class="right-panel" id="right-panel">
+      <div class="empty-state">
+        <i class="ti ti-hierarchy" style="font-size:32px;color:#D0D7E1;display:block;margin-bottom:12px;" aria-hidden="true"></i>
+        <div style="font-weight:600;color:var(--navy);margin-bottom:6px;">Select a stage or sub-validation</div>
+        <div style="color:var(--text-3);line-height:1.6;">Click any item in the tree on the left to see<br/>the data flow diagram, sub-validations, and<br/>which claims hit this stage and why.</div>
       </div>
-
-      <!-- Denial breakdown -->
-      <div class="panel">
-        <div class="panel-head">
-          <div class="panel-icon" style="background:#FCEBEB;color:#A32D2D;"><i class="ti ti-circle-x" aria-hidden="true"></i></div>
-          <div class="panel-title">Denial reasons</div>
-        </div>
-        <div class="panel-body" id="denial-breakdown"></div>
-      </div>
-
-      <!-- Savings by stage -->
-      <div class="panel">
-        <div class="panel-head">
-          <div class="panel-icon" style="background:#E1F5EE;color:#0F6E56;"><i class="ti ti-coins" aria-hidden="true"></i></div>
-          <div class="panel-title">Savings by stage</div>
-        </div>
-        <div class="panel-body" id="savings-stage"></div>
-      </div>
-
-      <!-- Auto-adjudication rate -->
-      <div class="panel">
-        <div class="panel-head">
-          <div class="panel-icon" style="background:#EEEDFE;color:#534AB7;"><i class="ti ti-robot" aria-hidden="true"></i></div>
-          <div class="panel-title">AI performance</div>
-        </div>
-        <div class="panel-body">
-          <div class="prow"><span class="prow-label">Auto-adjudicated</span><span class="prow-val" id="ai-auto">—</span></div>
-          <div class="prow"><span class="prow-label">AI confidence avg</span><span class="prow-val" id="ai-conf">—</span></div>
-          <div class="prow"><span class="prow-label">Human review needed</span><span class="prow-val" id="ai-human">—</span></div>
-          <div class="prow"><span class="prow-label">Rule-only stages</span><span class="prow-val" id="ai-rule">7 stages</span></div>
-          <div class="prow"><span class="prow-label">LLM-augmented stages</span><span class="prow-val" id="ai-llm">5 stages</span></div>
-          <div class="prow"><span class="prow-label">Avg pipeline time</span><span class="prow-val" id="ai-time">—</span></div>
-        </div>
-      </div>
-
     </div>
+
   </div>
 </div>
 
@@ -269,269 +262,415 @@
         <div class="logo-mark"><svg viewBox="0 0 18 22" fill="none"><path d="M9 1C9 1 15 6 15 11C15 13.5 13.5 15.5 11.5 16.5C12 15 12 13 10.5 11.5C9.5 13 9 14.5 9 16C9 17.5 9.5 18.5 10 19.5C8.5 19 7 17.5 7 16C7 14 8 12.5 8.5 11C7 12 6 13.5 6 15C4 13.5 3 11.5 3 9.5C3 5.5 6 2.5 9 1Z" fill="white"/></svg></div>
         <span class="logo-name">FHIRFabric</span>
       </a>
-      <p>Stage-by-stage payment integrity visibility — see exactly where claims drop and why.</p>
+      <p>17-stage payment integrity workflow — full visibility into every claim, every stage, every sub-validation.</p>
       <p class="footer-parent">A <a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix</a> company</p>
     </div>
     <div class="footer-links">
-      <div class="footer-col"><h4>Dashboards</h4><ul>
-        <li><a href="dashboard.html">PI Dashboard</a></li>
-        <li><a href="pa-dashboard.html">PA Dashboard</a></li>
-        <li><a href="workflow-dashboard.html">Workflow</a></li>
-      </ul></div>
-      <div class="footer-col"><h4>Platform</h4><ul>
-        <li><a href="platform.html">Interoperability</a></li>
-        <li><a href="payment-integrity.html">Payment Integrity</a></li>
-      </ul></div>
-      <div class="footer-col"><h4>Company</h4><ul>
-        <li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul></div>
+      <div class="footer-col"><h4>Dashboards</h4><ul><li><a href="dashboard.html">PI Dashboard</a></li><li><a href="pa-dashboard.html">PA Dashboard</a></li><li><a href="workflow-dashboard.html">Workflow</a></li></ul></div>
+      <div class="footer-col"><h4>Platform</h4><ul><li><a href="platform.html">Interoperability</a></li><li><a href="payment-integrity.html">Payment Integrity</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li><li><a href="contact.html">Contact</a></li></ul></div>
     </div>
   </div>
-  <div class="footer-bottom">
-    <span>© 2026 FHIRFabric · A MyAtrix Company · Downers Grove, IL</span>
-    <span>support@fhirfabric.com</span>
-  </div>
+  <div class="footer-bottom"><span>© 2026 FHIRFabric · MyAtrix LLC · Downers Grove, IL</span><span>support@fhirfabric.com</span></div>
 </footer>
 
 <script>
-// ── DATA MODEL ──
-const PERIODS = {
-  today: {
-    total: 10, approved: 4, denied: 3, pended: 3, savings: 29232,
-    stages: [
-      { num:'01', name:'Claim received', type:'Intake', color:'#0B1F3A',
-        inflow:10, passed:10, denied:0, pended:0, savings:0,
-        issues:[] },
-      { num:'02', name:'Eligibility + COB', type:'RULE', color:'#0F6E56',
-        inflow:10, passed:9, denied:1, pended:0, savings:0,
-        issues:[
-          {id:'CLM-00449',issue:'Coverage lapsed — term date Jun 30, 2024',rule:'EV-001',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'},
-        ]},
-      { num:'03', name:'Benefit validation', type:'RULE', color:'#0F6E56',
-        inflow:9, passed:9, denied:0, pended:0, savings:0,
-        issues:[] },
-      { num:'04', name:'Claim editing (NCCI/MUE)', type:'RULE', color:'#854F0B',
-        inflow:9, passed:7, denied:1, pended:1, savings:6867,
-        issues:[
-          {id:'CLM-00441',issue:'NCCI bundling CPT 27447+27310 · MUE exceeded · Wrong POS',rule:'NCCI-27447-27310',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'},
-          {id:'CLM-00445',issue:'E&M same-day upcoding CPT 99215+99214',rule:'NCCI-99215-99214',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'},
-          {id:'CLM-00446',issue:'MUE limit exceeded CPT 93306 qty 3, max 1',rule:'MUE-93306',type:'pend',badge:'Pended',badgeColor:'#FAEEDA',badgeText:'#412402'},
-        ]},
-      { num:'05', name:'Coding validation (AI)', type:'LLM', color:'#534AB7',
-        inflow:7, passed:6, denied:0, pended:1, savings:0,
-        issues:[
-          {id:'CLM-00443',issue:'I50.9 unspecified — AI flagged CDI opportunity; combination code gap',rule:'CV-002',type:'pend',badge:'Pended',badgeColor:'#FAEEDA',badgeText:'#412402'},
-        ]},
-      { num:'06', name:'Medical necessity (AI)', type:'LLM', color:'#534AB7',
-        inflow:6, passed:5, denied:0, pended:1, savings:0,
-        issues:[
-          {id:'CLM-00447',issue:'CPT 43239 — GERD without documented 8-week PPI trial failure (LCD L35062)',rule:'NCD-L35062',type:'pend',badge:'Pended',badgeColor:'#EEEDFE',badgeText:'#26215C'},
-        ]},
-      { num:'07', name:'Prior authorization', type:'RULE', color:'#0F6E56',
-        inflow:5, passed:4, denied:0, pended:1, savings:0,
-        issues:[
-          {id:'CLM-00441',issue:'CPT 27447 requires PA — no valid auth on file',rule:'PA-REQUIRED-27447',type:'pend',badge:'PA required',badgeColor:'#EEEDFE',badgeText:'#26215C'},
-        ]},
-      { num:'08', name:'Provider contract', type:'LLM', color:'#534AB7',
-        inflow:4, passed:4, denied:0, pended:0, savings:0,
-        issues:[] },
-      { num:'09', name:'Pricing / contract rate', type:'RULE', color:'#0F6E56',
-        inflow:4, passed:4, denied:0, pended:0, savings:9404,
-        issues:[
-          {id:'CLM-00441',issue:'CPT 27447: billed $14,000 · allowed $4,595 (120% Medicare)',rule:'RATE-OVER-27447',type:'pend',badge:'Adjusted',badgeColor:'#FAEEDA',badgeText:'#412402'},
-        ]},
-      { num:'10', name:'Duplicate detection', type:'RULE', color:'#0F6E56',
-        inflow:4, passed:4, denied:0, pended:0, savings:0,
-        issues:[] },
-      { num:'11', name:'FWA screening (AI)', type:'LLM', color:'#72243E',
-        inflow:4, passed:3, denied:0, pended:1, savings:0,
-        issues:[
-          {id:'CLM-00444',issue:'Provider billing 340% above peer median · systematic unbundling pattern across 6 claims',rule:'FWA-OUTLIER',type:'siu',badge:'SIU referred',badgeColor:'#EEEDFE',badgeText:'#26215C'},
-        ]},
-      { num:'12', name:'AI decision engine', type:'LLM', color:'#534AB7',
-        inflow:3, passed:3, denied:0, pended:0, savings:12961,
-        issues:[] },
+// ── DATA ──
+const STAGES = [
+  { id:1, name:'Claim Structure & Data Quality', color:'#374151', type:'RULE',
+    subs:[
+      {id:'1.1',name:'Transaction Validation',checks:['Supported transaction type','Valid X12 envelope','Valid sender/receiver','Valid control numbers','Duplicate transaction check']},
+      {id:'1.2',name:'Claim Header Validation',checks:['Claim identifier present','Claim type valid','Statement dates valid','Total charge present','Place of service valid','Frequency / type-of-bill valid']},
+      {id:'1.3',name:'Member Data Validation',checks:['Member ID present','Patient name present','Date of birth valid','Gender value valid','Relationship code valid']},
+      {id:'1.4',name:'Provider Data Validation',checks:['Billing provider NPI present','Rendering NPI present when required','Referring provider present when required','Tax ID present','Provider address present']},
+      {id:'1.5',name:'Clinical & Coding Data Validation',checks:['Diagnosis code present','Procedure code present','Code format valid','Modifier format valid','Diagnosis pointer valid','Units and quantity valid']},
+      {id:'1.6',name:'Financial Data Validation',checks:['Line charge present','Total charge = sum of lines','Units valid','Currency valid','Other payer amounts valid']},
+      {id:'1.7',name:'Normalization & Enrichment',checks:['Standardize member identifiers','Standardize provider identifiers','Normalize dates','Normalize diagnosis/procedure codes','Assign internal claim ID','Add source and receipt timestamps']},
+    ],
+    flow:{question:'Structurally valid?',yes:'Create normalized claim record',no:'Reject / return error to provider'},
+    periods:{today:{pass:10,deny:0,pend:0},week:{pass:68,deny:2,pend:1},month:{pass:292,deny:8,pend:4},ytd:{pass:3536,deny:98,pend:52}},
+    claims:[
+      {id:'CLM-00441',issue:'All structure checks passed',rule:'1.1–1.7',status:'pass'},
+      {id:'CLM-00442',issue:'All structure checks passed',rule:'1.1–1.7',status:'pass'},
+      {id:'CLM-00443',issue:'All structure checks passed',rule:'1.1–1.7',status:'pass'},
     ]
   },
-  week: {
-    total:68, approved:41, denied:16, pended:11, savings:187400,
-    stages:[
-      {num:'01',name:'Claim received',type:'Intake',color:'#0B1F3A',inflow:68,passed:68,denied:0,pended:0,savings:0,issues:[]},
-      {num:'02',name:'Eligibility + COB',type:'RULE',color:'#0F6E56',inflow:68,passed:62,denied:4,pended:2,savings:0,issues:[{id:'Multiple',issue:'4 denied — lapsed coverage / COB secondary pending',rule:'EV-001 / COB-001',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
-      {num:'03',name:'Benefit validation',type:'RULE',color:'#0F6E56',inflow:62,passed:61,denied:1,pended:0,savings:0,issues:[{id:'CLM-W-011',issue:'Non-covered cosmetic procedure billed as reconstructive',rule:'BEN-002',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
-      {num:'04',name:'Claim editing (NCCI/MUE)',type:'RULE',color:'#854F0B',inflow:61,passed:54,denied:5,pended:2,savings:42300,issues:[{id:'Multiple (7)',issue:'NCCI bundling (4) · MUE exceeded (2) · Wrong POS (1)',rule:'NCCI / MUE / POS',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
-      {num:'05',name:'Coding validation (AI)',type:'LLM',color:'#534AB7',inflow:54,passed:51,denied:0,pended:3,savings:0,issues:[{id:'Multiple (3)',issue:'ICD-10 specificity flags · DRG combination code gaps',rule:'CV-001/002',type:'pend',badge:'Pended',badgeColor:'#FAEEDA',badgeText:'#412402'}]},
-      {num:'06',name:'Medical necessity (AI)',type:'LLM',color:'#534AB7',inflow:51,passed:48,denied:2,pended:1,savings:0,issues:[{id:'Multiple (3)',issue:'LCD criteria not met (2 denied) · Documentation insufficient (1 pended)',rule:'LCD L35062 / NCD',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
-      {num:'07',name:'Prior authorization',type:'RULE',color:'#0F6E56',inflow:48,passed:45,denied:0,pended:3,savings:0,issues:[{id:'Multiple (3)',issue:'No valid PA on file for high-cost procedures',rule:'PA-REQUIRED',type:'pend',badge:'Pended',badgeColor:'#EEEDFE',badgeText:'#26215C'}]},
-      {num:'08',name:'Provider contract',type:'LLM',color:'#534AB7',inflow:45,passed:43,denied:2,pended:0,savings:0,issues:[{id:'Multiple (2)',issue:'Provider not credentialed for billed taxonomy',rule:'PV-002',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
-      {num:'09',name:'Pricing / contract rate',type:'RULE',color:'#0F6E56',inflow:43,passed:43,denied:0,pended:0,savings:61200,issues:[]},
-      {num:'10',name:'Duplicate detection',type:'RULE',color:'#0F6E56',inflow:43,passed:42,denied:1,pended:0,savings:0,issues:[{id:'CLM-W-044',issue:'Exact duplicate — same claim submitted to two payers',rule:'DUP-001',type:'err',badge:'Denied',badgeColor:'#FCEBEB',badgeText:'#501313'}]},
-      {num:'11',name:'FWA screening (AI)',type:'LLM',color:'#72243E',inflow:42,passed:41,denied:0,pended:1,savings:0,issues:[{id:'CLM-W-051',issue:'Provider outlier pattern referred to SIU',rule:'FWA-OUTLIER',type:'siu',badge:'SIU',badgeColor:'#EEEDFE',badgeText:'#26215C'}]},
-      {num:'12',name:'AI decision engine',type:'LLM',color:'#534AB7',inflow:41,passed:41,denied:0,pended:0,savings:83900,issues:[]},
+  { id:2, name:'Member Eligibility Validation', color:'#0F6E56', type:'RULE',
+    subs:[
+      {id:'2.1',name:'Coverage active on DOS',checks:['Effective date ≤ DOS','Termination date ≥ DOS or no termination','Plan and group match claim']},
+      {id:'2.2',name:'Member ID validity',checks:['Member ID exists in eligibility system','Unique match to one member record','ID format valid']},
+      {id:'2.3',name:'Plan / group enrollment',checks:['Plan ID valid','Group ID active','Subscriber enrolled']},
+      {id:'2.4',name:'Pre-coverage service check',checks:['DOS not before effective date']},
+      {id:'2.5',name:'Retroactive termination',checks:['No retroactive termination effective before DOS']},
+    ],
+    flow:{question:'Member eligible?',yes:'Proceed to benefit validation',no:'Deny — return ELIG denial code'},
+    periods:{today:{pass:9,deny:1,pend:0},week:{pass:64,deny:4,pend:0},month:{pass:275,deny:17,pend:0},ytd:{pass:3330,deny:206,pend:0}},
+    claims:[
+      {id:'CLM-00449',issue:'Coverage lapsed — term date Jun 30, 2024. DOS Jul 18, 2024',rule:'EV-001',status:'deny'},
+      {id:'CLM-00441',issue:'Coverage active BCBSA-PPO-GOLD effective Jan 1, 2024',rule:'EV-001',status:'pass'},
     ]
   },
+  { id:3, name:'Benefit & Coverage Validation', color:'#0F6E56', type:'RULE',
+    subs:[
+      {id:'3.1',name:'Covered service check',checks:['Service category covered under plan','CPT/revenue code on covered list']},
+      {id:'3.2',name:'Benefit exclusion check',checks:['Service not excluded (cosmetic, experimental)','Age / gender restrictions met']},
+      {id:'3.3',name:'Annual benefit limits',checks:['Remaining benefit not exhausted','Visit count within limit']},
+      {id:'3.4',name:'Cost sharing',checks:['Deductible status verified','Copay / coinsurance applicable']},
+    ],
+    flow:{question:'Service covered?',yes:'Proceed to COB',no:'Deny — non-covered service'},
+    periods:{today:{pass:9,deny:0,pend:0},week:{pass:63,deny:1,pend:0},month:{pass:271,deny:4,pend:0},ytd:{pass:3280,deny:50,pend:0}},
+    claims:[{id:'All (today)',issue:'All claims passed benefit validation',rule:'3.1–3.4',status:'pass'}]
+  },
+  { id:4, name:'Coordination of Benefits', color:'#0F6E56', type:'RULE',
+    subs:[
+      {id:'4.1',name:'Birthday rule',checks:['Dependent on two commercial plans','Earlier birthday month/day = primary']},
+      {id:'4.2',name:'Medicare Secondary Payer',checks:['MSP rules applied','Active employee / employer size check','ESRD 30-month coordination period']},
+      {id:'4.3',name:'Medicaid last resort',checks:['Medicaid always secondary to any commercial plan']},
+      {id:'4.4',name:'Workers comp / no-fault',checks:["Work-related injury routes to workers' comp first"]},
+      {id:'4.5',name:'TRICARE',checks:['TRICARE secondary to employer group health']},
+      {id:'4.6',name:'COB order determination',checks:['Primary payer identified','Secondary benefits calculated after primary EOB']},
+    ],
+    flow:{question:'This plan primary?',yes:'Adjudicate at full benefit',no:'Hold for primary EOB'},
+    periods:{today:{pass:9,deny:0,pend:1},week:{pass:61,deny:0,pend:3},month:{pass:262,deny:0,pend:13},ytd:{pass:3172,deny:0,pend:158}},
+    claims:[
+      {id:'CLM-00443',issue:'COB secondary — birthday rule applies. Awaiting primary EOB from Aetna PPO',rule:'COB-001',status:'pend'},
+    ]
+  },
+  { id:5, name:'Provider Validation', color:'#0F6E56', type:'RULE',
+    subs:[
+      {id:'5.1',name:'NPI validity',checks:['NPI exactly 10 digits','NPI active in NPPES','Type 1 (individual) vs Type 2 (org) correct']},
+      {id:'5.2',name:'Taxonomy / specialty match',checks:['Taxonomy matches billed CPT','Specialist CPT requires specialist taxonomy']},
+      {id:'5.3',name:'Network / participation',checks:['Provider in-network for plan','Out-of-network benefit applies if applicable']},
+      {id:'5.4',name:'Credentialing check',checks:['Provider credentialed with plan','License current in state of service']},
+      {id:'5.5',name:'Rendering vs billing',checks:['Individual rendering NPI when required','Incident-to billing rules checked','Locum tenens modifier validation']},
+    ],
+    flow:{question:'Provider valid & contracted?',yes:'Proceed to authorization',no:'Deny or pend — provider issue'},
+    periods:{today:{pass:9,deny:0,pend:0},week:{pass:59,deny:2,pend:0},month:{pass:254,deny:8,pend:0},ytd:{pass:3075,deny:97,pend:0}},
+    claims:[{id:'All (today)',issue:'All providers validated — NPI, taxonomy, credentialing passed',rule:'5.1–5.5',status:'pass'}]
+  },
+  { id:6, name:'Authorization & Referral Validation', color:'#854F0B', type:'RULE',
+    subs:[
+      {id:'6.1',name:'PA required list check',checks:['CPT on PA-required list for this plan','DRG on PA-required list for institutional']},
+      {id:'6.2',name:'Auth validity',checks:['Auth number on file','Auth not expired on DOS','Auth matches member / provider / CPT']},
+      {id:'6.3',name:'Approved units / LOS',checks:['Billed units ≤ approved units','Inpatient LOS ≤ approved days']},
+      {id:'6.4',name:'HMO referral check',checks:['PCP referral present for specialist visit on HMO plan','Referral valid on DOS']},
+      {id:'6.5',name:'PA Dashboard integration',checks:['PA status synced from PA Dashboard','Approved PAs auto-clear Stage 6 flag']},
+    ],
+    flow:{question:'Valid auth on file?',yes:'Proceed to clinical validation',no:'Pend — request PA or deny'},
+    periods:{today:{pass:8,deny:0,pend:1},week:{pass:58,deny:0,pend:3},month:{pass:249,deny:0,pend:13},ytd:{pass:3012,deny:0,pend:157}},
+    claims:[
+      {id:'CLM-00441',issue:'CPT 27447 requires PA — no valid auth on file. PA-2024-00101 in review.',rule:'PA-REQUIRED-27447',status:'pend'},
+    ]
+  },
+  { id:7, name:'Clinical Validation', color:'#534AB7', type:'LLM',
+    subs:[
+      {id:'7.1',name:'Medical necessity',checks:['NCD/LCD criteria met','Plan medical policy criteria met','Inpatient: 2-midnight rule']},
+      {id:'7.2',name:'InterQual / MCG criteria',checks:['Inpatient admission criteria met','Level of care appropriate']},
+      {id:'7.3',name:'DX-procedure compatibility',checks:['Principal DX supports the procedure','Clinical plausibility check (AI)']},
+      {id:'7.4',name:'DRG validation (institutional)',checks:['DRG tier CC/MCC supported by POA=Y diagnoses','HAC exclusions applied','LOS vs geometric mean','Discharge status correct']},
+    ],
+    flow:{question:'Clinically appropriate?',yes:'Proceed to coding validation',no:'Deny or pend — medical necessity'},
+    periods:{today:{pass:7,deny:0,pend:1},week:{pass:55,deny:2,pend:1},month:{pass:236,deny:8,pend:5},ytd:{pass:2858,deny:97,pend:57}},
+    claims:[
+      {id:'CLM-00447',issue:'CPT 43239 — GERD without documented 8-week PPI trial failure. LCD L35062 not met.',rule:'NCD-L35062',status:'pend'},
+    ]
+  },
+  { id:8, name:'Coding Validation', color:'#534AB7', type:'LLM',
+    subs:[
+      {id:'8.1',name:'NCCI bundling edits',checks:['Column 1/Column 2 pairs checked','Modifier 59/X override validation']},
+      {id:'8.2',name:'MUE limits',checks:['Units ≤ CMS MUE limit for CPT','Bilateral procedure unit count']},
+      {id:'8.3',name:'ICD-10-CM specificity (AI)',checks:['Most specific code used','Combination codes applied where required']},
+      {id:'8.4',name:'CPT accuracy (AI)',checks:['Procedure code clinically supports diagnosis','Upcoding pattern detection']},
+      {id:'8.5',name:'Modifier validation',checks:['Modifier appropriate for context','Bilateral (50), MPR, assistant surgeon rules']},
+      {id:'8.6',name:'POS restrictions',checks:['CPT payable at billed place of service']},
+    ],
+    flow:{question:'Coding valid?',yes:'Proceed to duplicate check',no:'Deny or pend — coding error'},
+    periods:{today:{pass:6,deny:2,pend:1},week:{pass:50,deny:5,pend:2},month:{pass:215,deny:21,pend:9},ytd:{pass:2603,deny:255,pend:109}},
+    claims:[
+      {id:'CLM-00441',issue:'NCCI: 27447+27310 bundling · MUE: 27447 qty 3 exceeds max 2 · POS 11 invalid for surgery',rule:'NCCI-27447-27310 / MUE-27447 / POS',status:'deny'},
+      {id:'CLM-00445',issue:'E&M same-day upcoding: 99215+99214 both billed same DOS',rule:'NCCI-99215-99214',status:'deny'},
+      {id:'CLM-00443',issue:'I50.9 insufficiently specific — AI flagged CDI opportunity; combination code gap',rule:'CV-002',status:'pend'},
+    ]
+  },
+  { id:9, name:'Duplicate, Frequency & Utilization', color:'#374151', type:'RULE',
+    subs:[
+      {id:'9.1',name:'Exact duplicate detection',checks:['Same member / provider / CPT / DOS / amount already paid']},
+      {id:'9.2',name:'Near-duplicate detection',checks:['Same-day same-service from different claims']},
+      {id:'9.3',name:'Frequency limits',checks:['CPT frequency per member per year checked','Preventive service frequency rules']},
+      {id:'9.4',name:'Utilization outlier',checks:['Provider billing vs peer group median','Cross-claim utilization pattern']},
+    ],
+    flow:{question:'Duplicate or outlier?',yes:'Deny duplicate / flag utilization',no:'Proceed to contract validation'},
+    periods:{today:{pass:6,deny:0,pend:0},week:{pass:50,deny:1,pend:0},month:{pass:215,deny:4,pend:0},ytd:{pass:2603,deny:48,pend:0}},
+    claims:[{id:'All (today)',issue:'No duplicates detected',rule:'9.1–9.4',status:'pass'}]
+  },
+  { id:10, name:'Provider Contract & Network', color:'#0F6E56', type:'RULE+LLM',
+    subs:[
+      {id:'10.1',name:'Contract matching',checks:['NPI + TIN + plan → contract record found','Contract active on DOS']},
+      {id:'10.2',name:'Network status',checks:['In-network for this plan and product']},
+      {id:'10.3',name:'Scope of service',checks:['CPT within contracted service scope','Taxonomy matches contracted specialty']},
+      {id:'10.4',name:'Credentialing (AI)',checks:['Rendering provider credentialed','Incident-to rules met','Locum tenens arrangement valid']},
+    ],
+    flow:{question:'Valid contract?',yes:'Proceed to pricing',no:'Deny or pend — contract issue'},
+    periods:{today:{pass:6,deny:0,pend:0},week:{pass:48,deny:2,pend:0},month:{pass:207,deny:8,pend:0},ytd:{pass:2506,deny:97,pend:0}},
+    claims:[{id:'All (today)',issue:'All contract validations passed',rule:'10.1–10.4',status:'pass'}]
+  },
+  { id:11, name:'Pricing & Member Liability', color:'#0F6E56', type:'RULE',
+    subs:[
+      {id:'11.1',name:'Negotiated rate lookup',checks:['Fee schedule: NPI + CPT → contracted rate','% Medicare: CPT → MPFS rate × contract %','DRG rate: DRG weight × base rate']},
+      {id:'11.2',name:'Modifier adjustments',checks:['Bilateral +50%','MPR: 2nd procedure −50%','Assistant surgeon −16%','Global surgery package check']},
+      {id:'11.3',name:'Transfer / outlier rules',checks:['Acute-to-acute transfer: per-diem rate','Post-acute transfer: reduced payment','LOS outlier: calculate fixed-loss threshold']},
+      {id:'11.4',name:'Member liability',checks:['Deductible applied','Copay calculated','Coinsurance calculated','OOP maximum check']},
+    ],
+    flow:{question:'Rate determined?',yes:'Proceed to FWA screening',no:'Adjust to contracted rate'},
+    periods:{today:{pass:6,deny:0,pend:0,adjust:1},week:{pass:48,deny:0,pend:0,adjust:4},month:{pass:207,deny:0,pend:0,adjust:17},ytd:{pass:2506,deny:0,pend:0,adjust:206}},
+    claims:[
+      {id:'CLM-00441',issue:'CPT 27447: billed $14,000 → allowed $4,595 (120% Medicare). Adjusted.',rule:'RATE-OVER-27447',status:'pend'},
+    ]
+  },
+  { id:12, name:'Fraud, Waste & Abuse Screening', color:'#72243E', type:'LLM',
+    subs:[
+      {id:'12.1',name:'Rules-based FWA',checks:['Known billing patterns flagged','NCCI abuse patterns','POS implausibility']},
+      {id:'12.2',name:'AI behavioral analytics',checks:['Provider vs peer group outlier','Cross-claim pattern (AI)','Anatomical mismatch (AI)']},
+      {id:'12.3',name:'Statistical outlier detection',checks:['Billing rate vs peer median','>2 SD above peers flagged']},
+      {id:'12.4',name:'Risk scoring',checks:['0–1 FWA risk score','≥0.8 → SIU referral','0.4–0.8 → enhanced review']},
+      {id:'12.5',name:'SIU workflow trigger',checks:['Case packet created','Claim routed to SIU queue','Provider risk score updated']},
+    ],
+    flow:{question:'FWA risk score ≥ 0.8?',yes:'SIU referral + suspend payment',no:'Proceed to decision engine'},
+    periods:{today:{pass:5,deny:0,pend:0,siu:1},week:{pass:47,deny:0,pend:0,siu:1},month:{pass:202,deny:0,pend:0,siu:5},ytd:{pass:2445,deny:0,pend:0,siu:61}},
+    claims:[
+      {id:'CLM-00444',issue:'Provider billing 340% above peer median. Systematic unbundling across 6 claims. Risk score 0.87.',rule:'FWA-OUTLIER',status:'fwa'},
+    ]
+  },
+  { id:13, name:'Final Payment Integrity Decision', color:'#0B1F3A', type:'LLM',
+    subs:[
+      {id:'13.1',name:'Cross-stage synthesis (AI)',checks:['All stage findings combined','Confidence score calculated','Disposition determined']},
+      {id:'13.2',name:'Decision matrix',checks:['Any ERROR finding → strong deny signal','PENDING stages → pend with queue','All PASS → approve','FWA ≥ 0.8 → SIU regardless']},
+      {id:'13.3',name:'Provider remittance message',checks:['Policy citation for every finding','Appeal path included','Correctable action specified']},
+      {id:'13.4',name:'Pend queue assignment',checks:['clinical_review','coding_review','fraud_investigation','contract_review','cob_review']},
+    ],
+    flow:{question:'Final disposition',yes:'Approve → 835 payment',no:'Deny / Pend / SIU'},
+    periods:{today:{pass:4,deny:3,pend:3,siu:1},week:{pass:41,deny:16,pend:11,siu:1},month:{pass:176,deny:69,pend:47,siu:5},ytd:{pass:2130,deny:835,pend:571,siu:61}},
+    claims:[
+      {id:'CLM-00442',issue:'All stages passed — clean E&M claim approved at $75',rule:'Decision',status:'pass'},
+      {id:'CLM-00441',issue:'DENIED — NCCI bundling, MUE, wrong POS, missing PA. SIU referred.',rule:'Decision',status:'deny'},
+      {id:'CLM-00445',issue:'DENIED — E&M upcoding CPT 99215+99214',rule:'Decision',status:'deny'},
+    ]
+  },
+  { id:14, name:'Payment & Remittance', color:'#374151', type:'RULE',
+    subs:[
+      {id:'14.1',name:'835 ERA generation',checks:['Electronic remittance advice generated','CAS segments for adjustments','PR segments for member liability']},
+      {id:'14.2',name:'Payment issuance',checks:['EFT / check issued to billing provider','Payment at contracted rate']},
+      {id:'14.3',name:'EOB generation',checks:['Member EOB: billed, allowed, paid, member responsibility','Consolidated episode view']},
+    ],
+    flow:{question:'Payment issued?',yes:'Post-payment audit cycle begins',no:'Hold pending resolution'},
+    periods:{today:{pass:4,deny:0,pend:0},week:{pass:41,deny:0,pend:0},month:{pass:176,deny:0,pend:0},ytd:{pass:2130,deny:0,pend:0}},
+    claims:[{id:'CLM-00442',issue:'835 issued · EFT $75.00 · ERA transmitted to Clearwater Primary Care',rule:'14.1–14.3',status:'pass'}]
+  },
+  { id:15, name:'Post-Payment Audit & Analytics', color:'#374151', type:'RULE+LLM',
+    subs:[
+      {id:'15.1',name:'Retrospective audit',checks:['Statistical sample of paid claims','Medical record request if flagged']},
+      {id:'15.2',name:'Provider scorecard',checks:['Billing accuracy score updated','Denial rate by provider','NCCI violation rate']},
+      {id:'15.3',name:'Analytics & reporting',checks:['Savings by stage','False positive rate','Turnaround time SLA']},
+    ],
+    flow:{question:'Overpayment found?',yes:'Initiate recovery workflow',no:'Update provider scorecard'},
+    periods:{today:{pass:4,deny:0,pend:0},week:{pass:41,deny:0,pend:0},month:{pass:176,deny:0,pend:0},ytd:{pass:2130,deny:0,pend:0}},
+    claims:[{id:'Batch process',issue:'Post-payment analytics running — no overpayments identified today',rule:'15.1–15.3',status:'pass'}]
+  },
+  { id:16, name:'Recovery, COB & Subrogation', color:'#374151', type:'RULE',
+    subs:[
+      {id:'16.1',name:'Overpayment recovery',checks:['Demand letter generated','Repayment plan tracked','Write-off threshold applied']},
+      {id:'16.2',name:'COB recovery',checks:['Primary payer EOB received','Secondary benefit calculated','Recovery demand if overpaid']},
+      {id:'16.3',name:'Subrogation',checks:['Third-party liability identified (auto/WC)','Subrogation lien filed','Recovery tracked']},
+    ],
+    flow:{question:'Recovery needed?',yes:'Issue demand / pursue recovery',no:'Close episode'},
+    periods:{today:{pass:0,deny:0,pend:0},week:{pass:2,deny:0,pend:1},month:{pass:8,deny:0,pend:4},ytd:{pass:97,deny:0,pend:48}},
+    claims:[{id:'N/A (today)',issue:'No recovery actions triggered today',rule:'16.1–16.3',status:'pass'}]
+  },
+  { id:17, name:'Feedback into Pre-Payment Controls', color:'#0F6E56', type:'LLM',
+    subs:[
+      {id:'17.1',name:'Rule gap identification',checks:['Overpayments not caught pre-pay → new rule created','ML-identified patterns deployed as rules']},
+      {id:'17.2',name:'Provider education triggers',checks:['Denial patterns → targeted education','Pre-submission scrubbing tips']},
+      {id:'17.3',name:'Feedback loop to AI',checks:['Human override patterns logged','Model fine-tuning from feedback','Prompt updates deployed']},
+    ],
+    flow:{question:'New rule needed?',yes:'Deploy to pre-payment pipeline',no:'Update AI training data'},
+    periods:{today:{pass:0,deny:0,pend:0},week:{pass:0,deny:0,pend:0},month:{pass:0,deny:0,pend:0},ytd:{pass:0,deny:0,pend:0}},
+    claims:[{id:'System',issue:'Feedback loop running — 3 new rules queued for next NCCI update cycle',rule:'17.1–17.3',status:'pass'}]
+  },
+];
+
+const PERIOD_TOTALS = {
+  today:{total:10,pass:4,deny:3,pend:3,fwa:2,siu:1,sav:29232},
+  week:{total:68,pass:41,deny:16,pend:11,fwa:3,siu:1,sav:187400},
+  month:{total:292,pass:176,deny:69,pend:47,fwa:12,siu:5,sav:805200},
+  ytd:{total:3536,pass:2130,deny:835,pend:571,fwa:145,siu:61,sav:9760000},
 };
-// Add month/ytd as scaled versions
-['month','ytd'].forEach((p,i) => {
-  const sc=i===0?4.3:52;
-  const base=PERIODS.week;
-  PERIODS[p]={
-    total:Math.round(base.total*sc),approved:Math.round(base.approved*sc),
-    denied:Math.round(base.denied*sc),pended:Math.round(base.pended*sc),
-    savings:Math.round(base.savings*sc),
-    stages:base.stages.map(s=>({...s,inflow:Math.round(s.inflow*sc),passed:Math.round(s.passed*sc),denied:Math.round(s.denied*sc),pended:Math.round(s.pended*sc),savings:Math.round(s.savings*sc)}))
-  };
-});
 
-let currentPeriod='today', activeStage=null;
+let period='today', selectedStage=null, selectedSub=null, expandedStages=new Set();
 
-function fmt(n){return n>=1000?'$'+(n/1000).toFixed(1)+'K':'$'+n}
+function fmt(n){return n>=1000000?'$'+(n/1000000).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(0)+'K':'$'+n}
 
-function renderAll(){
-  const d=PERIODS[currentPeriod];
-  // Summary
+function renderKPIs(){
+  const d=PERIOD_TOTALS[period];
   document.getElementById('s-total').textContent=d.total;
-  document.getElementById('s-approved').textContent=d.approved;
-  document.getElementById('s-approved-pct').textContent=Math.round(d.approved/d.total*100)+'% of claims';
-  document.getElementById('s-denied').textContent=d.denied;
-  document.getElementById('s-denied-pct').textContent=Math.round(d.denied/d.total*100)+'% of claims';
-  document.getElementById('s-pended').textContent=d.pended;
-  document.getElementById('s-savings').textContent=fmt(d.savings);
-  // AI
-  document.getElementById('ai-auto').textContent=Math.round(d.approved/d.total*100)+'%';
-  document.getElementById('ai-conf').textContent='88%';
-  document.getElementById('ai-human').textContent=d.pended+' claims';
-  document.getElementById('ai-time').textContent='<60 sec';
+  document.getElementById('s-pass').textContent=d.pass;
+  document.getElementById('s-pass-pct').textContent=Math.round(d.pass/d.total*100)+'% of claims';
+  document.getElementById('s-deny').textContent=d.deny;
+  document.getElementById('s-deny-pct').textContent=Math.round(d.deny/d.total*100)+'% of claims';
+  document.getElementById('s-pend').textContent=d.pend;
+  document.getElementById('s-fwa').textContent=d.fwa;
+  document.getElementById('s-siu').textContent=d.siu;
+  document.getElementById('s-sav').textContent=fmt(d.sav);
+  document.getElementById('intake-count').textContent=d.total+' claims';
+}
 
-  // Funnel
-  const fb=document.getElementById('funnel-body');
-  fb.innerHTML=d.stages.map((s,i)=>{
-    const pct=s.inflow>0?Math.round(s.passed/s.inflow*100):100;
-    const dropPct=s.inflow>0?Math.round((s.denied+s.pended)/s.inflow*100):0;
-    const hasIssues=s.denied+s.pended>0;
-    return `<div class="stage-row${activeStage===i?' active-row':''}" onclick="toggleStage(${i})">
-      <div class="stage-label">
-        <div class="stage-num" style="background:${s.color}">${s.num}</div>
-        <div>
+function chipHTML(p){
+  const pd=p.periods[period];
+  let html='';
+  if(pd.pass>0) html+=`<span class="chip chip-pass">${pd.pass}✓</span>`;
+  if(pd.deny>0) html+=`<span class="chip chip-deny">${pd.deny}✗</span>`;
+  if(pd.pend>0) html+=`<span class="chip chip-pend">${pd.pend}⏳</span>`;
+  if(pd.siu)    html+=`<span class="chip chip-fwa">${pd.siu}🔍</span>`;
+  if(pd.pass>0 && !pd.deny && !pd.pend && !pd.siu) html='<span class="chip chip-ok">all pass</span>';
+  return html;
+}
+
+function renderTree(){
+  document.getElementById('stage-tree').innerHTML=STAGES.map((s,i)=>`
+    <div class="stage-node" id="sn-${s.id}">
+      <div class="stage-header${selectedStage===s.id&&!selectedSub?' selected':''}" onclick="selectStage(${s.id})">
+        <div class="stage-bullet" style="background:${s.color}">${String(s.id).padStart(2,'0')}</div>
+        <div class="stage-info">
           <div class="stage-name">${s.name}</div>
-          <div class="stage-type">${s.type}</div>
+          <div class="stage-type-tag">${s.type}</div>
         </div>
+        <div class="stage-chips">${chipHTML(s)}</div>
+        <div class="expand-btn${expandedStages.has(s.id)?' open':''}">▶</div>
       </div>
-      <div class="stage-bars">
-        <div class="bar-row">
-          <div class="bar-label" style="font-size:.65rem;color:var(--text-3)">In: ${s.inflow}</div>
-          <div class="bar-track">
-            <div class="bar-fill" style="width:${pct}%;background:#3B6D11;">
-              <span>${s.passed} passed</span>
-            </div>
-          </div>
-          <div class="bar-count" style="color:#3B6D11">${s.passed}</div>
-        </div>
-        ${s.denied>0?`<div class="bar-row">
-          <div class="bar-label" style="font-size:.65rem;color:#A32D2D">Denied</div>
-          <div class="bar-track">
-            <div class="bar-fill" style="width:${Math.round(s.denied/s.inflow*100)}%;background:#A32D2D;">
-              <span>${s.denied}</span>
-            </div>
-          </div>
-          <div class="bar-count" style="color:#A32D2D">${s.denied}</div>
-        </div>`:''}
-        ${s.pended>0?`<div class="bar-row">
-          <div class="bar-label" style="font-size:.65rem;color:#854F0B">Pended</div>
-          <div class="bar-track">
-            <div class="bar-fill" style="width:${Math.round(s.pended/s.inflow*100)}%;background:#EF9F27;">
-              <span>${s.pended}</span>
-            </div>
-          </div>
-          <div class="bar-count" style="color:#854F0B">${s.pended}</div>
-        </div>`:''}
+      <div class="sub-tree${expandedStages.has(s.id)?' open':''}" id="sub-${s.id}">
+        ${s.subs.map(sub=>`
+          <div class="sub-item${selectedSub===sub.id?' selected':''}" onclick="selectSub('${sub.id}',${s.id},event)">
+            <div class="sub-dot" style="background:${s.color}"></div>
+            <div class="sub-name">${sub.name}</div>
+            <div class="sub-chips"><span class="chip chip-ok" style="font-size:.52rem;">${sub.checks.length} checks</span></div>
+          </div>`).join('')}
       </div>
-      <div class="stage-outcome">
-        ${s.savings>0?`<div class="outcome-item"><span class="outcome-label">Savings</span><span class="outcome-val" style="color:#0F6E56">${fmt(s.savings)}</span></div>`:''}
-        <div class="outcome-item"><span class="outcome-label">Pass rate</span><span class="outcome-val" style="color:${pct===100?'#3B6D11':'var(--navy)'}">${pct}%</span></div>
-        ${hasIssues?`<div class="outcome-item"><span class="outcome-label" style="color:#A32D2D">Drop-off</span><span class="outcome-val" style="color:#A32D2D">${dropPct}%</span></div>`:''}
-        ${s.issues.length>0?`<div style="font-size:.65rem;color:var(--teal);margin-top:4px;font-weight:500;">↓ click to see issues</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-
-  // Right panels
-  const dropoffs=d.stages.filter(s=>s.denied+s.pended>0)
-    .map(s=>({name:s.name,n:s.denied+s.pended,savings:s.savings}))
-    .sort((a,b)=>b.n-a.n);
-  const maxD=Math.max(...dropoffs.map(x=>x.n));
-  document.getElementById('top-dropoff').innerHTML=dropoffs.slice(0,5).map(x=>`
-    <div class="prow" style="flex-direction:column;align-items:flex-start;gap:2px;">
-      <div style="display:flex;justify-content:space-between;width:100%">
-        <span class="prow-label">${x.name}</span>
-        <span class="prow-val" style="color:#A32D2D">${x.n} claim${x.n>1?'s':''}</span>
-      </div>
-      <div class="mini-bar" style="width:100%"><div class="mini-fill" style="background:#E24B4A;width:${Math.round(x.n/maxD*100)}%"></div></div>
-    </div>`).join('');
-
-  const reasons={};
-  d.stages.forEach(s=>s.issues.forEach(i=>{
-    const k=i.rule.split('-')[0]; reasons[k]=(reasons[k]||0)+1;
-  }));
-  const rEntries=Object.entries(reasons).sort((a,b)=>b[1]-a[1]);
-  const maxR=Math.max(...rEntries.map(e=>e[1]));
-  document.getElementById('denial-breakdown').innerHTML=rEntries.map(([r,n])=>`
-    <div class="prow" style="flex-direction:column;align-items:flex-start;gap:2px;">
-      <div style="display:flex;justify-content:space-between;width:100%">
-        <span class="prow-label">${r} edits</span>
-        <span class="prow-val">${n}</span>
-      </div>
-      <div class="mini-bar" style="width:100%"><div class="mini-fill" style="background:var(--coral);width:${Math.round(n/maxR*100)}%"></div></div>
-    </div>`).join('');
-
-  const savEntries=d.stages.filter(s=>s.savings>0).sort((a,b)=>b.savings-a.savings);
-  const maxS=Math.max(...savEntries.map(s=>s.savings));
-  document.getElementById('savings-stage').innerHTML=savEntries.map(s=>`
-    <div class="prow" style="flex-direction:column;align-items:flex-start;gap:2px;">
-      <div style="display:flex;justify-content:space-between;width:100%">
-        <span class="prow-label">${s.name.split('(')[0].trim()}</span>
-        <span class="prow-val" style="color:#0F6E56">${fmt(s.savings)}</span>
-      </div>
-      <div class="mini-bar" style="width:100%"><div class="mini-fill" style="background:#1D9E75;width:${Math.round(s.savings/maxS*100)}%"></div></div>
     </div>`).join('');
 }
 
-function toggleStage(i){
-  const d=PERIODS[currentPeriod];
-  const s=d.stages[i];
-  const panel=document.getElementById('detail-panel');
-  if(activeStage===i){
-    activeStage=null;panel.classList.remove('open');
-    renderAll();return;
-  }
-  activeStage=i;
-  document.getElementById('dp-title').textContent=`Stage ${s.num} — ${s.name}: ${s.denied+s.pended} issue${s.denied+s.pended!==1?'s':''} (${s.denied} denied · ${s.pended} pended)`;
-  if(!s.issues.length){
-    document.getElementById('dp-claims').innerHTML='<div style="font-size:.82rem;color:var(--text-3);padding:4px 0;grid-column:1/-1;">✓ All claims passed this stage cleanly.</div>';
-  } else {
-    document.getElementById('dp-claims').innerHTML=s.issues.map(issue=>`
-      <div class="dp-claim ${issue.type}">
-        <div class="dp-claim-id">${issue.id}</div>
-        <div class="dp-claim-issue">${issue.issue}</div>
-        <div class="dp-claim-rule">Rule: ${issue.rule}</div>
-        <span class="dp-claim-badge" style="background:${issue.badgeColor};color:${issue.badgeText};border:1px solid ${issue.badgeText}22;">${issue.badge}</span>
-      </div>`).join('');
-  }
-  panel.classList.add('open');
-  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
-  renderAll();
+function selectStage(id){
+  const s=STAGES.find(x=>x.id===id);
+  if(selectedStage===id && !selectedSub){ expandedStages.has(id)?expandedStages.delete(id):expandedStages.add(id); }
+  else { expandedStages.add(id); }
+  selectedStage=id; selectedSub=null;
+  renderTree(); renderDetail(s,null);
+}
+
+function selectSub(subId,stageId,e){
+  e.stopPropagation();
+  const s=STAGES.find(x=>x.id===stageId);
+  const sub=s.subs.find(x=>x.id===subId);
+  selectedStage=stageId; selectedSub=subId;
+  renderTree(); renderDetail(s,sub);
+}
+
+function renderDetail(stage, sub){
+  const pd=stage.periods[period];
+  const rp=document.getElementById('right-panel');
+
+  const flowHTML=`
+    <div class="flow-card">
+      <div class="flow-header">
+        <div class="stage-bullet" style="background:${stage.color};width:22px;height:22px;font-size:.58rem">${String(stage.id).padStart(2,'0')}</div>
+        <div class="flow-title">${stage.name} — Data Flow</div>
+        <span style="margin-left:auto;font-family:var(--mono);font-size:.6rem;color:var(--text-3);">${stage.type}</span>
+      </div>
+      <div class="flow-body">
+        <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;gap:6px;">
+          <div class="flow-box" style="background:#F7F8FA;">
+            <div class="flow-box-title">From previous<br/>stage</div>
+            <div class="flow-box-sub" style="color:#3B6D11;font-weight:600;">${pd.pass+(pd.deny||0)+(pd.pend||0)+(pd.siu||0)} claims</div>
+          </div>
+          <div style="color:#D0D7E1;font-size:18px;">→</div>
+          <div class="flow-box highlight">
+            <div class="flow-box-title">${stage.name}</div>
+            <div class="flow-box-sub">${stage.type} validation</div>
+          </div>
+          <div style="color:#D0D7E1;font-size:18px;">→</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="background:#F0F0FF;border:1.5px solid #3B6D11;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;min-width:90px;">
+              <div style="font-weight:600;color:#3B6D11;">✓ ${pd.pass} pass</div>
+              <div style="font-size:.6rem;color:var(--text-3);">next stage →</div>
+            </div>
+            ${pd.deny>0?`<div style="background:#FFF5F5;border:1.5px solid #A32D2D;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;">
+              <div style="font-weight:600;color:#A32D2D;">✗ ${pd.deny} denied</div>
+              <div style="font-size:.6rem;color:var(--text-3);">→ 835 denial</div>
+            </div>`:''}
+            ${pd.pend>0?`<div style="background:#FFFBF5;border:1.5px solid #854F0B;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;">
+              <div style="font-weight:600;color:#854F0B;">⏳ ${pd.pend} pended</div>
+              <div style="font-size:.6rem;color:var(--text-3);">→ review queue</div>
+            </div>`:''}
+            ${pd.siu>0?`<div style="background:#EEEDFE;border:1.5px solid #534AB7;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;">
+              <div style="font-weight:600;color:#534AB7;">🔍 ${pd.siu} SIU</div>
+              <div style="font-size:.6rem;color:var(--text-3);">→ investigations</div>
+            </div>`:''}
+          </div>
+        </div>
+        <div style="margin-top:12px;background:#F7F8FA;border-radius:8px;padding:8px 12px;font-size:.72rem;color:var(--text-2);">
+          <span style="font-weight:600;color:var(--navy);">${stage.flow.question}</span>
+          &nbsp;→&nbsp; <span style="color:#3B6D11;">Yes: ${stage.flow.yes}</span>
+          &nbsp;·&nbsp; <span style="color:#A32D2D;">No: ${stage.flow.no}</span>
+        </div>
+      </div>
+    </div>`;
+
+  const subHTML=sub?`
+    <div class="claims-card">
+      <div class="claims-header">
+        <div class="claims-title">${sub.id} — ${sub.name}</div>
+      </div>
+      <div class="sub-detail">
+        <div class="sub-detail-title">Validation checks (${sub.checks.length})</div>
+        ${sub.checks.map(c=>`<div class="sub-check">
+          <span class="sub-check-icon" style="color:#0F6E56">✓</span>
+          <span style="color:var(--text-2)">${c}</span>
+        </div>`).join('')}
+      </div>
+    </div>`:'';
+
+  const badgeMap={pass:'b-pass',deny:'b-deny',pend:'b-pend',fwa:'b-fwa',siu:'b-siu'};
+  const labelMap={pass:'Passed',deny:'Denied',pend:'Pended',fwa:'FWA',siu:'SIU'};
+  const claimsHTML=`
+    <div class="claims-card">
+      <div class="claims-header">
+        <div class="claims-title">Claims at this stage — ${period}</div>
+        <div style="font-family:var(--mono);font-size:.62rem;color:var(--text-3);">${stage.claims.length} shown</div>
+      </div>
+      <div class="claims-body">
+        ${stage.claims.map(c=>`
+          <div class="claim-row">
+            <div class="claim-id">${c.id}</div>
+            <div>
+              <div class="claim-issue">${c.issue}</div>
+              <div class="claim-rule">Rule: ${c.rule}</div>
+            </div>
+            <div></div>
+            <span class="badge ${badgeMap[c.status]||'b-pass'}">${labelMap[c.status]||c.status}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  rp.innerHTML=flowHTML+subHTML+claimsHTML;
 }
 
 function setPeriod(p,btn){
-  currentPeriod=p;activeStage=null;
-  document.getElementById('detail-panel').classList.remove('open');
-  document.querySelectorAll('.dfilter').forEach(b=>b.classList.remove('on'));
+  period=p;
+  document.querySelectorAll('.pf').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  renderAll();
+  renderKPIs(); renderTree();
+  if(selectedStage){ const s=STAGES.find(x=>x.id===selectedStage); renderDetail(s,selectedSub?STAGES.find(x=>x.id===selectedStage).subs.find(x=>x.id===selectedSub):null); }
 }
 
-renderAll();
+renderKPIs(); renderTree();
 
 const nav=document.getElementById('nav');
 window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));

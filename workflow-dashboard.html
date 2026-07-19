@@ -516,6 +516,11 @@ const PERIOD_TOTALS = {
   week:{total:68,pass:41,deny:16,pend:11,fwa:3,siu:1,sav:187400},
   month:{total:292,pass:176,deny:69,pend:47,fwa:12,siu:5,sav:805200},
   ytd:{total:3536,pass:2130,deny:835,pend:571,fwa:145,siu:61,sav:9760000},
+  q1:{total:884,pass:533,deny:209,pend:143,fwa:37,siu:15,sav:2440000},
+  q2:{total:990,pass:597,deny:234,pend:160,fwa:41,siu:17,sav:2732800},
+  q3:{total:832,pass:500,deny:196,pend:134,fwa:34,siu:14,sav:2293600},
+  q4:{total:1068,pass:641,deny:251,pend:171,fwa:44,siu:18,sav:2941600},
+  custom:{total:0,pass:0,deny:0,pend:0,fwa:0,siu:0,sav:0},
 };
 
 let period='today', selectedStage=null, selectedSub=null, expandedStages=new Set();
@@ -723,11 +728,14 @@ const KPI_BADGE = {
 };
 
 function openKPIDrilldown(type) {
-  const d = PERIODS[period];
-  if(!d) return;
+  console.log('[KPI] openKPIDrilldown called with type:', type, 'period:', period);
+  const d = PERIOD_TOTALS[period] || PERIOD_TOTALS['today'];
+  console.log('[KPI] PERIOD_TOTALS data:', d);
+  if(!d){ console.error('[KPI] No period data found'); return; }
 
-  const countMap = {all:d.total, pass:d.approved, deny:d.denied, pend:d.pended, fwa:d.fwa||0, siu:d.siu||0, savings:d.approved};
+  const countMap = {all:d.total, pass:d.pass, deny:d.deny, pend:d.pend, fwa:d.fwa||0, siu:d.siu||0, savings:d.pass};
   const count = countMap[type]||0;
+  console.log('[KPI] count for type', type, '=', count);
   if(count===0){ alert('No claims of this type in the selected period.'); return; }
 
   // Highlight card
@@ -1049,12 +1057,14 @@ function applyCustomRange(){
   const base=PERIODS.week;
   const v=0.95+Math.random()*0.1; // slight variance
 
-  PERIODS['custom']={
+  PERIOD_TOTALS['custom']={
     total:Math.max(1,Math.round(base.total*scale*v)),
-    approved:Math.max(0,Math.round(base.approved*scale*v)),
-    denied:Math.max(0,Math.round(base.denied*scale*v)),
-    pended:Math.max(0,Math.round(base.pended*scale*v)),
-    savings:Math.max(0,Math.round(base.savings*scale*v)),
+    pass:Math.max(0,Math.round(base.pass*scale*v)),
+    deny:Math.max(0,Math.round(base.deny*scale*v)),
+    pend:Math.max(0,Math.round(base.pend*scale*v)),
+    fwa:Math.max(0,Math.round((base.fwa||0)*scale*v)),
+    siu:Math.max(0,Math.round((base.siu||0)*scale*v)),
+    sav:Math.max(0,Math.round(base.sav*scale*v)),
     stages:base.stages.map(s=>({
       ...s,
       inflow:Math.max(0,Math.round(s.inflow*scale*v)),

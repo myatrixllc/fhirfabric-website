@@ -605,9 +605,9 @@ function renderDrilldown(stage) {
       <!-- Search + filter -->
       <div style="padding:10px 14px;border-bottom:1px solid #F0F2F5;display:flex;gap:8px;align-items:center;">
         <input type="text" placeholder="Search claim ID, member, provider, issue..." value="${search}"
-          oninput="drilldown.search=this.value;drilldown.page=1;renderDrilldown(STAGES.find(s=>s.id===${stage.id}))"
+          oninput="drilldown.search=this.value;drilldown.page=1;renderDrilldown(STAGES.find(s=>s.id===drilldown.stageId))"
           style="flex:1;font-size:.75rem;padding:6px 10px;border:1px solid #D0D7E1;border-radius:6px;font-family:var(--sans);color:var(--navy);outline:none;"/>
-        <select onchange="drilldown.filterRule=this.value;drilldown.page=1;renderDrilldown(STAGES.find(s=>s.id===${stage.id}))"
+        <select onchange="drilldown.filterRule=this.value;drilldown.page=1;renderDrilldown(STAGES.find(s=>s.id===drilldown.stageId))"
           style="font-size:.72rem;padding:6px 8px;border:1px solid #D0D7E1;border-radius:6px;font-family:var(--sans);color:var(--navy);background:white;">
           <option value="">All rules</option>
           ${rules.map(r=>`<option value="${r}"${filterRule===r?' selected':''}>${r}</option>`).join('')}
@@ -641,16 +641,16 @@ function renderDrilldown(stage) {
           Showing ${Math.min((currentPage-1)*PAGE_SIZE+1, filtered.length)}–${Math.min(currentPage*PAGE_SIZE, filtered.length)} of ${filtered.length} claims
         </div>
         <div style="display:flex;gap:4px;">
-          <button onclick="drilldown.page=${currentPage-1};renderDrilldown(STAGES.find(s=>s.id===${stage.id}))" ${currentPage<=1?'disabled':''} 
+          <button onclick="drilldown.page=${currentPage-1};renderDrilldown(STAGES.find(s=>s.id===drilldown.stageId))" ${currentPage<=1?'disabled':''} 
             style="font-size:.72rem;padding:4px 10px;border:1px solid #D0D7E1;border-radius:6px;background:white;cursor:pointer;color:var(--navy);${currentPage<=1?'opacity:.4;cursor:default;':''}">← Prev</button>
           <div style="display:flex;gap:2px;">
             ${Array.from({length:Math.min(totalPages,7)},(_, i)=>{
               const pg = totalPages<=7 ? i+1 : currentPage<=4 ? i+1 : currentPage>=totalPages-3 ? totalPages-6+i : currentPage-3+i;
-              return `<button onclick="drilldown.page=${pg};renderDrilldown(STAGES.find(s=>s.id===${stage.id}))"
+              return `<button onclick="drilldown.page=${pg};renderDrilldown(STAGES.find(s=>s.id===drilldown.stageId))"
                 style="font-size:.7rem;width:26px;height:26px;border:1px solid ${pg===currentPage?'var(--navy)':'#D0D7E1'};border-radius:5px;background:${pg===currentPage?'var(--navy)':'white'};color:${pg===currentPage?'white':'var(--navy)'};cursor:pointer;">${pg}</button>`;
             }).join('')}
           </div>
-          <button onclick="drilldown.page=${currentPage+1};renderDrilldown(STAGES.find(s=>s.id===${stage.id}))" ${currentPage>=totalPages?'disabled':''}
+          <button onclick="drilldown.page=${currentPage+1};renderDrilldown(STAGES.find(s=>s.id===drilldown.stageId))" ${currentPage>=totalPages?'disabled':''}
             style="font-size:.72rem;padding:4px 10px;border:1px solid #D0D7E1;border-radius:6px;background:white;cursor:pointer;color:var(--navy);${currentPage>=totalPages?'opacity:.4;cursor:default;':''}">Next →</button>
         </div>
         <div style="font-size:.68rem;color:var(--text-3);">Page ${currentPage} of ${totalPages}</div>
@@ -756,15 +756,15 @@ function renderDetail(stage, sub){
               <div style="font-weight:600;color:#3B6D11;">✓ ${pd.pass} pass</div>
               <div style="font-size:.6rem;color:var(--text-3);">next stage →</div>
             </div>
-            ${pd.deny>0?`<div onclick="openDrilldown(stage.id,'deny',${pd.deny})" style="background:#FFF5F5;border:1.5px solid #A32D2D;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;cursor:pointer;transition:box-shadow .1s;" onmouseover="this.style.boxShadow='0 2px 6px rgba(162,45,45,.2)'" onmouseout="this.style.boxShadow='none'">
+            ${pd.deny>0?`<div onclick="openDrilldown(${stage.id},'deny',${pd.deny})" style="background:#FFF5F5;border:1.5px solid #A32D2D;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;cursor:pointer;transition:box-shadow .1s;" onmouseover="this.style.boxShadow='0 2px 6px rgba(162,45,45,.2)'" onmouseout="this.style.boxShadow='none'">
               <div style="font-weight:600;color:#A32D2D;">✗ ${pd.deny} denied</div>
               <div style="font-size:.6rem;color:#A32D2D;">click to see all →</div>
             </div>`:''}
-            ${pd.pend>0?`<div onclick="openDrilldown(stage.id,'pend',${pd.pend})" style="background:#FFFBF5;border:1.5px solid #854F0B;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;cursor:pointer;transition:box-shadow .1s;" onmouseover="this.style.boxShadow='0 2px 6px rgba(133,79,11,.2)'" onmouseout="this.style.boxShadow='none'">
+            ${pd.pend>0?`<div onclick="openDrilldown(${stage.id},'pend',${pd.pend})" style="background:#FFFBF5;border:1.5px solid #854F0B;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;cursor:pointer;transition:box-shadow .1s;" onmouseover="this.style.boxShadow='0 2px 6px rgba(133,79,11,.2)'" onmouseout="this.style.boxShadow='none'">
               <div style="font-weight:600;color:#854F0B;">⏳ ${pd.pend} pended</div>
               <div style="font-size:.6rem;color:#854F0B;">click to see all →</div>
             </div>`:''}
-            ${pd.siu>0?`<div onclick="openDrilldown(stage.id,'siu',${pd.siu})" style="background:#EEEDFE;border:1.5px solid #534AB7;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;cursor:pointer;transition:box-shadow .1s;" onmouseover="this.style.boxShadow='0 2px 6px rgba(83,74,183,.2)'" onmouseout="this.style.boxShadow='none'">
+            ${pd.siu>0?`<div onclick="openDrilldown(${stage.id},'siu',${pd.siu})" style="background:#EEEDFE;border:1.5px solid #534AB7;border-radius:8px;padding:6px 10px;font-size:.7rem;text-align:center;cursor:pointer;transition:box-shadow .1s;" onmouseover="this.style.boxShadow='0 2px 6px rgba(83,74,183,.2)'" onmouseout="this.style.boxShadow='none'">
               <div style="font-weight:600;color:#534AB7;">🔍 ${pd.siu} SIU</div>
               <div style="font-size:.6rem;color:#534AB7;">click to see all →</div>
             </div>`:''}

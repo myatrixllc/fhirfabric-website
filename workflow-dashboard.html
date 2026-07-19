@@ -726,83 +726,150 @@ function openKPIDrilldown(type) {
   const d = PERIODS[period];
   if(!d) return;
 
-  // Build cross-stage claim list for this disposition
-  const countMap = {
-    all: d.total, pass: d.approved, deny: d.denied,
-    pend: d.pended, fwa: d.fwa || 0, siu: d.siu || 0,
-    savings: d.approved
-  };
-  const count = countMap[type] || 0;
-  if(count === 0) return;
+  const countMap = {all:d.total, pass:d.approved, deny:d.denied, pend:d.pended, fwa:d.fwa||0, siu:d.siu||0, savings:d.approved};
+  const count = countMap[type]||0;
+  if(count===0){ alert('No claims of this type in the selected period.'); return; }
 
-  // Highlight active KPI card
+  // Highlight card
   document.querySelectorAll('.sc').forEach(c=>c.classList.remove('kpi-active'));
-  const cardMap={all:'.sc-total',pass:'.sc-pass',deny:'.sc-deny',pend:'.sc-pend',fwa:'.sc-fwa',siu:'.sc-siu',savings:'.sc-savings'};
-  const card=document.querySelector(cardMap[type]);
+  const cm={all:'.sc-total',pass:'.sc-pass',deny:'.sc-deny',pend:'.sc-pend',fwa:'.sc-fwa',siu:'.sc-siu',savings:'.sc-savings'};
+  const card=document.querySelector(cm[type]);
   if(card) card.classList.add('kpi-active');
 
-  // Generate cross-stage claims
-  // For KPI drilldown we aggregate across all stages that have this type
-  const stagesWithType = d.stages.filter(s => {
-    if(type==='deny') return s.denied > 0;
-    if(type==='pend') return s.pended > 0;
-    if(type==='fwa' || type==='siu') return s.siu > 0;
-    if(type==='pass' || type==='all' || type==='savings') return s.passed > 0;
-    return true;
-  });
-
-  // Generate claim list with stage context
-  const PROVIDERS=['Riverside Orthopaedics','Metro Cardiology Group','Northside Gastro LLC',
-    'Clearwater Primary Care','Midwest Heart & Vascular','Northwestern Orthopedics',
-    'Chicago Eye Institute','Midwest Spine Center','Regional Health Partners','Lake Shore Imaging'];
-  const MEMBERS=['MBR-2024-88821','MBR-2024-55102','MBR-2024-71103','MBR-2024-33291',
-    'MBR-2024-19982','MBR-2024-55899','MBR-2024-77412','MBR-2024-66301','MBR-2024-44892','MBR-2024-92011'];
-  const AMOUNTS=[16200,8200,4800,75,37200,12000,3200,950,2100,6800,14500,890,5600,22000,1200];
-
-  // Keep the original type key so renderDrilldown can style correctly
-  const claimType = type; // pass through as-is: 'deny','pend','fwa','siu','pass','all','savings'
-  const claims=[];
-  for(let i=0; i<count; i++){
-    const stage=stagesWithType[i%Math.max(stagesWithType.length,1)];
-    const stageNum=stage?stage.num:'01';
-    const stageName=stage?stage.name:'Pipeline';
-    const stageInt = parseInt(stageNum) || 13;
-    const denyRules = DENIAL_RULES[stageInt]||DENIAL_RULES[13]||[{rule:'PASS',desc:'All validations passed'}];
-    const pendRules = PEND_RULES[stageInt]||[{rule:'REVIEW',desc:'Review required'}];
-    const passDesc = 'All validations passed — claim approved at contracted rate';
-    let rule;
-    if(type==='deny') rule = denyRules[i%denyRules.length];
-    else if(type==='pend') rule = pendRules[i%pendRules.length];
-    else if(type==='fwa') rule = {rule:'FWA-OUTLIER', desc:'FWA pattern detected — billing outlier or systematic unbundling'};
-    else if(type==='siu') rule = {rule:'SIU-REFER', desc:'SIU referral — high-risk FWA pattern confirmed'};
-    else rule = {rule:'APPROVED', desc: type==='savings'?'Savings recovered at pricing or coding stage':passDesc};
-    claims.push({
-      id:'CLM-'+String(2024000+i).slice(-5),
-      member:MEMBERS[i%MEMBERS.length],
-      provider:PROVIDERS[i%PROVIDERS.length],
-      amount:AMOUNTS[i%AMOUNTS.length],
-      stage:'Stage '+stageNum+' — '+stageName,
-      rule:rule.rule,
-      desc:rule.desc,
-      type:claimType,
-    });
-  }
-
-  drilldown = {stageId:'kpi-'+type, type:claimType, claims, page:1, search:'', filterRule:''};
+  // Clear stage selection
   selectedStage=null; selectedSub=null;
+  drilldown=null;
   renderTree();
 
-  // Render in right panel with KPI header
-  const color=KPI_COLORS[type];
-  const label=KPI_LABELS[type];
-  const typeBadge=KPI_BADGE[type];
-  const typeLabel=type==='deny'?'Denied':type==='pend'?'Pended':type==='siu'?'SIU':type==='fwa'?'FWA':'Approved';
-  const typeBg=type==='deny'?'#FCEBEB':type==='pend'?'#FAEEDA':type==='siu'||type==='fwa'?'#EEEDFE':'#EAF3DE';
+  const PROVIDERS=['Riverside Orthopaedics','Metro Cardiology Group','Northside Gastro LLC','Clearwater Primary Care','Midwest Heart & Vascular','Northwestern Orthopedics','Chicago Eye Institute','Midwest Spine Center','Regional Health Partners','Lake Shore Imaging'];
+  const MEMBERS=['MBR-2024-88821','MBR-2024-55102','MBR-2024-71103','MBR-2024-33291','MBR-2024-19982','MBR-2024-55899','MBR-2024-77412','MBR-2024-66301','MBR-2024-44892','MBR-2024-92011'];
+  const AMOUNTS=[16200,8200,4800,75,37200,12000,3200,950,2100,6800,14500,890,5600,22000,1200];
 
-  // Use renderDrilldown with a fake stage object
-  const fakeStage={id:'kpi-'+type, name:label, color:color, subs:[]};
-  renderDrilldown(fakeStage);
+  const STAGE_RULES={
+    deny:{ 2:[{r:'EV-001',d:'Coverage lapsed'},{r:'EV-003',d:'Member ID not found'}], 4:[{r:'COB-001',d:'COB secondary — awaiting primary EOB'}], 8:[{r:'NCCI-BUNDLE',d:'NCCI bundling violation'},{r:'MUE-EXCEED',d:'MUE limit exceeded'},{r:'POS-RESTRICT',d:'Wrong place of service'},{r:'UPCODE-AI',d:'AI: upcoding pattern detected'}], 7:[{r:'LCD-FAIL',d:'LCD criteria not met'},{r:'MED-NEC',d:'Medical necessity not established'}], 10:[{r:'PV-002',d:'Provider taxonomy/specialty mismatch'}] },
+    pend:{ 6:[{r:'PA-REQUIRED',d:'Prior authorization required — no auth on file'}], 7:[{r:'CDI-FLAG',d:'AI: ICD-10 specificity gap — CDI review recommended'}], 4:[{r:'COB-PEND',d:'COB secondary — awaiting primary payer EOB'}] },
+    fwa:[{r:'FWA-OUTLIER',d:'Provider billing >2 SD above peer group median'},{r:'FWA-PATTERN',d:'Systematic unbundling pattern across multiple claims'}],
+    siu:[{r:'SIU-REFER',d:'SIU referral — high-risk FWA pattern confirmed (risk ≥80)'},{r:'SIU-PHANTOM',d:'Potential phantom billing — service date inconsistency'}],
+  };
+
+  const claims=[];
+  for(let i=0;i<count;i++){
+    let rule,stageLabel;
+    if(type==='deny'){
+      const stageKeys=Object.keys(STAGE_RULES.deny).map(Number);
+      const sk=stageKeys[i%stageKeys.length];
+      const rules=STAGE_RULES.deny[sk];
+      rule=rules[i%rules.length];
+      const st=STAGES.find(s=>s.id===sk);
+      stageLabel='Stage '+String(sk).padStart(2,'0')+(st?' — '+st.name:'');
+    } else if(type==='pend'){
+      const stageKeys=Object.keys(STAGE_RULES.pend).map(Number);
+      const sk=stageKeys[i%stageKeys.length];
+      const rules=STAGE_RULES.pend[sk];
+      rule=rules[i%rules.length];
+      const st=STAGES.find(s=>s.id===sk);
+      stageLabel='Stage '+String(sk).padStart(2,'0')+(st?' — '+st.name:'');
+    } else if(type==='fwa'){
+      rule=STAGE_RULES.fwa[i%STAGE_RULES.fwa.length];
+      stageLabel='Stage 12 — FWA Screening';
+    } else if(type==='siu'){
+      rule=STAGE_RULES.siu[i%STAGE_RULES.siu.length];
+      stageLabel='Stage 12 — FWA Screening';
+    } else {
+      rule={r:'APPROVED',d:'All 13 validation stages passed — claim approved at contracted rate'};
+      stageLabel='Stage 13 — Final Disposition';
+    }
+    claims.push({id:'CLM-'+String(2024000+i).slice(-5), member:MEMBERS[i%MEMBERS.length], provider:PROVIDERS[i%PROVIDERS.length], amount:AMOUNTS[i%AMOUNTS.length], stage:stageLabel, rule:rule.r, desc:rule.d, type});
+  }
+
+  // Store and render directly
+  const kpiState={stageId:'kpi-'+type, type, claims, page:1, search:'', filterRule:''};
+  drilldown=kpiState;
+  renderKPIDrilldown(type, count, claims);
 }
+
+function renderKPIDrilldown(type, totalCount, allClaims) {
+  const COLORS={deny:'#A32D2D',pend:'#854F0B',siu:'#534AB7',fwa:'#72243E',pass:'#3B6D11',all:'var(--navy)',savings:'#00838F'};
+  const BGS={deny:'#FCEBEB',pend:'#FAEEDA',siu:'#EEEDFE',fwa:'#FBEAF0',pass:'#EAF3DE',all:'#F0F2F5',savings:'#E1F5EE'};
+  const BADGES={deny:'b-deny',pend:'b-pend',siu:'b-siu',fwa:'b-fwa',pass:'b-pass',all:'b-pass',savings:'b-pass'};
+  const LABELS={deny:'Denied',pend:'Pended',siu:'SIU Referred',fwa:'FWA Flagged',pass:'Approved',all:'All Claims',savings:'Claims with Savings'};
+  const typeColor=COLORS[type]||'#374151';
+  const typeBg=BGS[type]||'#F7F8FA';
+  const typeBadge=BADGES[type]||'b-pass';
+  const typeLabel=LABELS[type]||type;
+
+  const {search, filterRule, page} = drilldown;
+  const rules=[...new Set(allClaims.map(c=>c.rule))];
+  let filtered=allClaims.filter(c=>{
+    const ms=!search||c.id.includes(search.toUpperCase())||c.member.toLowerCase().includes(search.toLowerCase())||c.provider.toLowerCase().includes(search.toLowerCase())||c.desc.toLowerCase().includes(search.toLowerCase())||c.stage.toLowerCase().includes(search.toLowerCase());
+    const mr=!filterRule||c.rule===filterRule;
+    return ms&&mr;
+  });
+  const PAGE_SIZE=20;
+  const totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
+  const cur=Math.min(page,totalPages);
+  const paged=filtered.slice((cur-1)*PAGE_SIZE,cur*PAGE_SIZE);
+
+  document.getElementById('right-panel').innerHTML=`
+    <div style="background:white;border:1px solid ${typeColor}33;border-radius:12px;overflow:hidden;">
+      <div style="background:${typeBg};padding:14px 20px;border-bottom:1px solid ${typeColor}22;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-weight:600;font-size:.9rem;color:var(--navy);">${typeLabel}</div>
+          <div style="font-size:.72rem;color:${typeColor};font-weight:600;margin-top:2px;">${filtered.length} claims · ${drilldown.search||drilldown.filterRule?'filtered':'all periods'}</div>
+        </div>
+        <button onclick="closeKPIDrilldown()" style="font-size:.72rem;padding:5px 10px;border:1px solid #D0D7E1;border-radius:6px;background:white;cursor:pointer;color:var(--navy);">← Close</button>
+      </div>
+      <div style="padding:10px 14px;border-bottom:1px solid #F0F2F5;display:flex;gap:8px;">
+        <input type="text" placeholder="Search claim, member, provider, stage, issue..." value="${search}"
+          oninput="drilldown.search=this.value;drilldown.page=1;renderKPIDrilldown('${type}',${totalCount},drilldown.claims)"
+          style="flex:1;font-size:.75rem;padding:6px 10px;border:1px solid #D0D7E1;border-radius:6px;font-family:var(--sans);color:var(--navy);outline:none;"/>
+        <select onchange="drilldown.filterRule=this.value;drilldown.page=1;renderKPIDrilldown('${type}',${totalCount},drilldown.claims)"
+          style="font-size:.72rem;padding:6px 8px;border:1px solid #D0D7E1;border-radius:6px;font-family:var(--sans);color:var(--navy);background:white;">
+          <option value="">All rules</option>
+          ${rules.map(r=>`<option value="${r}"${filterRule===r?' selected':''}>${r}</option>`).join('')}
+        </select>
+        <div style="font-size:.68rem;color:var(--text-3);white-space:nowrap;align-self:center;">${filtered.length} of ${totalCount}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:80px 90px 1fr 1fr 60px 80px;background:#F7F8FA;border-bottom:1px solid #E2E6ED;">
+        ${['Claim ID','Member','Provider / Stage','Issue / Rule','Billed','Status'].map(h=>`<div style="padding:6px 10px;font-size:.58rem;font-weight:600;color:#6B7685;text-transform:uppercase;letter-spacing:.06em;">${h}</div>`).join('')}
+      </div>
+      <div style="max-height:440px;overflow-y:auto;">
+        ${paged.length?paged.map(c=>`
+          <div style="display:grid;grid-template-columns:80px 90px 1fr 1fr 60px 80px;border-bottom:1px solid #F0F2F5;" onmouseover="this.style.background='#F7F8FA'" onmouseout="this.style.background='white'">
+            <div style="padding:8px 10px;font-family:monospace;font-size:.62rem;color:#6B7685;">${c.id}</div>
+            <div style="padding:8px 10px;font-size:.68rem;color:#6B7685;">${c.member.replace('MBR-2024-','MBR-')}</div>
+            <div style="padding:8px 10px;"><div style="font-size:.72rem;color:var(--navy);font-weight:500;">${c.provider}</div><div style="font-size:.62rem;color:#9BA8B6;margin-top:1px;">${c.stage}</div></div>
+            <div style="padding:8px 10px;"><div style="font-size:.72rem;color:var(--navy);">${c.desc}</div><div style="font-family:monospace;font-size:.6rem;color:#9BA8B6;margin-top:1px;">${c.rule}</div></div>
+            <div style="padding:8px 10px;font-size:.72rem;color:var(--navy);font-weight:500;">$${c.amount.toLocaleString()}</div>
+            <div style="padding:8px 10px;"><span class="badge ${typeBadge}">${typeLabel.split(' ')[0]}</span></div>
+          </div>`).join('')
+        :`<div style="padding:24px;text-align:center;color:#9BA8B6;font-size:.82rem;">No claims match your search</div>`}
+      </div>
+      <div style="padding:10px 14px;border-top:1px solid #F0F2F5;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:.72rem;color:#6B7685;">Showing ${Math.min((cur-1)*PAGE_SIZE+1,filtered.length)}–${Math.min(cur*PAGE_SIZE,filtered.length)} of ${filtered.length}</div>
+        <div style="display:flex;gap:3px;">
+          <button onclick="drilldown.page=${cur-1};renderKPIDrilldown('${type}',${totalCount},drilldown.claims)" ${cur<=1?'disabled':''}
+            style="font-size:.7rem;padding:4px 8px;border:1px solid #D0D7E1;border-radius:5px;background:white;cursor:pointer;${cur<=1?'opacity:.4':''}">←</button>
+          ${Array.from({length:Math.min(totalPages,5)},(_,i)=>{const pg=cur<=3?i+1:cur>=totalPages-2?totalPages-4+i:cur-2+i;return `<button onclick="drilldown.page=${pg};renderKPIDrilldown('${type}',${totalCount},drilldown.claims)" style="font-size:.7rem;width:26px;height:26px;border:1px solid ${pg===cur?'var(--navy)':'#D0D7E1'};border-radius:5px;background:${pg===cur?'var(--navy)':'white'};color:${pg===cur?'white':'var(--navy)'};cursor:pointer;">${pg}</button>`;}).join('')}
+          <button onclick="drilldown.page=${cur+1};renderKPIDrilldown('${type}',${totalCount},drilldown.claims)" ${cur>=totalPages?'disabled':''}
+            style="font-size:.7rem;padding:4px 8px;border:1px solid #D0D7E1;border-radius:5px;background:white;cursor:pointer;${cur>=totalPages?'opacity:.4':''}">→</button>
+        </div>
+        <div style="font-size:.68rem;color:#6B7685;">Page ${cur} of ${totalPages}</div>
+      </div>
+    </div>`;
+}
+
+function closeKPIDrilldown(){
+  drilldown=null;
+  document.querySelectorAll('.sc').forEach(c=>c.classList.remove('kpi-active'));
+  document.getElementById('right-panel').innerHTML=`
+    <div class="empty-state">
+      <i class="ti ti-hierarchy" style="font-size:32px;color:#D0D7E1;display:block;margin-bottom:12px;"></i>
+      <div style="font-weight:600;color:var(--navy);margin-bottom:6px;">Select a stage or sub-validation</div>
+      <div style="color:var(--text-3);line-height:1.6;">Click any item in the tree on the left to see<br/>the data flow diagram, sub-validations, and<br/>which claims hit this stage and why.</div>
+    </div>`;
+}
+
 
 function renderKPIs(){
   const d=PERIOD_TOTALS[period];

@@ -91,12 +91,11 @@
       </div>
       <span class="logo-name">FHIRFabric</span>
     </a>
-        <ul class="nav-links" id="navLinks">
+            <ul class="nav-links" id="navLinks">
       <li><a href="platform.html">Platform</a></li>
       <li><a href="payment-integrity.html" class="active">Payment Integrity</a></li>
-      <li><a href="workflow-dashboard.html">PI Dashboard</a></li>
-      <li><a href="pa-workflow-dashboard.html">PA Dashboard</a></li>
-      <li><a href="workflow-workflow-dashboard.html">Workflow</a></li>
+      <li><a href="workflow-dashboard.html">Workflow</a></li>
+      <li><a href="pa-dashboard.html">PA Dashboard</a></li>
       <li><a href="compliance.html">Compliance</a></li>
       <li><a href="experience.html">Experience</a></li>
       <li><a href="contact.html" class="nav-cta">Request a Briefing</a></li>
@@ -275,12 +274,12 @@
   </div>
 </div>
 
-<!-- DASHBOARD PREVIEW -->
+<!-- WORKFLOW DASHBOARD PREVIEW -->
 <section class="section bg-off" id="dashboard-preview">
   <div class="section-inner">
     <div class="eyebrow reveal">Real-time visibility</div>
-    <h2 class="h2 reveal d1">Every claim. Every finding.<br /><em>Every dollar. In one place.</em></h2>
-    <p class="section-lead reveal d2">Every other integrity vendor is a black box — you send claims in, you get a report weeks later. FHIRFabric is the first platform where your VP of Payment Integrity opens a browser and sees exactly what's happening, right now.</p>
+    <h2 class="h2 reveal d1">Every claim. Every stage.<br /><em>Every dollar. One place.</em></h2>
+    <p class="section-lead reveal d2">Every other integrity vendor is a black box — you send claims in, you get a report weeks later. FHIRFabric is the first platform where your VP of Payment Integrity opens a browser, sees a 17-stage workflow tree, clicks any stage, and sees exactly which claims stopped there and why.</p>
 
     <!-- Browser frame -->
     <div style="margin-top:48px;border:1px solid var(--gray-2);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-lg);" class="reveal">
@@ -291,101 +290,100 @@
           <div style="width:11px;height:11px;border-radius:50%;background:#EF9F27;"></div>
           <div style="width:11px;height:11px;border-radius:50%;background:#97C459;"></div>
         </div>
-        <div style="flex:1;background:rgba(255,255,255,.08);border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:.65rem;color:rgba(255,255,255,.4);">fhirfabric.com/dashboard</div>
+        <div style="flex:1;background:rgba(255,255,255,.08);border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:.65rem;color:rgba(255,255,255,.4);">fhirfabric.com/workflow-dashboard</div>
         <div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.6rem;color:#1D9E75;">
           <div style="width:5px;height:5px;border-radius:50%;background:#1D9E75;animation:pi-pulse 2s infinite;"></div>Live
         </div>
       </div>
-      <!-- Mini dashboard -->
-      <div style="background:#F7F8FA;padding:16px;">
-        <!-- KPI row -->
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px;">
-          <div style="background:white;border:1px solid #E2E6ED;border-radius:8px;padding:10px 8px;border-top:3px solid #0B1F3A;">
-            <div style="font-size:.55rem;color:#6B7685;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:monospace;">Total</div>
-            <div style="font-size:1.3rem;font-weight:700;color:#0B1F3A;font-family:Georgia,serif;">5</div>
+      <!-- Mini workflow preview -->
+      <div style="background:#F0F2F5;padding:14px;display:grid;grid-template-columns:200px 1fr;gap:10px;">
+        <!-- Mini tree -->
+        <div style="background:white;border:1px solid #E2E6ED;border-radius:10px;overflow:hidden;">
+          <div style="background:#0B1F3A;padding:8px 12px;">
+            <div style="font-size:.65rem;font-weight:600;color:white;">PI Processing Tree</div>
+            <div style="font-size:.58rem;color:rgba(255,255,255,.4);margin-top:1px;">17 stages · click to expand</div>
           </div>
-          <div style="background:white;border:1px solid #E2E6ED;border-radius:8px;padding:10px 8px;border-top:3px solid #3B6D11;">
-            <div style="font-size:.55rem;color:#6B7685;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:monospace;">Approved</div>
-            <div style="font-size:1.3rem;font-weight:700;color:#3B6D11;font-family:Georgia,serif;">1</div>
-          </div>
-          <div style="background:white;border:1px solid #E2E6ED;border-radius:8px;padding:10px 8px;border-top:3px solid #A32D2D;">
-            <div style="font-size:.55rem;color:#6B7685;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:monospace;">Denied</div>
-            <div style="font-size:1.3rem;font-weight:700;color:#A32D2D;font-family:Georgia,serif;">2</div>
-          </div>
-          <div style="background:white;border:1px solid #E2E6ED;border-radius:8px;padding:10px 8px;border-top:3px solid #854F0B;">
-            <div style="font-size:.55rem;color:#6B7685;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:monospace;">Pended</div>
-            <div style="font-size:1.3rem;font-weight:700;color:#854F0B;font-family:Georgia,serif;">1</div>
-          </div>
-          <div style="background:white;border:1px solid #E2E6ED;border-radius:8px;padding:10px 8px;border-top:3px solid #72243E;">
-            <div style="font-size:.55rem;color:#6B7685;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:monospace;">FWA</div>
-            <div style="font-size:1.3rem;font-weight:700;color:#72243E;font-family:Georgia,serif;">2</div>
-          </div>
-          <div style="background:white;border:1px solid #E2E6ED;border-radius:8px;padding:10px 8px;border-top:3px solid #3C3489;">
-            <div style="font-size:.55rem;color:#6B7685;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:monospace;">SIU</div>
-            <div style="font-size:1.3rem;font-weight:700;color:#3C3489;font-family:Georgia,serif;">1</div>
-          </div>
-          <div style="background:white;border:1px solid #E2E6ED;border-radius:8px;padding:10px 8px;border-top:3px solid #00838F;">
-            <div style="font-size:.55rem;color:#6B7685;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:monospace;">Savings</div>
-            <div style="font-size:1.1rem;font-weight:700;color:#00838F;font-family:Georgia,serif;">$25K</div>
-          </div>
-        </div>
-        <!-- Mini claims table -->
-        <div style="background:white;border:1px solid #E2E6ED;border-radius:8px;overflow:hidden;">
-          <div style="padding:8px 12px;border-bottom:1px solid #E2E6ED;display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:.75rem;font-weight:600;color:#0B1F3A;">Claims</span>
-            <div style="display:flex;gap:4px;">
-              <span style="font-size:.62rem;padding:2px 7px;background:#0B1F3A;color:white;border-radius:100px;">All</span>
-              <span style="font-size:.62rem;padding:2px 7px;border:1px solid #E2E6ED;color:#6B7685;border-radius:100px;">Denied</span>
-              <span style="font-size:.62rem;padding:2px 7px;border:1px solid #E2E6ED;color:#6B7685;border-radius:100px;">FWA</span>
-              <span style="font-size:.62rem;padding:2px 7px;border:1px solid #E2E6ED;color:#6B7685;border-radius:100px;">SIU</span>
+          <div style="padding:8px;">
+            <!-- Intake -->
+            <div style="display:flex;align-items:center;gap:6px;padding:5px 6px;background:#F7F8FA;border-radius:5px;margin-bottom:4px;">
+              <div style="width:18px;height:18px;border-radius:50%;background:#0B1F3A;display:flex;align-items:center;justify-content:center;font-size:8px;color:white;">⬡</div>
+              <div style="font-size:.65rem;font-weight:600;color:#0B1F3A;">Claim Intake</div>
+              <div style="margin-left:auto;background:#0B1F3A;color:white;font-size:.55rem;padding:1px 5px;border-radius:8px;font-family:monospace;">10</div>
+            </div>
+            <!-- Stages -->
+            <div style="border-left:2px solid #E2E6ED;margin-left:8px;padding-left:8px;">
+              ${[
+                ['01','Claim Structure','#374151','10✓',''],
+                ['02','Eligibility','#0F6E56','9✓','1✗'],
+                ['03','Benefits','#0F6E56','9✓',''],
+                ['04','COB','#0F6E56','9✓',''],
+                ['05','Provider','#0F6E56','9✓',''],
+                ['06','Authorization','#854F0B','8✓','1⏳'],
+                ['07','Clinical (AI)','#534AB7','7✓','1⏳'],
+                ['08','Coding (AI)','#534AB7','6✓','2✗ 1⏳'],
+              ].map(([n,name,col,pass,fail])=>`
+              <div style="display:flex;align-items:center;gap:5px;padding:3px 4px;border-radius:4px;margin-bottom:2px;">
+                <div style="width:14px;height:14px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:700;color:white;flex-shrink:0;">${n}</div>
+                <div style="font-size:.62rem;color:#374151;flex:1;">${name}</div>
+                <span style="font-size:.55rem;font-weight:700;color:#3B6D11;">${pass}</span>
+                ${fail?`<span style="font-size:.55rem;font-weight:700;color:#A32D2D;">${fail}</span>`:''}
+              </div>`).join('')}
+              <div style="font-size:.58rem;color:#9BA8B6;padding:3px 4px;">+ 9 more stages...</div>
             </div>
           </div>
-          <table style="width:100%;border-collapse:collapse;font-size:.72rem;">
-            <thead><tr style="background:#F7F8FA;">
-              <th style="padding:6px 10px;text-align:left;font-size:.58rem;color:#6B7685;font-weight:600;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #E2E6ED;">Claim ID</th>
-              <th style="padding:6px 10px;text-align:left;font-size:.58rem;color:#6B7685;font-weight:600;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #E2E6ED;">Provider</th>
-              <th style="padding:6px 10px;text-align:left;font-size:.58rem;color:#6B7685;font-weight:600;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #E2E6ED;">Billed</th>
-              <th style="padding:6px 10px;text-align:left;font-size:.58rem;color:#6B7685;font-weight:600;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #E2E6ED;">Savings</th>
-              <th style="padding:6px 10px;text-align:left;font-size:.58rem;color:#6B7685;font-weight:600;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #E2E6ED;">Status</th>
-            </tr></thead>
-            <tbody>
-              <tr style="border-bottom:1px solid #F0F2F5;">
-                <td style="padding:7px 10px;font-family:monospace;font-size:.65rem;color:#6B7685;">CLM-00441</td>
-                <td style="padding:7px 10px;color:#0B1F3A;">Riverside Orthopaedics</td>
-                <td style="padding:7px 10px;color:#0B1F3A;">$16,200</td>
-                <td style="padding:7px 10px;color:#3B6D11;font-weight:600;">$16,200</td>
-                <td style="padding:7px 10px;"><span style="background:#EEEDFE;color:#26215C;border:1px solid #CECBF6;border-radius:100px;padding:2px 7px;font-size:.65rem;font-weight:600;">SIU</span></td>
-              </tr>
-              <tr style="border-bottom:1px solid #F0F2F5;">
-                <td style="padding:7px 10px;font-family:monospace;font-size:.65rem;color:#6B7685;">CLM-00442</td>
-                <td style="padding:7px 10px;color:#0B1F3A;">Clearwater Primary Care</td>
-                <td style="padding:7px 10px;color:#0B1F3A;">$75</td>
-                <td style="padding:7px 10px;color:#6B7685;">—</td>
-                <td style="padding:7px 10px;"><span style="background:#EAF3DE;color:#27500A;border:1px solid #C0DD97;border-radius:100px;padding:2px 7px;font-size:.65rem;font-weight:600;">Approved</span></td>
-              </tr>
-              <tr style="border-bottom:1px solid #F0F2F5;">
-                <td style="padding:7px 10px;font-family:monospace;font-size:.65rem;color:#6B7685;">CLM-00443</td>
-                <td style="padding:7px 10px;color:#0B1F3A;">Metro Cardiology Group</td>
-                <td style="padding:7px 10px;color:#0B1F3A;">$8,200</td>
-                <td style="padding:7px 10px;color:#3B6D11;font-weight:600;">$4,100</td>
-                <td style="padding:7px 10px;"><span style="background:#FAEEDA;color:#412402;border:1px solid #FAC775;border-radius:100px;padding:2px 7px;font-size:.65rem;font-weight:600;">Pended</span></td>
-              </tr>
-              <tr style="border-bottom:1px solid #F0F2F5;">
-                <td style="padding:7px 10px;font-family:monospace;font-size:.65rem;color:#6B7685;">CLM-00444</td>
-                <td style="padding:7px 10px;color:#0B1F3A;">Northside Gastro LLC</td>
-                <td style="padding:7px 10px;color:#0B1F3A;">$4,800</td>
-                <td style="padding:7px 10px;color:#3B6D11;font-weight:600;">$2,200</td>
-                <td style="padding:7px 10px;"><span style="background:#FBEAF0;color:#4B1528;border:1px solid #F4C0D1;border-radius:100px;padding:2px 7px;font-size:.65rem;font-weight:600;">FWA</span></td>
-              </tr>
-              <tr>
-                <td style="padding:7px 10px;font-family:monospace;font-size:.65rem;color:#6B7685;">CLM-00445</td>
-                <td style="padding:7px 10px;color:#0B1F3A;">Riverside Medical Center</td>
-                <td style="padding:7px 10px;color:#0B1F3A;">$37,200</td>
-                <td style="padding:7px 10px;color:#3B6D11;font-weight:600;">$7,032</td>
-                <td style="padding:7px 10px;"><span style="background:#FCEBEB;color:#501313;border:1px solid #F7C1C1;border-radius:100px;padding:2px 7px;font-size:.65rem;font-weight:600;">Denied</span></td>
-              </tr>
-            </tbody>
-          </table>
+        </div>
+        <!-- Mini detail panel -->
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <!-- Flow diagram preview -->
+          <div style="background:white;border:1px solid #E2E6ED;border-radius:10px;padding:10px 14px;">
+            <div style="font-size:.65rem;font-weight:600;color:#0B1F3A;margin-bottom:8px;">Stage 08 — Coding Validation — Data Flow</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="border:1px solid #E2E6ED;border-radius:6px;padding:6px 8px;font-size:.62rem;text-align:center;background:#F7F8FA;min-width:70px;">
+                <div style="font-weight:600;color:#0B1F3A;">Previous</div>
+                <div style="color:#3B6D11;font-weight:600;margin-top:2px;">7 claims</div>
+              </div>
+              <div style="color:#D0D7E1;font-size:14px;">→</div>
+              <div style="border:2px solid #00838F;border-radius:6px;padding:6px 8px;font-size:.62rem;text-align:center;background:#F2FBFC;min-width:80px;">
+                <div style="font-weight:600;color:#0B1F3A;">Coding (AI)</div>
+                <div style="color:#00838F;font-size:.58rem;">LLM validation</div>
+              </div>
+              <div style="color:#D0D7E1;font-size:14px;">→</div>
+              <div style="display:flex;flex-direction:column;gap:3px;">
+                <div style="border:1.5px solid #3B6D11;border-radius:5px;padding:3px 8px;font-size:.6rem;text-align:center;background:#EAF3DE;">
+                  <span style="color:#3B6D11;font-weight:600;">✓ 4 pass</span>
+                </div>
+                <div style="border:1.5px solid #A32D2D;border-radius:5px;padding:3px 8px;font-size:.6rem;text-align:center;background:#FCEBEB;cursor:pointer;">
+                  <span style="color:#A32D2D;font-weight:600;">✗ 2 denied</span>
+                  <div style="font-size:.55rem;color:#A32D2D;">click to see all →</div>
+                </div>
+                <div style="border:1.5px solid #854F0B;border-radius:5px;padding:3px 8px;font-size:.6rem;text-align:center;background:#FAEEDA;">
+                  <span style="color:#854F0B;font-weight:600;">⏳ 1 pended</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Mini claims drilldown -->
+          <div style="background:white;border:1px solid #E2E6ED;border-radius:10px;overflow:hidden;">
+            <div style="padding:7px 12px;border-bottom:1px solid #F0F2F5;display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:.65rem;font-weight:600;color:#0B1F3A;">2 claims denied at Stage 08</div>
+              <div style="font-size:.58rem;color:#9BA8B6;">search · filter · paginate</div>
+            </div>
+            <div style="display:grid;grid-template-columns:80px 1fr 60px;background:#F7F8FA;border-bottom:1px solid #E2E6ED;">
+              <div style="padding:4px 8px;font-size:.55rem;font-weight:600;color:#6B7685;text-transform:uppercase;">Claim ID</div>
+              <div style="padding:4px 8px;font-size:.55rem;font-weight:600;color:#6B7685;text-transform:uppercase;">Issue / Rule</div>
+              <div style="padding:4px 8px;font-size:.55rem;font-weight:600;color:#6B7685;text-transform:uppercase;">Status</div>
+            </div>
+            <div style="display:grid;grid-template-columns:80px 1fr 60px;border-bottom:1px solid #F0F2F5;">
+              <div style="padding:5px 8px;font-family:monospace;font-size:.58rem;color:#9BA8B6;">CLM-00441</div>
+              <div style="padding:5px 8px;font-size:.6rem;color:#0B1F3A;">NCCI bundling CPT 27447+27310 · MUE exceeded · Wrong POS<div style="font-family:monospace;font-size:.55rem;color:#9BA8B6;">NCCI-27447-27310</div></div>
+              <div style="padding:5px 8px;"><span style="background:#FCEBEB;color:#501313;border:1px solid #F7C1C1;border-radius:8px;padding:1px 5px;font-size:.55rem;font-weight:600;">Denied</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:80px 1fr 60px;">
+              <div style="padding:5px 8px;font-family:monospace;font-size:.58rem;color:#9BA8B6;">CLM-00445</div>
+              <div style="padding:5px 8px;font-size:.6rem;color:#0B1F3A;">E&M same-day upcoding CPT 99215+99214<div style="font-family:monospace;font-size:.55rem;color:#9BA8B6;">NCCI-99215-99214</div></div>
+              <div style="padding:5px 8px;"><span style="background:#FCEBEB;color:#501313;border:1px solid #F7C1C1;border-radius:8px;padding:1px 5px;font-size:.55rem;font-weight:600;">Denied</span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -393,10 +391,10 @@
     <!-- Caption + CTA -->
     <div style="display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;margin-top:24px;" class="reveal">
       <div>
-        <div style="font-weight:600;font-size:.95rem;color:var(--navy);margin-bottom:6px;">No separate analytics platform. No weekly reports. No black box.</div>
-        <div style="font-size:.875rem;color:var(--text-2);line-height:1.7;">Every claim, every finding, every dollar saved — visible in real time. Click any claim to see the full 13-stage pipeline, every finding with its policy citation, and the AI reasoning chain. Already have Cotiviti or Optum? Connect them here too.</div>
+        <div style="font-weight:600;font-size:.95rem;color:var(--navy);margin-bottom:6px;">17 stages. Every sub-validation. Every claim. Click to drill down.</div>
+        <div style="font-size:.875rem;color:var(--text-2);line-height:1.7;">See the full processing tree, expand any stage to its sub-validations, click any denied or pended count to see the full list of affected claims — with search, filter, and pagination. No separate analytics platform needed.</div>
       </div>
-      <a href="workflow-dashboard.html" class="btn-navy" style="white-space:nowrap;">Open live dashboard <span class="arr">→</span></a>
+      <a href="workflow-dashboard.html" class="btn-navy" style="white-space:nowrap;">Open workflow dashboard <span class="arr">→</span></a>
     </div>
   </div>
 </section>
@@ -405,6 +403,9 @@
 </style>
 
 <!-- WHAT WE CATCH -->
+<section class="section">
+  <div class="section-inner">
+    <div class="eyebrow reveal">What Gets Caught</div>
 <section class="section">
   <div class="section-inner">
     <div class="eyebrow reveal">What Gets Caught</div>
@@ -726,9 +727,9 @@
     </div>
     <div class="footer-links">
       <div class="footer-col"><h4>Platform</h4><ul><li><a href="platform.html">Interoperability</a></li><li><a href="payment-integrity.html">Payment Integrity</a></li>
-      <li><a href="workflow-dashboard.html">PI Dashboard</a></li>
-      <li><a href="pa-workflow-dashboard.html">PA Dashboard</a></li>
-      <li><a href="workflow-workflow-dashboard.html">Workflow</a></li><li><a href="compliance.html">Compliance</a></li><li><a href="experience.html">Evidence</a></li></ul></div>
+      <li><a href="workflow-dashboard.html">Workflow</a></li>
+      <li><a href="pa-dashboard.html">PA Dashboard</a></li>
+      <li><a href="workflow-dashboard.html">Workflow</a></li><li><a href="compliance.html">Compliance</a></li><li><a href="experience.html">Evidence</a></li></ul></div>
       <div class="footer-col"><h4>Integrity</h4><ul><li><a href="payment-integrity.html#pipeline">13-Stage Pipeline</a></li><li><a href="payment-integrity.html">CPT Track</a></li><li><a href="payment-integrity.html">DRG Track</a></li><li><a href="payment-integrity.html">FWA &amp; SIU</a></li></ul></div>
       <div class="footer-col"><h4>Company</h4><ul><li><a href="https://myatrix.com" target="_blank" rel="noopener">MyAtrix ↗</a></li><li><a href="contact.html">Contact</a></li><li><a href="contact.html">Request Demo</a></li></ul></div>
     </div>

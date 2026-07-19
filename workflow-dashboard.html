@@ -582,13 +582,32 @@ function openDrilldown(stageId, type, count, e) {
   renderDrilldown(stage);
 }
 
+function rerenderDrilldown() {
+  // Re-render using cached stage info from drilldown state
+  if(!drilldown) return;
+  const sid = drilldown.stageId;
+  // KPI drilldowns have string IDs like 'kpi-deny'
+  if(typeof sid === 'string' && sid.startsWith('kpi-')) {
+    const kpiType = sid.replace('kpi-','');
+    const color = {deny:'#A32D2D',pend:'#854F0B',siu:'#534AB7',fwa:'#72243E',pass:'#3B6D11',all:'var(--navy)',savings:'#00838F'}[kpiType]||'#374151';
+    renderDrilldown({id:sid, name:KPI_LABELS[kpiType]||kpiType, color});
+  } else {
+    const stage = STAGES.find(s=>s.id===sid);
+    if(stage) renderDrilldown(stage);
+  }
+}
+
 function renderDrilldown(stage) {
   if(!drilldown) return;
   const {type, claims, page, search, filterRule} = drilldown;
-  const typeLabel = type==='deny'?'Denied':type==='pend'?'Pended':'SIU Referred';
-  const typeBadge = type==='deny'?'b-deny':type==='pend'?'b-pend':'b-siu';
-  const typeColor = type==='deny'?'#A32D2D':type==='pend'?'#854F0B':'#534AB7';
-  const typeBg    = type==='deny'?'#FCEBEB':type==='pend'?'#FAEEDA':'#EEEDFE';
+  const _LABELS={deny:'Denied',pend:'Pended',siu:'SIU Referred',fwa:'FWA Flagged',pass:'Approved',all:'All Claims',savings:'Claims with Savings'};
+  const _BADGES={deny:'b-deny',pend:'b-pend',siu:'b-siu',fwa:'b-fwa',pass:'b-pass',all:'b-pass',savings:'b-pass'};
+  const _COLORS={deny:'#A32D2D',pend:'#854F0B',siu:'#534AB7',fwa:'#72243E',pass:'#3B6D11',all:'var(--navy)',savings:'#00838F'};
+  const _BGS={deny:'#FCEBEB',pend:'#FAEEDA',siu:'#EEEDFE',fwa:'#FBEAF0',pass:'#EAF3DE',all:'#F0F2F5',savings:'#E1F5EE'};
+  const typeLabel = _LABELS[type]||type;
+  const typeBadge = _BADGES[type]||'b-pass';
+  const typeColor = _COLORS[type]||'#374151';
+  const typeBg    = _BGS[type]||'#F7F8FA';
 
   // Filter
   const rules = [...new Set(claims.map(c=>c.rule))];
@@ -619,9 +638,9 @@ function renderDrilldown(stage) {
       <!-- Search + filter -->
       <div style="padding:10px 14px;border-bottom:1px solid #F0F2F5;display:flex;gap:8px;align-items:center;">
         <input type="text" placeholder="Search claim ID, member, provider, issue..." value="${search}"
-          oninput="drilldown.search=this.value;drilldown.page=1;renderDrilldown(STAGES.find(s=>s.id===drilldown.stageId))"
+          oninput="drilldown.search=this.value;drilldown.page=1;rerenderDrilldown()"
           style="flex:1;font-size:.75rem;padding:6px 10px;border:1px solid #D0D7E1;border-radius:6px;font-family:var(--sans);color:var(--navy);outline:none;"/>
-        <select onchange="drilldown.filterRule=this.value;drilldown.page=1;renderDrilldown(STAGES.find(s=>s.id===drilldown.stageId))"
+        <select onchange="drilldown.filterRule=this.value;drilldown.page=1;rerenderDrilldown()"
           style="font-size:.72rem;padding:6px 8px;border:1px solid #D0D7E1;border-radius:6px;font-family:var(--sans);color:var(--navy);background:white;">
           <option value="">All rules</option>
           ${rules.map(r=>`<option value="${r}"${filterRule===r?' selected':''}>${r}</option>`).join('')}
@@ -655,16 +674,16 @@ function renderDrilldown(stage) {
           Showing ${Math.min((currentPage-1)*PAGE_SIZE+1, filtered.length)}–${Math.min(currentPage*PAGE_SIZE, filtered.length)} of ${filtered.length} claims
         </div>
         <div style="display:flex;gap:4px;">
-          <button onclick="drilldown.page=${currentPage-1};renderDrilldown(STAGES.find(s=>s.id===drilldown.stageId))" ${currentPage<=1?'disabled':''} 
+          <button onclick="drilldown.page=${currentPage-1};rerenderDrilldown()" ${currentPage<=1?'disabled':''} 
             style="font-size:.72rem;padding:4px 10px;border:1px solid #D0D7E1;border-radius:6px;background:white;cursor:pointer;color:var(--navy);${currentPage<=1?'opacity:.4;cursor:default;':''}">← Prev</button>
           <div style="display:flex;gap:2px;">
             ${Array.from({length:Math.min(totalPages,7)},(_, i)=>{
               const pg = totalPages<=7 ? i+1 : currentPage<=4 ? i+1 : currentPage>=totalPages-3 ? totalPages-6+i : currentPage-3+i;
-              return `<button onclick="drilldown.page=${pg};renderDrilldown(STAGES.find(s=>s.id===drilldown.stageId))"
+              return `<button onclick="drilldown.page=${pg};rerenderDrilldown()"
                 style="font-size:.7rem;width:26px;height:26px;border:1px solid ${pg===currentPage?'var(--navy)':'#D0D7E1'};border-radius:5px;background:${pg===currentPage?'var(--navy)':'white'};color:${pg===currentPage?'white':'var(--navy)'};cursor:pointer;">${pg}</button>`;
             }).join('')}
           </div>
-          <button onclick="drilldown.page=${currentPage+1};renderDrilldown(STAGES.find(s=>s.id===drilldown.stageId))" ${currentPage>=totalPages?'disabled':''}
+          <button onclick="drilldown.page=${currentPage+1};rerenderDrilldown()" ${currentPage>=totalPages?'disabled':''}
             style="font-size:.72rem;padding:4px 10px;border:1px solid #D0D7E1;border-radius:6px;background:white;cursor:pointer;color:var(--navy);${currentPage>=totalPages?'opacity:.4;cursor:default;':''}">Next →</button>
         </div>
         <div style="font-size:.68rem;color:var(--text-3);">Page ${currentPage} of ${totalPages}</div>
@@ -740,23 +759,31 @@ function openKPIDrilldown(type) {
     'MBR-2024-19982','MBR-2024-55899','MBR-2024-77412','MBR-2024-66301','MBR-2024-44892','MBR-2024-92011'];
   const AMOUNTS=[16200,8200,4800,75,37200,12000,3200,950,2100,6800,14500,890,5600,22000,1200];
 
-  const claimType = type==='deny'?'deny':type==='pend'?'pend':type==='fwa'||type==='siu'?'siu':'pass';
+  // Keep the original type key so renderDrilldown can style correctly
+  const claimType = type; // pass through as-is: 'deny','pend','fwa','siu','pass','all','savings'
   const claims=[];
   for(let i=0; i<count; i++){
     const stage=stagesWithType[i%Math.max(stagesWithType.length,1)];
     const stageNum=stage?stage.num:'01';
     const stageName=stage?stage.name:'Pipeline';
-    const rules=DENIAL_RULES[parseInt(stageNum)]||DENIAL_RULES[13]||[{rule:'RULE',desc:'Validation check'}];
-    const pendRules=PEND_RULES[parseInt(stageNum)]||[{rule:'REVIEW',desc:'Review required'}];
-    const rule=(type==='deny'?rules:type==='pend'?pendRules:rules)[i%Math.max((type==='deny'?rules:type==='pend'?pendRules:rules).length,1)];
+    const stageInt = parseInt(stageNum) || 13;
+    const denyRules = DENIAL_RULES[stageInt]||DENIAL_RULES[13]||[{rule:'PASS',desc:'All validations passed'}];
+    const pendRules = PEND_RULES[stageInt]||[{rule:'REVIEW',desc:'Review required'}];
+    const passDesc = 'All validations passed — claim approved at contracted rate';
+    let rule;
+    if(type==='deny') rule = denyRules[i%denyRules.length];
+    else if(type==='pend') rule = pendRules[i%pendRules.length];
+    else if(type==='fwa') rule = {rule:'FWA-OUTLIER', desc:'FWA pattern detected — billing outlier or systematic unbundling'};
+    else if(type==='siu') rule = {rule:'SIU-REFER', desc:'SIU referral — high-risk FWA pattern confirmed'};
+    else rule = {rule:'APPROVED', desc: type==='savings'?'Savings recovered at pricing or coding stage':passDesc};
     claims.push({
       id:'CLM-'+String(2024000+i).slice(-5),
       member:MEMBERS[i%MEMBERS.length],
       provider:PROVIDERS[i%PROVIDERS.length],
       amount:AMOUNTS[i%AMOUNTS.length],
       stage:'Stage '+stageNum+' — '+stageName,
-      rule:rule?rule.rule:'PASS',
-      desc:rule?rule.desc:(type==='pass'||type==='savings'?'All validations passed':'Processed'),
+      rule:rule.rule,
+      desc:rule.desc,
       type:claimType,
     });
   }

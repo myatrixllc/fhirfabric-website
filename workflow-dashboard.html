@@ -157,6 +157,33 @@
     /* Empty state */
     .empty-state{padding:32px;text-align:center;color:var(--text-3);font-size:.82rem}
 
+
+    /* Score bars */
+    .score-row{display:flex;align-items:center;gap:6px;margin-top:3px}
+    .score-label{font-size:.55rem;color:var(--text-3);font-family:var(--mono);width:28px;flex-shrink:0}
+    .score-track{flex:1;height:5px;background:#E2E6ED;border-radius:3px;overflow:hidden}
+    .score-fill{height:5px;border-radius:3px;transition:width .5s}
+    .score-val{font-size:.58rem;font-weight:600;width:28px;text-align:right;flex-shrink:0}
+    .score-tier{font-size:.55rem;padding:1px 4px;border-radius:3px;flex-shrink:0}
+    .tier-high{background:#EAF3DE;color:#27500A}
+    .tier-medium{background:#FAEEDA;color:#412402}
+    .tier-low{background:#FCEBEB;color:#501313}
+    .tier-minimal{background:#EAF3DE;color:#27500A}
+    .tier-critical{background:#FCEBEB;color:#501313}
+    /* Score panel */
+    .score-panel{background:#F7F8FA;border:1px solid #E2E6ED;border-radius:8px;padding:12px 14px;margin-bottom:10px}
+    .score-panel-title{font-size:.65rem;font-weight:600;color:var(--navy);margin-bottom:8px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em}
+    .signal-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:.7rem;border-bottom:1px solid #F0F2F5}
+    .signal-row:last-child{border-bottom:none}
+    .signal-delta{font-weight:700;width:32px;text-align:right;flex-shrink:0;font-family:var(--mono);font-size:.68rem}
+    .signal-id{font-family:var(--mono);font-size:.62rem;color:var(--teal);flex-shrink:0;min-width:100px}
+    .signal-desc{color:var(--text-2);flex:1}
+    .episode-banner{background:var(--navy);border-radius:10px;padding:12px 16px;margin-bottom:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .ep-item{text-align:center}
+    .ep-label{font-size:.58rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:4px}
+    .ep-val{font-size:1.2rem;font-weight:700;font-family:var(--serif)}
+    .ep-tier{font-size:.6rem;padding:2px 6px;border-radius:4px;margin-top:3px;display:inline-block}
+
     @media(max-width:1100px){.main{grid-template-columns:1fr}.tree-body{max-height:400px}}
     @media(max-width:768px){.summary{grid-template-columns:repeat(4,1fr)}.wrap{padding:80px 12px 32px}}
   </style>
@@ -230,6 +257,25 @@
   </div>
 
   <!-- Main: tree + detail -->
+  <!-- Episode score banner -->
+  <div class="episode-banner" id="episode-banner" style="display:none;">
+    <div class="ep-item">
+      <div class="ep-label">Episode Confidence</div>
+      <div class="ep-val" id="ep-conf" style="color:#6FD0D8;">—</div>
+      <div class="ep-tier" id="ep-conf-tier" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);">—</div>
+    </div>
+    <div class="ep-item">
+      <div class="ep-label">Episode Risk</div>
+      <div class="ep-val" id="ep-risk" style="color:#F09595;">—</div>
+      <div class="ep-tier" id="ep-risk-tier" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);">—</div>
+    </div>
+    <div class="ep-item">
+      <div class="ep-label">Data Quality</div>
+      <div class="ep-val" id="ep-dq" style="color:#C0DD97;">—</div>
+      <div class="ep-tier" id="ep-dq-tier" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);">—</div>
+    </div>
+  </div>
+
   <div class="main">
 
     <!-- Left: tree -->
@@ -302,6 +348,7 @@ const STAGES = [
     ],
     flow:{question:'Structurally valid?',yes:'Create normalized claim record',no:'Reject / return error to provider'},
     periods:{today:{pass:10,deny:0,pend:0},week:{pass:68,deny:2,pend:1},month:{pass:292,deny:8,pend:4},ytd:{pass:3536,deny:98,pend:52}},
+    scores:{conf:0.97,risk:5,dq:0.98,tier_c:'high',tier_r:'minimal',signals:['+5 FIN_LOW', '0 No errors found']},
     claims:[
       {id:'CLM-00441',issue:'All structure checks passed',rule:'1.1–1.7',status:'pass'},
       {id:'CLM-00442',issue:'All structure checks passed',rule:'1.1–1.7',status:'pass'},
@@ -318,6 +365,7 @@ const STAGES = [
     ],
     flow:{question:'Member eligible?',yes:'Proceed to benefit validation',no:'Deny — return ELIG denial code'},
     periods:{today:{pass:9,deny:1,pend:0},week:{pass:64,deny:4,pend:0},month:{pass:275,deny:17,pend:0},ytd:{pass:3330,deny:206,pend:0}},
+    scores:{conf:0.95,risk:18,dq:0.97,tier_c:'high',tier_r:'low',signals:['+12 FIN_MODERATE', '+6 ELIG_FAIL (1 claim)']},
     claims:[
       {id:'CLM-00449',issue:'Coverage lapsed — term date Jun 30, 2024. DOS Jul 18, 2024',rule:'EV-001',status:'deny'},
       {id:'CLM-00441',issue:'Coverage active BCBSA-PPO-GOLD effective Jan 1, 2024',rule:'EV-001',status:'pass'},
@@ -332,6 +380,7 @@ const STAGES = [
     ],
     flow:{question:'Service covered?',yes:'Proceed to COB',no:'Deny — non-covered service'},
     periods:{today:{pass:9,deny:0,pend:0},week:{pass:63,deny:1,pend:0},month:{pass:271,deny:4,pend:0},ytd:{pass:3280,deny:50,pend:0}},
+    scores:{conf:0.97,risk:4,dq:0.98,tier_c:'high',tier_r:'minimal',signals:['+4 FIN_MINIMAL', '0 No benefit exclusions']},
     claims:[{id:'All (today)',issue:'All claims passed benefit validation',rule:'3.1–3.4',status:'pass'}]
   },
   { id:4, name:'Coordination of Benefits', color:'#0F6E56', type:'RULE',
@@ -345,6 +394,7 @@ const STAGES = [
     ],
     flow:{question:'This plan primary?',yes:'Adjudicate at full benefit',no:'Hold for primary EOB'},
     periods:{today:{pass:9,deny:0,pend:1},week:{pass:61,deny:0,pend:3},month:{pass:262,deny:0,pend:13},ytd:{pass:3172,deny:0,pend:158}},
+    scores:{conf:0.95,risk:12,dq:0.96,tier_c:'high',tier_r:'low',signals:['+12 FIN_MODERATE', '0 No COB issues today']},
     claims:[
       {id:'CLM-00443',issue:'COB secondary — birthday rule applies. Awaiting primary EOB from Aetna PPO',rule:'COB-001',status:'pend'},
     ]
@@ -359,6 +409,7 @@ const STAGES = [
     ],
     flow:{question:'Provider valid & contracted?',yes:'Proceed to authorization',no:'Deny or pend — provider issue'},
     periods:{today:{pass:9,deny:0,pend:0},week:{pass:59,deny:2,pend:0},month:{pass:254,deny:8,pend:0},ytd:{pass:3075,deny:97,pend:0}},
+    scores:{conf:0.97,risk:5,dq:0.98,tier_c:'high',tier_r:'minimal',signals:['+5 FIN_LOW', '0 No provider issues']},
     claims:[{id:'All (today)',issue:'All providers validated — NPI, taxonomy, credentialing passed',rule:'5.1–5.5',status:'pass'}]
   },
   { id:6, name:'Authorization & Referral Validation', color:'#854F0B', type:'RULE',
@@ -371,6 +422,7 @@ const STAGES = [
     ],
     flow:{question:'Valid auth on file?',yes:'Proceed to clinical validation',no:'Pend — request PA or deny'},
     periods:{today:{pass:8,deny:0,pend:1},week:{pass:58,deny:0,pend:3},month:{pass:249,deny:0,pend:13},ytd:{pass:3012,deny:0,pend:157}},
+    scores:{conf:0.9,risk:22,dq:0.95,tier_c:'high',tier_r:'low',signals:['+12 FIN_MODERATE', '+10 PA_MISSING (1 claim)']},
     claims:[
       {id:'CLM-00441',issue:'CPT 27447 requires PA — no valid auth on file. PA-2024-00101 in review.',rule:'PA-REQUIRED-27447',status:'pend'},
     ]
@@ -384,6 +436,7 @@ const STAGES = [
     ],
     flow:{question:'Clinically appropriate?',yes:'Proceed to coding validation',no:'Deny or pend — medical necessity'},
     periods:{today:{pass:7,deny:0,pend:1},week:{pass:55,deny:2,pend:1},month:{pass:236,deny:8,pend:5},ytd:{pass:2858,deny:97,pend:57}},
+    scores:{conf:0.88,risk:28,dq:0.93,tier_c:'medium',tier_r:'low',signals:['+15 LLM_ERRORS', '+12 FIN_MODERATE', '+1 CDI_FLAG']},
     claims:[
       {id:'CLM-00447',issue:'CPT 43239 — GERD without documented 8-week PPI trial failure. LCD L35062 not met.',rule:'NCD-L35062',status:'pend'},
     ]
@@ -399,6 +452,7 @@ const STAGES = [
     ],
     flow:{question:'Coding valid?',yes:'Proceed to duplicate check',no:'Deny or pend — coding error'},
     periods:{today:{pass:6,deny:2,pend:1},week:{pass:50,deny:5,pend:2},month:{pass:215,deny:21,pend:9},ytd:{pass:2603,deny:255,pend:109}},
+    scores:{conf:0.91,risk:52,dq:0.95,tier_c:'high',tier_r:'medium',signals:['+20 LLM_ERRORS (NCCI+MUE)', '+20 FIN_HIGH', '+12 DRG_UPCODE']},
     claims:[
       {id:'CLM-00441',issue:'NCCI: 27447+27310 bundling · MUE: 27447 qty 3 exceeds max 2 · POS 11 invalid for surgery',rule:'NCCI-27447-27310 / MUE-27447 / POS',status:'deny'},
       {id:'CLM-00445',issue:'E&M same-day upcoding: 99215+99214 both billed same DOS',rule:'NCCI-99215-99214',status:'deny'},
@@ -414,6 +468,7 @@ const STAGES = [
     ],
     flow:{question:'Duplicate or outlier?',yes:'Deny duplicate / flag utilization',no:'Proceed to contract validation'},
     periods:{today:{pass:6,deny:0,pend:0},week:{pass:50,deny:1,pend:0},month:{pass:215,deny:4,pend:0},ytd:{pass:2603,deny:48,pend:0}},
+    scores:{conf:0.97,risk:8,dq:0.97,tier_c:'high',tier_r:'minimal',signals:['+5 FIN_LOW', '0 No duplicates today']},
     claims:[{id:'All (today)',issue:'No duplicates detected',rule:'9.1–9.4',status:'pass'}]
   },
   { id:10, name:'Provider Contract & Network', color:'#0F6E56', type:'RULE+LLM',
@@ -425,6 +480,7 @@ const STAGES = [
     ],
     flow:{question:'Valid contract?',yes:'Proceed to pricing',no:'Deny or pend — contract issue'},
     periods:{today:{pass:6,deny:0,pend:0},week:{pass:48,deny:2,pend:0},month:{pass:207,deny:8,pend:0},ytd:{pass:2506,deny:97,pend:0}},
+    scores:{conf:0.95,risk:12,dq:0.96,tier_c:'high',tier_r:'low',signals:['+12 FIN_MODERATE', '0 Contract valid']},
     claims:[{id:'All (today)',issue:'All contract validations passed',rule:'10.1–10.4',status:'pass'}]
   },
   { id:11, name:'Pricing & Member Liability', color:'#0F6E56', type:'RULE',
@@ -436,6 +492,7 @@ const STAGES = [
     ],
     flow:{question:'Rate determined?',yes:'Proceed to FWA screening',no:'Adjust to contracted rate'},
     periods:{today:{pass:6,deny:0,pend:0,adjust:1},week:{pass:48,deny:0,pend:0,adjust:4},month:{pass:207,deny:0,pend:0,adjust:17},ytd:{pass:2506,deny:0,pend:0,adjust:206}},
+    scores:{conf:0.97,risk:14,dq:0.97,tier_c:'high',tier_r:'low',signals:['+12 FIN_MODERATE', '+2 RATE_ADJ (1 claim)']},
     claims:[
       {id:'CLM-00441',issue:'CPT 27447: billed $14,000 → allowed $4,595 (120% Medicare). Adjusted.',rule:'RATE-OVER-27447',status:'pend'},
     ]
@@ -450,6 +507,7 @@ const STAGES = [
     ],
     flow:{question:'FWA risk score ≥ 0.8?',yes:'SIU referral + suspend payment',no:'Proceed to decision engine'},
     periods:{today:{pass:5,deny:0,pend:0,siu:1},week:{pass:47,deny:0,pend:0,siu:1},month:{pass:202,deny:0,pend:0,siu:5},ytd:{pass:2445,deny:0,pend:0,siu:61}},
+    scores:{conf:0.87,risk:72,dq:0.93,tier_c:'medium',tier_r:'high',signals:['+25 FWA_ELEVATED', '+20 FIN_HIGH', '+15 LLM_ERRORS', '+12 PROVIDER_RISK']},
     claims:[
       {id:'CLM-00444',issue:'Provider billing 340% above peer median. Systematic unbundling across 6 claims. Risk score 0.87.',rule:'FWA-OUTLIER',status:'fwa'},
     ]
@@ -463,6 +521,7 @@ const STAGES = [
     ],
     flow:{question:'Final disposition',yes:'Approve → 835 payment',no:'Deny / Pend / SIU'},
     periods:{today:{pass:4,deny:3,pend:3,siu:1},week:{pass:41,deny:16,pend:11,siu:1},month:{pass:176,deny:69,pend:47,siu:5},ytd:{pass:2130,deny:835,pend:571,siu:61}},
+    scores:{conf:0.91,risk:68,dq:0.95,tier_c:'high',tier_r:'high',signals:['+35 MULTI_STAGE_ERRORS', '+20 FIN_HIGH', '+13 LLM_CONFIDENCE']},
     claims:[
       {id:'CLM-00442',issue:'All stages passed — clean E&M claim approved at $75',rule:'Decision',status:'pass'},
       {id:'CLM-00441',issue:'DENIED — NCCI bundling, MUE, wrong POS, missing PA. SIU referred.',rule:'Decision',status:'deny'},
@@ -477,6 +536,7 @@ const STAGES = [
     ],
     flow:{question:'Payment issued?',yes:'Post-payment audit cycle begins',no:'Hold pending resolution'},
     periods:{today:{pass:4,deny:0,pend:0},week:{pass:41,deny:0,pend:0},month:{pass:176,deny:0,pend:0},ytd:{pass:2130,deny:0,pend:0}},
+    scores:{conf:0.99,risk:2,dq:1.0,tier_c:'high',tier_r:'minimal',signals:['+0 Payment processed']},
     claims:[{id:'CLM-00442',issue:'835 issued · EFT $75.00 · ERA transmitted to Clearwater Primary Care',rule:'14.1–14.3',status:'pass'}]
   },
   { id:15, name:'Post-Payment Audit & Analytics', color:'#374151', type:'RULE+LLM',
@@ -487,6 +547,7 @@ const STAGES = [
     ],
     flow:{question:'Overpayment found?',yes:'Initiate recovery workflow',no:'Update provider scorecard'},
     periods:{today:{pass:4,deny:0,pend:0},week:{pass:41,deny:0,pend:0},month:{pass:176,deny:0,pend:0},ytd:{pass:2130,deny:0,pend:0}},
+    scores:{conf:0.95,risk:3,dq:0.99,tier_c:'high',tier_r:'minimal',signals:['+0 Audit clean']},
     claims:[{id:'Batch process',issue:'Post-payment analytics running — no overpayments identified today',rule:'15.1–15.3',status:'pass'}]
   },
   { id:16, name:'Recovery, COB & Subrogation', color:'#374151', type:'RULE',
@@ -497,6 +558,7 @@ const STAGES = [
     ],
     flow:{question:'Recovery needed?',yes:'Issue demand / pursue recovery',no:'Close episode'},
     periods:{today:{pass:0,deny:0,pend:0},week:{pass:2,deny:0,pend:1},month:{pass:8,deny:0,pend:4},ytd:{pass:97,deny:0,pend:48}},
+    scores:{conf:0.92,risk:5,dq:0.98,tier_c:'high',tier_r:'minimal',signals:['+0 No recovery needed']},
     claims:[{id:'N/A (today)',issue:'No recovery actions triggered today',rule:'16.1–16.3',status:'pass'}]
   },
   { id:17, name:'Feedback into Pre-Payment Controls', color:'#0F6E56', type:'LLM',
@@ -507,6 +569,7 @@ const STAGES = [
     ],
     flow:{question:'New rule needed?',yes:'Deploy to pre-payment pipeline',no:'Update AI training data'},
     periods:{today:{pass:0,deny:0,pend:0},week:{pass:0,deny:0,pend:0},month:{pass:0,deny:0,pend:0},ytd:{pass:0,deny:0,pend:0}},
+    scores:{conf:0.9,risk:2,dq:1.0,tier_c:'high',tier_r:'minimal',signals:['+0 Feedback captured']},
     claims:[{id:'System',issue:'Feedback loop running — 3 new rules queued for next NCCI update cycle',rule:'17.1–17.3',status:'pass'}]
   },
 ];
@@ -881,6 +944,7 @@ function closeKPIDrilldown(){
 
 function renderKPIs(){
   const d=PERIOD_TOTALS[period];
+  if(!d) return;
   document.getElementById('s-total').textContent=d.total;
   document.getElementById('s-pass').textContent=d.pass;
   document.getElementById('s-pass-pct').textContent=Math.round(d.pass/d.total*100)+'% of claims';
@@ -891,17 +955,65 @@ function renderKPIs(){
   document.getElementById('s-siu').textContent=d.siu;
   document.getElementById('s-sav').textContent=fmt(d.sav);
   document.getElementById('intake-count').textContent=d.total+' claims';
+  // Active period label
+  const periodLabels={today:'Today',week:'This week',month:'This month',q1:'Q1 2026',q2:'Q2 2026',q3:'Q3 2026',q4:'Q4 2026',ytd:'Year to date',custom:'Custom range'};
+  const lbl=document.getElementById('active-period-label');
+  if(lbl) lbl.textContent=periodLabels[period]||period;
+  // Episode score banner — aggregate across all 17 stages
+  const sw=STAGES.filter(s=>s.scores);
+  if(sw.length>0){
+    const avgConf=sw.reduce((a,s)=>a+s.scores.conf,0)/sw.length;
+    const maxRisk=Math.max(...sw.map(s=>s.scores.risk));
+    const minDq=Math.min(...sw.map(s=>s.scores.dq));
+    const confPct=Math.round(avgConf*100);
+    const dqPct=Math.round(minDq*100);
+    const confTier=confPct>=90?'high':confPct>=75?'medium':'low';
+    const riskTier=maxRisk>=80?'critical':maxRisk>=60?'high':maxRisk>=40?'medium':maxRisk>=20?'low':'minimal';
+    const rCol={critical:'#F09595',high:'#F09595',medium:'#FAC775',low:'#C0DD97',minimal:'#C0DD97'};
+    const cCol={high:'#6FD0D8',medium:'#FAC775',low:'#F09595'};
+    document.getElementById('ep-conf').textContent=confPct+'%';
+    document.getElementById('ep-conf').style.color=cCol[confTier]||'#6FD0D8';
+    document.getElementById('ep-conf-tier').textContent=confTier;
+    document.getElementById('ep-risk').textContent=maxRisk+'/100';
+    document.getElementById('ep-risk').style.color=rCol[riskTier]||'#FAC775';
+    document.getElementById('ep-risk-tier').textContent=riskTier;
+    document.getElementById('ep-dq').textContent=dqPct+'%';
+    document.getElementById('ep-dq-tier').textContent=dqPct>=90?'complete':dqPct>=70?'adequate':'degraded';
+    document.getElementById('episode-banner').style.display='grid';
+  }
+}
+
+function tierColor(tier){
+  return {high:'#3B6D11',medium:'#854F0B',low:'#A32D2D',minimal:'#3B6D11',critical:'#A32D2D',very_low:'#A32D2D'}[tier]||'#374151';
+}
+function tierBg(tier){
+  return {high:'#EAF3DE',medium:'#FAEEDA',low:'#FCEBEB',minimal:'#EAF3DE',critical:'#FCEBEB',very_low:'#FCEBEB'}[tier]||'#F0F2F5';
 }
 
 function chipHTML(p){
   const pd=p.periods[period];
-  let html='';
-  if(pd.pass>0) html+=`<span class="chip chip-pass">${pd.pass}✓</span>`;
-  if(pd.deny>0) html+=`<span class="chip chip-deny" title="Click to see all ${pd.deny} denied claims" onclick="openDrilldown(${p.id},'deny',${pd.deny},event)" style="cursor:pointer;">${pd.deny}✗</span>`;
-  if(pd.pend>0) html+=`<span class="chip chip-pend" title="Click to see all ${pd.pend} pended claims" onclick="openDrilldown(${p.id},'pend',${pd.pend},event)" style="cursor:pointer;">${pd.pend}⏳</span>`;
-  if(pd.siu)    html+=`<span class="chip chip-fwa" title="Click to see SIU referrals" onclick="openDrilldown(${p.id},'siu',${pd.siu},event)" style="cursor:pointer;">${pd.siu}🔍</span>`;
-  if(pd.pass>0 && !pd.deny && !pd.pend && !pd.siu) html='<span class="chip chip-ok">all pass</span>';
-  return html;
+  const sc=p.scores||{conf:0.95,risk:5,dq:1.0,tier_c:'high',tier_r:'minimal',signals:[]};
+  let chips='';
+  if(pd.pass>0) chips+=`<span class="chip chip-pass">${pd.pass}✓</span>`;
+  if(pd.deny>0) chips+=`<span class="chip chip-deny" title="Click to see ${pd.deny} denied claims" onclick="openDrilldown(${p.id},'deny',${pd.deny},event)" style="cursor:pointer;">${pd.deny}✗</span>`;
+  if(pd.pend>0) chips+=`<span class="chip chip-pend" title="Click to see ${pd.pend} pended claims" onclick="openDrilldown(${p.id},'pend',${pd.pend},event)" style="cursor:pointer;">${pd.pend}⏳</span>`;
+  if(pd.siu)   chips+=`<span class="chip chip-fwa" title="Click to see SIU referrals" onclick="openDrilldown(${p.id},'siu',${pd.siu},event)" style="cursor:pointer;">${pd.siu}🔍</span>`;
+  if(pd.pass>0 && !pd.deny && !pd.pend && !pd.siu) chips='<span class="chip chip-ok">all pass</span>';
+  // Mini score bars under chips
+  const confPct=Math.round(sc.conf*100);
+  const riskPct=sc.risk;
+  const confColor=tierColor(sc.tier_c);
+  const riskColor=tierColor(sc.tier_r);
+  const scoreBars=`
+    <div style="display:flex;gap:4px;margin-top:2px;align-items:center;">
+      <span style="font-size:.52rem;color:var(--text-3);font-family:monospace;">C</span>
+      <div style="width:32px;height:3px;background:#E2E6ED;border-radius:2px;overflow:hidden;"><div style="height:3px;width:${confPct}%;background:${confColor};border-radius:2px;"></div></div>
+      <span style="font-size:.52rem;color:${confColor};font-weight:600;">${confPct}%</span>
+      <span style="font-size:.52rem;color:var(--text-3);font-family:monospace;margin-left:2px;">R</span>
+      <div style="width:32px;height:3px;background:#E2E6ED;border-radius:2px;overflow:hidden;"><div style="height:3px;width:${riskPct}%;background:${riskColor};border-radius:2px;"></div></div>
+      <span style="font-size:.52rem;color:${riskColor};font-weight:600;">${riskPct}</span>
+    </div>`;
+  return `<div style="display:flex;flex-direction:column;align-items:flex-end;">${chips}${scoreBars}</div>`;
 }
 
 function renderTree(){
@@ -943,9 +1055,92 @@ function selectSub(subId,stageId,e){
   renderTree(); renderDetail(s,sub);
 }
 
+function buildSignalRows(signals){
+  if(!signals||!signals.length) return '';
+  let html='<div style="font-size:.65rem;font-weight:600;color:var(--navy);margin-bottom:4px;">Risk score signals</div>';
+  signals.forEach(sig=>{
+    const parts=sig.split(' ');
+    const delta=parts[0];const id=parts[1];const desc=parts.slice(2).join(' ');
+    const isPos=delta.startsWith('+')&&delta!=='+0';
+    html+='<div class="signal-row">'+
+      '<span class="signal-delta" style="color:'+(isPos?'#A32D2D':'#3B6D11')+';">'+delta+'</span>'+
+      '<span class="signal-id">'+id+'</span>'+
+      '<span class="signal-desc">'+desc+'</span>'+
+      '</div>';
+  });
+  return html;
+}
+
 function renderDetail(stage, sub){
   const pd=stage.periods[period];
   const rp=document.getElementById('right-panel');
+
+  // ── Score panel ──
+  const sc = stage.scores || {conf:0.95,risk:5,dq:1.0,tier_c:'high',tier_r:'minimal',signals:[]};
+  const confPct = Math.round(sc.conf*100);
+  const riskPct = sc.risk;
+  const dqPct   = Math.round(sc.dq*100);
+  const confColor = tierColor(sc.tier_c);
+  const riskColor = tierColor(sc.tier_r);
+  const confBg    = tierBg(sc.tier_c);
+  const riskBg    = tierBg(sc.tier_r);
+
+  // Disposition from scores
+  const dispMap = {
+    auto_approve:'AUTO APPROVE', auto_deny:'AUTO DENY', auto_siu:'SIU AUTO',
+    pend_auto:'PEND AUTO', pend_human:'PEND HUMAN', pend_siu:'PEND SIU'
+  };
+  const dispColorMap = {
+    auto_approve:'#3B6D11',auto_deny:'#A32D2D',auto_siu:'#534AB7',
+    pend_auto:'#854F0B',pend_human:'#854F0B',pend_siu:'#534AB7'
+  };
+  // Infer disposition from risk/confidence
+  const inferredDisp = riskPct >= 80 ? 'auto_siu'
+    : riskPct >= 60 && confPct >= 90 ? 'auto_deny'
+    : riskPct >= 40 ? 'pend_auto'
+    : 'auto_approve';
+  const dispLabel = dispMap[inferredDisp]||'AUTO APPROVE';
+  const dispColor = dispColorMap[inferredDisp]||'#3B6D11';
+
+  const scoreHTML=`
+    <div class="score-panel">
+      <div class="score-panel-title">Confidence · Risk · Data Quality — ${stage.name}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:.68rem;margin-bottom:3px;">
+            <span style="color:var(--text-3);">Confidence</span>
+            <span style="font-weight:700;color:${confColor};">${confPct}%</span>
+          </div>
+          <div class="score-track"><div class="score-fill" style="width:${confPct}%;background:${confColor};"></div></div>
+          <span class="score-tier ${sc.tier_c==='high'?'tier-high':sc.tier_c==='medium'?'tier-medium':'tier-low'}" style="margin-top:3px;font-size:.58rem;">${sc.tier_c}</span>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:.68rem;margin-bottom:3px;">
+            <span style="color:var(--text-3);">Risk score</span>
+            <span style="font-weight:700;color:${riskColor};">${riskPct}/100</span>
+          </div>
+          <div class="score-track"><div class="score-fill" style="width:${riskPct}%;background:${riskColor};"></div></div>
+          <span class="score-tier ${sc.tier_r==='minimal'||sc.tier_r==='low'?'tier-minimal':sc.tier_r==='medium'?'tier-medium':'tier-critical'}" style="margin-top:3px;font-size:.58rem;">${sc.tier_r}</span>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:.68rem;margin-bottom:3px;">
+            <span style="color:var(--text-3);">Data quality</span>
+            <span style="font-weight:700;color:#3B6D11;">${dqPct}%</span>
+          </div>
+          <div class="score-track"><div class="score-fill" style="width:${dqPct}%;background:#3B6D11;"></div></div>
+          <span class="score-tier tier-high" style="margin-top:3px;font-size:.58rem;">complete</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:${riskBg};border-radius:6px;margin-bottom:10px;">
+        <div style="font-size:.72rem;color:var(--text-2);">
+          <span style="font-weight:600;color:var(--navy);">Threshold decision: </span>
+          <span style="font-weight:700;color:${dispColor};">${dispLabel}</span>
+          &nbsp;·&nbsp;
+          <span style="color:var(--text-3);">Trigger: risk ${riskPct} ${riskPct>=60?'≥':'<'} auto-deny threshold ${riskPct>=80?'80 (SIU)':riskPct>=60?'60':riskPct>=40?'40 (pend)':'40'}</span>
+        </div>
+      </div>
+      ${(sc.signals||[]).length>0 ? buildSignalRows(sc.signals) : ''}
+    </div>`;
 
   const flowHTML=`
     <div class="flow-card">
@@ -1029,7 +1224,7 @@ function renderDetail(stage, sub){
       </div>
     </div>`;
 
-  rp.innerHTML=flowHTML+subHTML+claimsHTML;
+  rp.innerHTML=scoreHTML+flowHTML+subHTML+claimsHTML;
 }
 
 function setPeriod(p,btn){

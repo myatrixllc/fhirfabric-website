@@ -32,6 +32,9 @@
     .sc-label{font-family:var(--mono);font-size:.55rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
     .sc-val{font-family:var(--serif);font-size:1.5rem;line-height:1}
     .sc-sub{font-size:.65rem;color:var(--text-3);margin-top:2px}
+    .sc-drill{font-size:.58rem;color:var(--teal);margin-top:4px;opacity:0;transition:opacity .15s}
+    .sc:hover .sc-drill{opacity:1}
+    .sc.kpi-active{box-shadow:0 0 0 2px var(--teal)!important}
 
     /* Period filter */
     .period-bar{display:flex;gap:4px;margin-bottom:16px;align-items:center}
@@ -217,13 +220,13 @@
 
   <!-- Summary KPIs -->
   <div class="summary">
-    <div class="sc sc-total"><div class="sc-label">Received</div><div class="sc-val" id="s-total" style="color:var(--navy)">0</div><div class="sc-sub">Entered pipeline</div></div>
-    <div class="sc sc-pass"><div class="sc-label">Approved</div><div class="sc-val" id="s-pass" style="color:#3B6D11">0</div><div class="sc-sub" id="s-pass-pct">—</div></div>
-    <div class="sc sc-deny"><div class="sc-label">Denied</div><div class="sc-val" id="s-deny" style="color:#A32D2D">0</div><div class="sc-sub" id="s-deny-pct">—</div></div>
-    <div class="sc sc-pend"><div class="sc-label">Pended</div><div class="sc-val" id="s-pend" style="color:#854F0B">0</div><div class="sc-sub">Awaiting review</div></div>
-    <div class="sc sc-fwa"><div class="sc-label">FWA flagged</div><div class="sc-val" id="s-fwa" style="color:#72243E">0</div><div class="sc-sub">Fraud/Waste/Abuse</div></div>
-    <div class="sc sc-siu"><div class="sc-label">SIU referred</div><div class="sc-val" id="s-siu" style="color:#534AB7">0</div><div class="sc-sub">Investigations</div></div>
-    <div class="sc sc-savings"><div class="sc-label">Est. savings</div><div class="sc-val" id="s-sav" style="color:#00838F">$0</div><div class="sc-sub">Pre-payment</div></div>
+    <div class="sc sc-total" onclick="openKPIDrilldown('all')" title="View all claims" style="cursor:pointer;"><div class="sc-label">Received</div><div class="sc-val" id="s-total" style="color:var(--navy)">0</div><div class="sc-sub">Entered pipeline</div><div class="sc-drill">click to see all →</div></div>
+    <div class="sc sc-pass" onclick="openKPIDrilldown('pass')" title="View approved claims" style="cursor:pointer;"><div class="sc-label">Approved</div><div class="sc-val" id="s-pass" style="color:#3B6D11">0</div><div class="sc-sub" id="s-pass-pct">—</div><div class="sc-drill">click to see all →</div></div>
+    <div class="sc sc-deny" onclick="openKPIDrilldown('deny')" title="View denied claims" style="cursor:pointer;"><div class="sc-label">Denied</div><div class="sc-val" id="s-deny" style="color:#A32D2D">0</div><div class="sc-sub" id="s-deny-pct">—</div><div class="sc-drill">click to see all →</div></div>
+    <div class="sc sc-pend" onclick="openKPIDrilldown('pend')" title="View pended claims" style="cursor:pointer;"><div class="sc-label">Pended</div><div class="sc-val" id="s-pend" style="color:#854F0B">0</div><div class="sc-sub">Awaiting review</div><div class="sc-drill">click to see all →</div></div>
+    <div class="sc sc-fwa" onclick="openKPIDrilldown('fwa')" title="View FWA flagged claims" style="cursor:pointer;"><div class="sc-label">FWA flagged</div><div class="sc-val" id="s-fwa" style="color:#72243E">0</div><div class="sc-sub">Fraud/Waste/Abuse</div><div class="sc-drill">click to see all →</div></div>
+    <div class="sc sc-siu" onclick="openKPIDrilldown('siu')" title="View SIU referrals" style="cursor:pointer;"><div class="sc-label">SIU referred</div><div class="sc-val" id="s-siu" style="color:#534AB7">0</div><div class="sc-sub">Investigations</div><div class="sc-drill">click to see all →</div></div>
+    <div class="sc sc-savings" onclick="openKPIDrilldown('savings')" title="View claims with savings" style="cursor:pointer;"><div class="sc-label">Est. savings</div><div class="sc-val" id="s-sav" style="color:#00838F">$0</div><div class="sc-sub">Pre-payment</div><div class="sc-drill">click to see all →</div></div>
   </div>
 
   <!-- Main: tree + detail -->
@@ -605,7 +608,7 @@ function renderDrilldown(stage) {
     <div class="claims-card" style="border:1px solid ${typeColor}22;">
       <div class="claims-header" style="background:${typeBg};border-bottom:1px solid ${typeColor}22;">
         <div style="display:flex;align-items:center;gap:8px;">
-          <div class="stage-bullet" style="background:${stage.color};width:22px;height:22px;font-size:.58rem">${String(stage.id).padStart(2,'0')}</div>
+          <div class="stage-bullet" style="background:${stage.color||typeColor};width:22px;height:22px;font-size:.58rem">${typeof stage.id==='number'?String(stage.id).padStart(2,'0'):'⬡'}</div>
           <div>
             <div class="claims-title">${stage.name}</div>
             <div style="font-size:.68rem;color:${typeColor};font-weight:600;margin-top:1px;">${filtered.length} claims ${typeLabel.toLowerCase()} at this stage</div>
@@ -671,8 +674,107 @@ function renderDrilldown(stage) {
 
 function closeDrilldown(){
   drilldown=null;
-  const stage=STAGES.find(s=>s.id===selectedStage);
-  if(stage) renderDetail(stage,null);
+  // Clear KPI active highlight
+  document.querySelectorAll('.sc').forEach(c=>c.classList.remove('kpi-active'));
+  if(selectedStage && typeof selectedStage==='number'){
+    const stage=STAGES.find(s=>s.id===selectedStage);
+    if(stage) renderDetail(stage,null);
+  } else {
+    // Return to empty state
+    document.getElementById('right-panel').innerHTML=`
+      <div class="empty-state">
+        <i class="ti ti-hierarchy" style="font-size:32px;color:#D0D7E1;display:block;margin-bottom:12px;"></i>
+        <div style="font-weight:600;color:var(--navy);margin-bottom:6px;">Select a stage or sub-validation</div>
+        <div style="color:var(--text-3);line-height:1.6;">Click any item in the tree on the left to see<br/>the data flow diagram, sub-validations, and<br/>which claims hit this stage and why.</div>
+      </div>`;
+  }
+}
+
+// KPI-level drilldown — shows claims across ALL stages for a disposition type
+const KPI_LABELS = {
+  all:'All claims received',pass:'Approved claims',deny:'Denied claims',
+  pend:'Pended claims',fwa:'FWA flagged claims',siu:'SIU referred claims',savings:'Claims with savings'
+};
+const KPI_COLORS = {
+  all:'var(--navy)',pass:'#3B6D11',deny:'#A32D2D',
+  pend:'#854F0B',fwa:'#72243E',siu:'#534AB7',savings:'#00838F'
+};
+const KPI_BADGE = {
+  all:'b-pass',pass:'b-pass',deny:'b-deny',pend:'b-pend',fwa:'b-fwa',siu:'b-siu',savings:'b-pass'
+};
+
+function openKPIDrilldown(type) {
+  const d = PERIODS[period];
+  if(!d) return;
+
+  // Build cross-stage claim list for this disposition
+  const countMap = {
+    all: d.total, pass: d.approved, deny: d.denied,
+    pend: d.pended, fwa: d.fwa || 0, siu: d.siu || 0,
+    savings: d.approved
+  };
+  const count = countMap[type] || 0;
+  if(count === 0) return;
+
+  // Highlight active KPI card
+  document.querySelectorAll('.sc').forEach(c=>c.classList.remove('kpi-active'));
+  const cardMap={all:'.sc-total',pass:'.sc-pass',deny:'.sc-deny',pend:'.sc-pend',fwa:'.sc-fwa',siu:'.sc-siu',savings:'.sc-savings'};
+  const card=document.querySelector(cardMap[type]);
+  if(card) card.classList.add('kpi-active');
+
+  // Generate cross-stage claims
+  // For KPI drilldown we aggregate across all stages that have this type
+  const stagesWithType = d.stages.filter(s => {
+    if(type==='deny') return s.denied > 0;
+    if(type==='pend') return s.pended > 0;
+    if(type==='fwa' || type==='siu') return s.siu > 0;
+    if(type==='pass' || type==='all' || type==='savings') return s.passed > 0;
+    return true;
+  });
+
+  // Generate claim list with stage context
+  const PROVIDERS=['Riverside Orthopaedics','Metro Cardiology Group','Northside Gastro LLC',
+    'Clearwater Primary Care','Midwest Heart & Vascular','Northwestern Orthopedics',
+    'Chicago Eye Institute','Midwest Spine Center','Regional Health Partners','Lake Shore Imaging'];
+  const MEMBERS=['MBR-2024-88821','MBR-2024-55102','MBR-2024-71103','MBR-2024-33291',
+    'MBR-2024-19982','MBR-2024-55899','MBR-2024-77412','MBR-2024-66301','MBR-2024-44892','MBR-2024-92011'];
+  const AMOUNTS=[16200,8200,4800,75,37200,12000,3200,950,2100,6800,14500,890,5600,22000,1200];
+
+  const claimType = type==='deny'?'deny':type==='pend'?'pend':type==='fwa'||type==='siu'?'siu':'pass';
+  const claims=[];
+  for(let i=0; i<count; i++){
+    const stage=stagesWithType[i%Math.max(stagesWithType.length,1)];
+    const stageNum=stage?stage.num:'01';
+    const stageName=stage?stage.name:'Pipeline';
+    const rules=DENIAL_RULES[parseInt(stageNum)]||DENIAL_RULES[13]||[{rule:'RULE',desc:'Validation check'}];
+    const pendRules=PEND_RULES[parseInt(stageNum)]||[{rule:'REVIEW',desc:'Review required'}];
+    const rule=(type==='deny'?rules:type==='pend'?pendRules:rules)[i%Math.max((type==='deny'?rules:type==='pend'?pendRules:rules).length,1)];
+    claims.push({
+      id:'CLM-'+String(2024000+i).slice(-5),
+      member:MEMBERS[i%MEMBERS.length],
+      provider:PROVIDERS[i%PROVIDERS.length],
+      amount:AMOUNTS[i%AMOUNTS.length],
+      stage:'Stage '+stageNum+' — '+stageName,
+      rule:rule?rule.rule:'PASS',
+      desc:rule?rule.desc:(type==='pass'||type==='savings'?'All validations passed':'Processed'),
+      type:claimType,
+    });
+  }
+
+  drilldown = {stageId:'kpi-'+type, type:claimType, claims, page:1, search:'', filterRule:''};
+  selectedStage=null; selectedSub=null;
+  renderTree();
+
+  // Render in right panel with KPI header
+  const color=KPI_COLORS[type];
+  const label=KPI_LABELS[type];
+  const typeBadge=KPI_BADGE[type];
+  const typeLabel=type==='deny'?'Denied':type==='pend'?'Pended':type==='siu'?'SIU':type==='fwa'?'FWA':'Approved';
+  const typeBg=type==='deny'?'#FCEBEB':type==='pend'?'#FAEEDA':type==='siu'||type==='fwa'?'#EEEDFE':'#EAF3DE';
+
+  // Use renderDrilldown with a fake stage object
+  const fakeStage={id:'kpi-'+type, name:label, color:color, subs:[]};
+  renderDrilldown(fakeStage);
 }
 
 function renderKPIs(){

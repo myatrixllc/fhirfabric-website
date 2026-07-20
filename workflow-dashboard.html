@@ -226,22 +226,95 @@
   </div>
 
   <!-- Period filter -->
-  <div class="period-bar" style="flex-wrap:wrap;">
-    <span style="font-size:.72rem;color:var(--text-3);">Period:</span>
-    <button class="pf on" onclick="setPeriod('today',this)" id="pf-today">Today</button>
-    <button class="pf" onclick="setPeriod('week',this)" id="pf-week">This week</button>
-    <button class="pf" onclick="setPeriod('month',this)" id="pf-month">This month</button>
-    <button class="pf" onclick="setPeriod('q1',this)" id="pf-q1">Q1</button>
-    <button class="pf" onclick="setPeriod('q2',this)" id="pf-q2">Q2</button>
-    <button class="pf" onclick="setPeriod('q3',this)" id="pf-q3">Q3</button>
-    <button class="pf" onclick="setPeriod('q4',this)" id="pf-q4">Q4</button>
-    <button class="pf" onclick="setPeriod('ytd',this)" id="pf-ytd">YTD</button>
-    <div style="display:flex;align-items:center;gap:4px;margin-left:4px;">
-      <span style="font-size:.68rem;color:var(--text-3);">Custom:</span>
-      <input type="date" id="custom-from" style="font-size:.68rem;padding:4px 6px;border:1px solid #D0D7E1;border-radius:6px;font-family:var(--sans);color:var(--navy);background:white;cursor:pointer;" onchange="applyCustomRange()"/>
-      <span style="font-size:.68rem;color:var(--text-3);">→</span>
-      <input type="date" id="custom-to" style="font-size:.68rem;padding:4px 6px;border:1px solid #D0D7E1;border-radius:6px;font-family:var(--sans);color:var(--navy);background:white;cursor:pointer;" onchange="applyCustomRange()"/>
-      <span id="custom-label" style="font-size:.65rem;color:var(--text-3);display:none;"></span>
+  <style>
+    .pf-trigger{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid #D0D7E1;border-radius:8px;font-size:.8rem;color:var(--navy);background:white;cursor:pointer;min-width:200px;justify-content:space-between;font-family:var(--sans);transition:border-color .12s}
+    .pf-trigger:hover{border-color:#9BA8B6}
+    .pf-trigger-left{display:flex;align-items:center;gap:7px}
+    .pf-badge{font-size:.65rem;background:#E1F5EE;color:#0F6E56;padding:2px 8px;border-radius:100px;font-weight:600;white-space:nowrap}
+    .pf-dd{position:absolute;top:calc(100% + 6px);left:0;background:white;border:1px solid #D0D7E1;border-radius:12px;padding:5px;min-width:260px;box-shadow:0 4px 20px rgba(0,0,0,.10);z-index:200;display:none}
+    .pf-dd.open{display:block}
+    .pf-dg{font-size:.58rem;color:#9BA8B6;padding:8px 10px 3px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--mono)}
+    .pf-di{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:7px;font-size:.78rem;color:var(--navy);cursor:pointer;transition:background .1s}
+    .pf-di:hover{background:#F0F2F5}
+    .pf-di.on{background:#E1F5EE;color:#0F6E56}
+    .pf-di.on .pf-dm{color:#0F6E56;opacity:.7}
+    .pf-dm{font-size:.68rem;color:#9BA8B6}
+    .pf-sep{height:0.5px;background:#E2E6ED;margin:4px 6px}
+    .pf-qrow{padding:4px 10px 6px;display:flex;gap:4px}
+    .pf-qp{flex:1;padding:5px 0;text-align:center;border-radius:6px;font-size:.72rem;font-weight:600;cursor:pointer;border:1px solid #D0D7E1;color:#6B7685;background:transparent;transition:all .1s;font-family:var(--sans)}
+    .pf-qp:hover{border-color:#9BA8B6;color:var(--navy)}
+    .pf-qp.on{background:#00838F;color:white;border-color:#00838F}
+    .pf-yrow{padding:4px 10px 6px;display:flex;gap:4px}
+    .pf-yp{flex:1;padding:5px 0;text-align:center;border-radius:6px;font-size:.72rem;font-weight:600;cursor:pointer;border:1px solid #D0D7E1;color:#6B7685;background:transparent;transition:all .1s;font-family:var(--sans)}
+    .pf-yp:hover{border-color:#9BA8B6;color:var(--navy)}
+    .pf-yp.on{background:#00838F;color:white;border-color:#00838F}
+    .pf-custom{padding:4px 10px 8px;display:none}
+    .pf-custom.open{display:block}
+    .pf-drow{display:flex;align-items:center;gap:6px;margin-top:6px}
+    .pf-dbox{flex:1;display:flex;align-items:center;gap:4px;padding:5px 8px;border:1px solid #D0D7E1;border-radius:6px;background:#F7F8FA;font-size:.72rem;color:#9BA8B6}
+    .pf-dbox input[type=date]{border:none;background:transparent;font-size:.72rem;color:var(--navy);outline:none;font-family:var(--sans);width:100%}
+    .pf-apply{width:100%;margin-top:8px;padding:7px;background:#00838F;color:white;border:none;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:var(--sans)}
+    .pf-apply:hover{background:#0F6E56}
+    .pf-chip{display:none;align-items:center;gap:6px;padding:5px 10px;background:#E1F5EE;border:1px solid rgba(15,110,86,.2);border-radius:8px;font-size:.72rem;color:#0F6E56;white-space:nowrap}
+    .pf-chip.show{display:inline-flex}
+  </style>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <span style="font-size:.72rem;color:var(--text-3);font-family:var(--mono);">Period:</span>
+    <div style="position:relative;" id="pf-wrap">
+      <div class="pf-trigger" id="pf-trigger" onclick="pfToggle()">
+        <div class="pf-trigger-left">
+          <i class="ti ti-calendar" aria-hidden="true" style="font-size:14px;color:#9BA8B6;"></i>
+          <span id="pf-label">Today</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="pf-badge" id="pf-badge">Jul 20</span>
+          <i class="ti ti-chevron-down" aria-hidden="true" style="font-size:13px;color:#9BA8B6;"></i>
+        </div>
+      </div>
+      <div class="pf-dd" id="pf-dd">
+        <!-- Relative -->
+        <div class="pf-dg">Relative</div>
+        <div class="pf-di on" id="pfi-today" onclick="pfSelect('today','Today','Jul 20','Claims for <strong>today Jul 20, 2026</strong> — real-time')">Today <span class="pf-dm">Jul 20, 2026</span></div>
+        <div class="pf-di" id="pfi-week" onclick="pfSelect('week','This week','Jul 14–20','Claims for <strong>Jul 14–20, 2026</strong> (this week)')">This week <span class="pf-dm">Jul 14–20</span></div>
+        <div class="pf-di" id="pfi-month" onclick="pfSelect('month','This month','Jul 2026','Claims for <strong>Jul 1–20, 2026</strong> (month to date)')">This month <span class="pf-dm">Jul 1–20</span></div>
+        <div class="pf-di" id="pfi-ytd" onclick="pfSelect('ytd','Year to date','Jan–Jul 26','Claims for <strong>Jan 1 – Jul 20, 2026</strong> (year to date)')">Year to date <span class="pf-dm">Jan 1 – today</span></div>
+        <div class="pf-sep"></div>
+        <!-- Quarters -->
+        <div class="pf-dg">Quarter — <span id="pf-q-year">2026</span></div>
+        <div class="pf-qrow">
+          <button class="pf-qp" id="pfq-q1" onclick="pfSelectQ('q1')">Q1</button>
+          <button class="pf-qp" id="pfq-q2" onclick="pfSelectQ('q2')">Q2</button>
+          <button class="pf-qp" id="pfq-q3" onclick="pfSelectQ('q3')">Q3</button>
+          <button class="pf-qp" id="pfq-q4" onclick="pfSelectQ('q4')">Q4</button>
+        </div>
+        <div class="pf-sep"></div>
+        <!-- Full year -->
+        <div class="pf-dg">Full year</div>
+        <div class="pf-yrow">
+          <button class="pf-yp" id="pfy-2024" onclick="pfSelectYear(2024)">2024</button>
+          <button class="pf-yp" id="pfy-2025" onclick="pfSelectYear(2025)">2025</button>
+          <button class="pf-yp on" id="pfy-2026" onclick="pfSelectYear(2026)">2026</button>
+        </div>
+        <div class="pf-sep"></div>
+        <!-- Custom -->
+        <div class="pf-di" id="pfi-custom" onclick="pfToggleCustom()">
+          <div style="display:flex;align-items:center;gap:6px;"><i class="ti ti-calendar-event" aria-hidden="true" style="font-size:13px;color:#9BA8B6;"></i>Custom range</div>
+          <i class="ti ti-chevron-right" aria-hidden="true" id="pf-caret" style="font-size:12px;color:#9BA8B6;"></i>
+        </div>
+        <div class="pf-custom" id="pf-custom-sec">
+          <div class="pf-drow">
+            <div class="pf-dbox"><i class="ti ti-calendar" aria-hidden="true" style="font-size:11px;"></i><input type="date" id="pf-from" value="2026-07-01"/></div>
+            <span style="font-size:.72rem;color:#9BA8B6;">–</span>
+            <div class="pf-dbox"><i class="ti ti-calendar" aria-hidden="true" style="font-size:11px;"></i><input type="date" id="pf-to" value="2026-07-20"/></div>
+          </div>
+          <button class="pf-apply" onclick="pfApplyCustom()">Apply range</button>
+        </div>
+      </div>
+    </div>
+    <div class="pf-chip" id="pf-chip">
+      <i class="ti ti-calendar-event" aria-hidden="true" style="font-size:13px;"></i>
+      <span id="pf-chip-text"></span>
+      <span onclick="pfClearCustom()" style="cursor:pointer;opacity:.6;margin-left:2px;font-size:11px;"><i class="ti ti-x" aria-hidden="true"></i></span>
     </div>
   </div>
 

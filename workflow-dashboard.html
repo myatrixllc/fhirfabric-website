@@ -1300,71 +1300,169 @@ function renderDetail(stage, sub){
   rp.innerHTML=scoreHTML+flowHTML+subHTML+claimsHTML;
 }
 
-function setPeriod(p,btn){
-  period=p;
+// ── Period filter dropdown JS ──
+let pfOpen=false, pfCustomOpen=false, pfActiveYear=2026, pfActiveQ=null;
+const PF_QDATES={q1:'Jan 1–Mar 31',q2:'Apr 1–Jun 30',q3:'Jul 1–Sep 30',q4:'Oct 1–Dec 31'};
+const PF_QNAMES={q1:'Q1',q2:'Q2',q3:'Q3',q4:'Q4'};
+
+function pfRefresh(){
   drilldown=null;
-  document.querySelectorAll('.pf').forEach(b=>b.classList.remove('on'));
-  if(btn) btn.classList.add('on');
-  // Clear custom inputs when switching to preset
-  document.getElementById('custom-label').style.display='none';
   renderKPIs(); renderTree();
-  if(selectedStage){ const s=STAGES.find(x=>x.id===selectedStage); renderDetail(s,selectedSub?STAGES.find(x=>x.id===selectedStage).subs.find(x=>x.id===selectedSub):null); }
+  if(selectedStage){
+    const s=STAGES.find(x=>x.id===selectedStage);
+    if(s) renderDetail(s, selectedSub?s.subs.find(x=>x.id===selectedSub):null);
+  }
 }
 
-function applyCustomRange(){
-  const from=document.getElementById('custom-from').value;
-  const to=document.getElementById('custom-to').value;
-  if(!from || !to) return;
+function pfClearActive(){
+  document.querySelectorAll('.pf-di').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.pf-qp').forEach(el=>el.classList.remove('on'));
+  pfActiveQ=null;
+}
 
-  const d1=new Date(from), d2=new Date(to);
+function pfClose(){
+  pfOpen=false;
+  const dd=document.getElementById('pf-dd');
+  if(dd) dd.classList.remove('open');
+}
+
+function pfToggle(){
+  pfOpen=!pfOpen;
+  const dd=document.getElementById('pf-dd');
+  if(dd) dd.classList.toggle('open',pfOpen);
+}
+
+function pfSetTrigger(label,badge){
+  const l=document.getElementById('pf-label');
+  const b=document.getElementById('pf-badge');
+  if(l) l.textContent=label;
+  if(b) b.textContent=badge;
+}
+
+function pfSelect(p,label,badge){
+  period=p;
+  pfClearActive();
+  const el=document.getElementById('pfi-'+p);
+  if(el) el.classList.add('on');
+  pfSetTrigger(label,badge);
+  const chip=document.getElementById('pf-chip');
+  if(chip) chip.classList.remove('show');
+  pfClose();
+  pfRefresh();
+}
+
+function pfSelectQ(q){
+  pfActiveQ=q;
+  period=q;
+  pfClearActive();
+  document.querySelectorAll('.pf-qp').forEach(el=>el.classList.remove('on'));
+  const btn=document.getElementById('pfq-'+q);
+  if(btn) btn.classList.add('on');
+  const label=PF_QNAMES[q]+' '+pfActiveYear;
+  const badge=PF_QDATES[q]+', '+pfActiveYear;
+  pfSetTrigger(label,badge);
+  const chip=document.getElementById('pf-chip');
+  if(chip) chip.classList.remove('show');
+  // Update PERIOD_TOTALS for this quarter/year
+  const v={q1:1.0,q2:1.12,q3:0.94,q4:1.21}[q]||1;
+  const yr=pfActiveYear===2026?1:pfActiveYear===2025?0.85:0.72;
+  PERIOD_TOTALS[q]={
+    total:Math.round(880*v*yr),pass:Math.round(530*v*yr),deny:Math.round(210*v*yr),
+    pend:Math.round(140*v*yr),fwa:Math.round(38*v*yr),siu:Math.round(15*v*yr),
+    sav:Math.round(2440000*v*yr)
+  };
+  pfClose();
+  pfRefresh();
+}
+
+function pfSelectYear(yr){
+  pfActiveYear=yr;
+  period='year_'+yr;
+  pfClearActive();
+  document.querySelectorAll('.pf-yp').forEach(el=>el.classList.remove('on'));
+  const btn=document.getElementById('pfy-'+yr);
+  if(btn) btn.classList.add('on');
+  const qYr=document.getElementById('pf-q-year');
+  if(qYr) qYr.textContent=yr;
+  pfSetTrigger('Full year '+yr,'Jan–Dec '+yr);
+  const chip=document.getElementById('pf-chip');
+  if(chip) chip.classList.remove('show');
+  const v=yr===2026?1:yr===2025?0.91:0.79;
+  PERIOD_TOTALS['year_'+yr]={
+    total:Math.round(3536*v),pass:Math.round(2130*v),deny:Math.round(835*v),
+    pend:Math.round(571*v),fwa:Math.round(145*v),siu:Math.round(61*v),
+    sav:Math.round(9760000*v)
+  };
+  pfClose();
+  pfRefresh();
+}
+
+function pfToggleCustom(){
+  pfCustomOpen=!pfCustomOpen;
+  const sec=document.getElementById('pf-custom-sec');
+  const caret=document.getElementById('pf-caret');
+  if(sec) sec.classList.toggle('open',pfCustomOpen);
+  if(caret) caret.className='ti ti-chevron-'+(pfCustomOpen?'down':'right');
+}
+
+function pfApplyCustom(){
+  const fromEl=document.getElementById('pf-from');
+  const toEl=document.getElementById('pf-to');
+  if(!fromEl||!toEl) return;
+  const from=fromEl.value, to=toEl.value;
+  if(!from||!to){ alert('Please select both dates'); return; }
+  const d1=new Date(from+'T12:00:00'), d2=new Date(to+'T12:00:00');
   if(d2<d1){ alert('End date must be after start date'); return; }
-
-  // Calculate days between dates and scale data proportionally
-  const days=Math.round((d2-d1)/(1000*60*60*24))+1;
-  const scale=days/7; // scale relative to 1 week of data
-  const base=PERIODS.week;
-  const v=0.95+Math.random()*0.1; // slight variance
-
-  PERIOD_TOTALS['custom']={
+  const days=Math.round((d2-d1)/864e5)+1;
+  const fmtD=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const chipText=fmtD(d1)+' – '+fmtD(d2)+' ('+days+'d)';
+  period='custom';
+  const scale=days/7;
+  const v=0.95+Math.random()*0.1;
+  const base=PERIOD_TOTALS.week;
+  PERIOD_TOTALS.custom={
     total:Math.max(1,Math.round(base.total*scale*v)),
     pass:Math.max(0,Math.round(base.pass*scale*v)),
     deny:Math.max(0,Math.round(base.deny*scale*v)),
     pend:Math.max(0,Math.round(base.pend*scale*v)),
     fwa:Math.max(0,Math.round((base.fwa||0)*scale*v)),
     siu:Math.max(0,Math.round((base.siu||0)*scale*v)),
-    sav:Math.max(0,Math.round(base.sav*scale*v)),
-    stages:base.stages.map(s=>({
-      ...s,
-      inflow:Math.max(0,Math.round(s.inflow*scale*v)),
-      passed:Math.max(0,Math.round(s.passed*scale*v)),
-      denied:Math.max(0,Math.round(s.denied*scale*v)),
-      pended:Math.max(0,Math.round(s.pended*scale*v)),
-      savings:Math.max(0,Math.round(s.savings*scale*v))
-    }))
+    sav:Math.max(0,Math.round(base.sav*scale*v))
   };
-
-  period='custom';
-  drilldown=null;
-  document.querySelectorAll('.pf').forEach(b=>b.classList.remove('on'));
-
-  // Format dates for label
-  const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  const label=document.getElementById('custom-label');
-  label.textContent=fmt(d1)+' – '+fmt(d2)+' ('+days+' days)';
-  label.style.display='inline';
-
-  renderKPIs(); renderTree();
-  if(selectedStage){ const s=STAGES.find(x=>x.id===selectedStage); renderDetail(s,selectedSub?STAGES.find(x=>x.id===selectedStage).subs.find(x=>x.id===selectedSub):null); }
+  pfClearActive();
+  const cust=document.getElementById('pfi-custom');
+  if(cust) cust.classList.add('on');
+  pfSetTrigger('Custom',days+'d');
+  const chip=document.getElementById('pf-chip');
+  const chipTxt=document.getElementById('pf-chip-text');
+  if(chip){ chipTxt.textContent=chipText; chip.classList.add('show'); }
+  pfClose();
+  pfRefresh();
 }
 
-// Set default custom date range to current month
-(function initDates(){
-  const now=new Date();
-  const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0');
-  document.getElementById('custom-from').value=y+'-'+m+'-01';
-  const lastDay=new Date(y,now.getMonth()+1,0).getDate();
-  document.getElementById('custom-to').value=y+'-'+m+'-'+String(lastDay).padStart(2,'0');
-})();
+function pfClearCustom(){
+  const chip=document.getElementById('pf-chip');
+  if(chip) chip.classList.remove('show');
+  pfSelect('today','Today','Jul 20');
+}
+
+// Close on outside click — but not on date inputs
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#pf-wrap') && e.target.type!=='date'){
+    pfClose();
+  }
+});
+
+// Stop date input clicks from bubbling
+document.addEventListener('DOMContentLoaded',function(){
+  ['pf-from','pf-to'].forEach(function(id){
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('click',function(e){ e.stopPropagation(); });
+  });
+});
+
+// Legacy stub
+function setPeriod(p){ pfSelect(p,p,''); }
 
 renderKPIs(); renderTree();
 

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FHIRFabric — Executive Briefing</title>
+<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+  body{background:#0B1F3A;color:white;font-family:'DM Sans',system-ui,sans-serif}
+  /* Slide system */
+  .slide{display:none;min-height:100vh;padding:48px 64px;position:relative;flex-direction:column;justify-content:center}
+  .slide.active{display:flex}
+  .slide-num{position:fixed;bottom:24px;right:32px;font-family:monospace;font-size:.7rem;color:rgba(255,255,255,.25);z-index:100}
+  .nav-btns{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:100}
+  .nav-btn{padding:8px 20px;border:1px solid rgba(255,255,255,.2);border-radius:100px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);cursor:pointer;font-size:.8rem;font-family:var(--sans);transition:all .15s}
+  .nav-btn:hover{background:rgba(255,255,255,.12);color:white}
+  .nav-btn.primary{background:var(--teal);color:white;border-color:var(--teal)}
+  /* Slide backgrounds */
+  .bg-dark{background:#0B1F3A}
+  .bg-navy{background:#081628}
+  .bg-light{background:#F0F2F5;color:#0B1F3A}
+  .bg-teal{background:#0F6E56}
+  /* Typography */
+  .eyebrow{font-family:monospace;font-size:.7rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
+  .eyebrow-dark{font-family:monospace;font-size:.7rem;color:#9BA8B6;text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
+  .h-hero{font-family:'DM Serif Display',Georgia,serif;font-size:3.8rem;line-height:1.1;margin-bottom:20px;max-width:900px}
+  .h-hero em{color:#6FD0D8;font-style:italic}
+  .h-section{font-family:'DM Serif Display',Georgia,serif;font-size:2.6rem;line-height:1.15;margin-bottom:16px}
+  .h-section em{color:#6FD0D8;font-style:italic}
+  .h-section-dark{font-family:'DM Serif Display',Georgia,serif;font-size:2.4rem;line-height:1.15;margin-bottom:16px;color:#0B1F3A}
+  .sub{font-size:1.05rem;color:rgba(255,255,255,.65);line-height:1.75;max-width:720px}
+  .sub-dark{font-size:1rem;color:#4B5563;line-height:1.75;max-width:720px}
+  /* Cards */
+  .card-grid{display:grid;gap:14px;margin-top:32px}
+  .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px 24px}
+  .card-light{background:white;border:1px solid #E2E6ED;border-radius:12px;padding:20px 24px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .card-teal{background:rgba(0,131,143,.15);border:1px solid rgba(111,208,216,.25);border-radius:12px;padding:20px 24px}
+  .card-title{font-weight:600;font-size:.95rem;margin-bottom:6px}
+  .card-title-dark{font-weight:600;font-size:.95rem;margin-bottom:6px;color:#0B1F3A}
+  .card-sub{font-size:.82rem;color:rgba(255,255,255,.55);line-height:1.6}
+  .card-sub-dark{font-size:.82rem;color:#6B7685;line-height:1.6}
+  /* Stat */
+  .stat{font-family:'DM Serif Display',Georgia,serif;font-size:3rem;color:#6FD0D8;line-height:1}
+  .stat-label{font-size:.78rem;color:rgba(255,255,255,.45);margin-top:4px}
+  /* Flow */
+  .flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-top:28px}
+  .flow-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:14px 18px;min-width:140px;text-align:center}
+  .flow-box.highlight{background:rgba(0,131,143,.2);border-color:#6FD0D8;border-width:1.5px}
+  .flow-box.outcome-green{background:rgba(59,109,17,.2);border-color:#97C459}
+  .flow-box.outcome-red{background:rgba(162,45,45,.2);border-color:#F7C1C1}
+  .flow-box.outcome-amber{background:rgba(133,79,11,.2);border-color:#FAC775}
+  .flow-box.outcome-purple{background:rgba(83,74,183,.2);border-color:#CECBF6}
+  .flow-arrow{font-size:20px;color:rgba(255,255,255,.3);padding:0 8px;flex-shrink:0}
+  .flow-title{font-weight:600;font-size:.82rem}
+  .flow-sub{font-size:.68rem;color:rgba(255,255,255,.45);margin-top:3px}
+  /* Arch diagram */
+  .arch-grid{display:grid;grid-template-columns:1fr 2px 1fr 2px 1fr;gap:0;margin-top:32px;align-items:start}
+  .arch-col{display:flex;flex-direction:column;gap:10px;padding:0 20px}
+  .arch-divider{background:rgba(255,255,255,.1);height:400px;align-self:center}
+  .arch-layer-label{font-family:monospace;font-size:.6rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;text-align:center}
+  .arch-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px 14px;font-size:.8rem}
+  .arch-box-teal{background:rgba(0,131,143,.15);border:1px solid rgba(111,208,216,.25);border-radius:8px;padding:12px 14px;font-size:.8rem}
+  .arch-box-purple{background:rgba(83,74,183,.15);border:1px solid rgba(206,203,246,.25);border-radius:8px;padding:12px 14px;font-size:.8rem}
+  .arch-box-green{background:rgba(59,109,17,.15);border:1px solid rgba(192,221,151,.25);border-radius:8px;padding:12px 14px;font-size:.8rem}
+  /* Badge */
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:.65rem;font-weight:600;padding:3px 8px;border-radius:100px}
+  .badge-rule{background:rgba(0,131,143,.2);color:#6FD0D8;border:1px solid rgba(111,208,216,.3)}
+  .badge-llm{background:rgba(83,74,183,.2);color:#CECBF6;border:1px solid rgba(206,203,246,.3)}
+  .badge-output{background:rgba(59,109,17,.2);color:#97C459;border:1px solid rgba(192,221,151,.3)}
+  /* Pipeline stages */
+  .stage-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+  .stage-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px}
+  .stage-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:.65rem;font-weight:700;flex-shrink:0}
+  .stage-info{flex:1}
+  .stage-name{font-size:.8rem;font-weight:600}
+  .stage-type{font-size:.65rem;color:rgba(255,255,255,.4);margin-top:1px}
+  /* Scoring visual */
+  .score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+  .score-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px}
+  .score-val{font-family:'DM Serif Display',Georgia,serif;font-size:2.4rem;line-height:1;margin:8px 0}
+  .score-bar-track{height:6px;background:rgba(255,255,255,.1);border-radius:3px;margin:8px 0}
+  .score-bar-fill{height:6px;border-radius:3px}
+  /* Timeline */
+  .timeline{display:flex;flex-direction:column;gap:0;margin-top:24px;max-width:600px}
+  .tl-item{display:flex;gap:16px;align-items:flex-start}
+  .tl-left{display:flex;flex-direction:column;align-items:center;width:40px;flex-shrink:0}
+  .tl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:3px}
+  .tl-line{width:2px;flex:1;background:rgba(255,255,255,.1);margin:4px 0;min-height:32px}
+  .tl-content{padding-bottom:24px;flex:1}
+  .tl-phase{font-family:monospace;font-size:.62rem;color:rgba(255,255,255,.4);margin-bottom:3px}
+  .tl-title{font-weight:600;font-size:.9rem;margin-bottom:4px}
+  .tl-items{font-size:.78rem;color:rgba(255,255,255,.55);line-height:1.7}
+  /* Demo step */
+  .demo-step{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
+  .step-num{width:32px;height:32px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0}
+  .step-content{flex:1}
+  .step-title{font-weight:600;font-size:.9rem;margin-bottom:4px}
+  .step-desc{font-size:.8rem;color:rgba(255,255,255,.55);line-height:1.6}
+  .code-block{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px 16px;font-family:monospace;font-size:.75rem;color:#6FD0D8;margin-top:8px;line-height:1.7}
+</style>
+</head>
+<body>
+
+<!-- ══ SLIDE 1: COVER ══ -->
+<div class="slide bg-navy active" id="slide-1">
+  <div style="max-width:900px">
+    <div class="eyebrow">FHIRFabric · Payment Integrity Platform</div>
+    <div class="h-hero">The gaps in your adjudication system<br/>are costing you <em>$100B+ annually.</em></div>
+    <div class="sub">A pre-payment integrity briefing for health plan executives. How FHIRFabric plugs into what you already have — and catches what your rules engine can't.</div>
+    <div style="margin-top:40px;display:flex;gap:16px;">
+      <div style="padding:10px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:.82rem;color:rgba(255,255,255,.5);">MyAtrix LLC · Downers Grove, IL</div>
+      <div style="padding:10px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:.82rem;color:rgba(255,255,255,.5);">Confidential</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 2: THE PROBLEM ══ -->
+<div class="slide bg-dark" id="slide-2">
+  <div class="eyebrow">The problem</div>
+  <div class="h-section">Your adjudication system<br/>was not built for <em>this.</em></div>
+  <div class="card-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="card">
+      <div style="font-size:2rem;margin-bottom:8px;">🔍</div>
+      <div class="card-title">Rules engines catch rules</div>
+      <div class="card-sub">NCCI tables, MUE limits, basic edits. They cannot do clinical reasoning, detect upcoding patterns, or validate DRG tier accuracy. That requires AI.</div>
+    </div>
+    <div class="card">
+      <div style="font-size:2rem;margin-bottom:8px;">📦</div>
+      <div class="card-title">Every vendor is a black box</div>
+      <div class="card-sub">Cotiviti, Optum, Lyric — you send claims in, you get a file back 3 weeks later. Nobody can tell you what's happening right now, claim by claim.</div>
+    </div>
+    <div class="card">
+      <div style="font-size:2rem;margin-bottom:8px;">💸</div>
+      <div class="card-title">Post-pay recovery is expensive</div>
+      <div class="card-sub">Recovering an overpayment costs 3–5× more than preventing it. Provider relationships suffer. Retroactive demands generate appeals that cost more than the original overpayment.</div>
+    </div>
+  </div>
+  <div style="margin-top:32px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+    <div><div class="stat">$100B+</div><div class="stat-label">Annual improper Medicare &amp; Medicaid payments (GAO)</div></div>
+    <div><div class="stat">3–5×</div><div class="stat-label">Cost to recover vs. prevent an overpayment</div></div>
+    <div><div class="stat">0</div><div class="stat-label">Incumbent vendors giving you real-time claim visibility</div></div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3: THE SOLUTION ══ -->
+<div class="slide bg-dark" id="slide-3">
+  <div class="eyebrow">The solution</div>
+  <div class="h-section">Your adjudication system stays.<br/><em>We fill the gaps it can't cover.</em></div>
+  <div class="sub">FHIRFabric is a plug-and-play augmentation layer. One API call before payment. No workflow change. No rip and replace. Your system calls ours, gets a decision back in under 60 seconds, and acts on it.</div>
+  <div class="flow" style="margin-top:36px">
+    <div class="flow-box">
+      <div class="flow-title">Your adjudication system</div>
+      <div class="flow-sub">Facets · QNXT · HealthEdge</div>
+      <div class="flow-sub" style="margin-top:6px;color:rgba(255,255,255,.3)">unchanged</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="background:rgba(0,131,143,.15);border:1.5px solid #6FD0D8">
+      <div class="flow-title" style="color:#6FD0D8">POST /v1/claims/validate</div>
+      <div class="flow-sub">FHIRFabric PI Pipeline</div>
+      <div class="flow-sub">&lt;60 seconds</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="flow-box outcome-green"><div class="flow-title" style="color:#97C459">✓ Approve</div><div class="flow-sub">Pay at contracted rate</div></div>
+      <div class="flow-box outcome-amber"><div class="flow-title" style="color:#FAC775">⏳ Pend</div><div class="flow-sub">Route to review queue</div></div>
+      <div class="flow-box outcome-red"><div class="flow-title" style="color:#F7C1C1">✗ Deny</div><div class="flow-sub">With policy citation</div></div>
+      <div class="flow-box outcome-purple"><div class="flow-title" style="color:#CECBF6">🔍 SIU</div><div class="flow-sub">Fraud referral</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4: PLATFORM ARCHITECTURE ══ -->
+<div class="slide bg-dark" id="slide-4">
+  <div class="eyebrow">Platform architecture</div>
+  <div class="h-section">How it's built — <em>three layers.</em></div>
+  <div class="arch-grid">
+    <!-- Layer 1: Payer systems -->
+    <div class="arch-col">
+      <div class="arch-layer-label">Your systems (unchanged)</div>
+      <div class="arch-box">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;">Adjudication</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.45);">Facets · QNXT · HealthEdge</div>
+      </div>
+      <div class="arch-box">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;">Eligibility</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.45);">Member eligibility DB</div>
+      </div>
+      <div class="arch-box">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;">Provider</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.45);">Credentialing · Contracts</div>
+      </div>
+      <div class="arch-box">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:8px;">Claims</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.45);">837P · 837I · FHIR R4</div>
+      </div>
+      <div style="font-size:.7rem;color:rgba(255,255,255,.25);text-align:center;margin-top:8px;">↓ one API call</div>
+    </div>
+    <div class="arch-divider"></div>
+    <!-- Layer 2: FHIRFabric -->
+    <div class="arch-col">
+      <div class="arch-layer-label">FHIRFabric PI (our platform)</div>
+      <div class="arch-box-teal">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:6px;color:#6FD0D8;">API Gateway</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);">FastAPI · Auth · Rate limiting<br/>FHIR R4 + X12 837 input</div>
+      </div>
+      <div class="arch-box-teal">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:6px;color:#6FD0D8;">17-Stage Pipeline</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);">Eligibility → COB → Benefits<br/>Editing → Coding → Clinical<br/>Auth → Contract → Pricing<br/>FWA → AI Decision Engine</div>
+      </div>
+      <div class="arch-box-purple">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:6px;color:#CECBF6;">Scoring Engine</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);">Confidence · Risk · Data Quality<br/>Threshold-based auto-routing</div>
+      </div>
+      <div class="arch-box-purple">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:6px;color:#CECBF6;">Pluggable LLM</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);">Anthropic · OpenAI · Azure<br/>Ollama (air-gapped) · Custom</div>
+      </div>
+    </div>
+    <div class="arch-divider"></div>
+    <!-- Layer 3: Outputs -->
+    <div class="arch-col">
+      <div class="arch-layer-label">Outputs</div>
+      <div class="arch-box-green">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:6px;color:#97C459;">Decision + Audit Trail</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);">Approve · Pend · Deny · SIU<br/>Policy citation on every finding<br/>Confidence &amp; risk score<br/>Provider remittance message</div>
+      </div>
+      <div class="arch-box-green">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:6px;color:#97C459;">Workflow Dashboard</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);">17-stage processing tree<br/>Real-time claim visibility<br/>Click-through drilldown<br/>Confidence/risk per stage</div>
+      </div>
+      <div class="arch-box-green">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:6px;color:#97C459;">PA Dashboard</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);">Prior auth workflow<br/>CMS §1557 compliance<br/>Linked to PI pipeline</div>
+      </div>
+      <div class="arch-box">
+        <div style="font-weight:600;font-size:.82rem;margin-bottom:6px;">835 ERA</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.45);">Electronic remittance back<br/>to adjudication system</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5: 17-STAGE PIPELINE ══ -->
+<div class="slide bg-dark" id="slide-5">
+  <div class="eyebrow">Pipeline components</div>
+  <div class="h-section">17 validation stages.<br/><em>Every claim. Before payment.</em></div>
+  <div class="stage-list">
+    <div class="stage-item"><div class="stage-num" style="background:#374151">01</div><div class="stage-info"><div class="stage-name">Claim Structure &amp; Data Quality</div><div class="stage-type"><span class="badge badge-rule">RULE</span> X12 validation · field checks · normalization</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#0F6E56">02</div><div class="stage-info"><div class="stage-name">Member Eligibility</div><div class="stage-type"><span class="badge badge-rule">RULE</span> Coverage dates · member ID · plan enrollment</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#0F6E56">03</div><div class="stage-info"><div class="stage-name">Benefit &amp; Coverage</div><div class="stage-type"><span class="badge badge-rule">RULE</span> Covered services · exclusions · annual limits</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#0F6E56">04</div><div class="stage-info"><div class="stage-name">Coordination of Benefits</div><div class="stage-type"><span class="badge badge-rule">RULE</span> Birthday rule · MSP · Medicaid last resort</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#0F6E56">05</div><div class="stage-info"><div class="stage-name">Provider Validation</div><div class="stage-type"><span class="badge badge-rule">RULE</span> NPI · taxonomy · credentialing · network</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#854F0B">06</div><div class="stage-info"><div class="stage-name">Authorization &amp; Referral</div><div class="stage-type"><span class="badge badge-rule">RULE</span> PA required list · auth validity · HMO referral</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#534AB7">07</div><div class="stage-info"><div class="stage-name">Clinical Validation</div><div class="stage-type"><span class="badge badge-llm">AI</span> Medical necessity · LCD/NCD · DRG accuracy</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#534AB7">08</div><div class="stage-info"><div class="stage-name">Coding Validation</div><div class="stage-type"><span class="badge badge-llm">AI</span> NCCI · MUE · upcoding · ICD-10 specificity</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#374151">09</div><div class="stage-info"><div class="stage-name">Duplicate Detection</div><div class="stage-type"><span class="badge badge-rule">RULE</span> Intra-claim · cross-claim history · frequency</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#0F6E56">10</div><div class="stage-info"><div class="stage-name">Provider Contract &amp; Network</div><div class="stage-type"><span class="badge badge-rule">RULE</span> Contract matching · scope of service · TIN</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#0F6E56">11</div><div class="stage-info"><div class="stage-name">Pricing &amp; Member Liability</div><div class="stage-type"><span class="badge badge-rule">RULE</span> Fee schedule · modifier adjustments · DRG rate</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#72243E">12</div><div class="stage-info"><div class="stage-name">Fraud, Waste &amp; Abuse</div><div class="stage-type"><span class="badge badge-llm">AI</span> Pattern detection · outlier scoring · SIU referral</div></div></div>
+    <div class="stage-item"><div class="stage-num" style="background:#0B1F3A;border:1px solid rgba(255,255,255,.2)">13</div><div class="stage-info"><div class="stage-name">AI Decision Engine</div><div class="stage-type"><span class="badge badge-llm">AI</span> Cross-stage synthesis · confidence score · disposition</div></div></div>
+    <div class="stage-item" style="grid-column:span 2;background:rgba(0,131,143,.1);border-color:rgba(111,208,216,.2)"><div class="stage-num" style="background:#00838F">17</div><div class="stage-info"><div class="stage-name">Feedback → Pre-Payment Controls</div><div class="stage-type"><span class="badge badge-llm">AI</span> Post-pay findings loop back into pre-pay rules · self-improving platform</div></div></div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6: SCORING MODEL ══ -->
+<div class="slide bg-dark" id="slide-6">
+  <div class="eyebrow">Intelligence layer</div>
+  <div class="h-section">Every stage scores every claim.<br/><em>Three dimensions.</em></div>
+  <div class="sub">Not a rules engine that fires or doesn't. A scoring platform that quantifies certainty, risk, and data completeness — then routes automatically based on thresholds your team configures.</div>
+  <div class="score-grid">
+    <div class="score-card">
+      <div style="font-family:monospace;font-size:.62rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;">Confidence Score</div>
+      <div class="score-val" style="color:#6FD0D8">91%</div>
+      <div class="score-bar-track"><div class="score-bar-fill" style="width:91%;background:#6FD0D8"></div></div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.55);margin-top:8px;line-height:1.6">How certain is the system? Rule-based stages reach 97%+. AI stages range 75–95% depending on data completeness. Below 75% → always human review.</div>
+    </div>
+    <div class="score-card">
+      <div style="font-family:monospace;font-size:.62rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;">Risk Score</div>
+      <div class="score-val" style="color:#F09595">72<span style="font-size:1.2rem">/100</span></div>
+      <div class="score-bar-track"><div class="score-bar-fill" style="width:72%;background:#E8553D"></div></div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.55);margin-top:8px;line-height:1.6">Financial + compliance risk. Driven by billed amount, finding severity, provider history, FWA signals. ≥80 → SIU auto-referral. ≥60 → auto-deny. ≥40 → pend.</div>
+    </div>
+    <div class="score-card">
+      <div style="font-family:monospace;font-size:.62rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;">Data Quality</div>
+      <div class="score-val" style="color:#97C459">95%</div>
+      <div class="score-bar-track"><div class="score-bar-fill" style="width:95%;background:#97C459"></div></div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.55);margin-top:8px;line-height:1.6">How complete is the input? Missing NPI, stale eligibility, incomplete diagnoses all reduce this score. Below 70% → never auto-execute — always human review.</div>
+    </div>
+  </div>
+  <div style="margin-top:24px;padding:16px 20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;font-size:.82rem;color:rgba(255,255,255,.6);line-height:1.7">
+    <span style="color:white;font-weight:600;">Your team configures the thresholds.</span> A conservative Medicaid MCO sets auto-deny at risk 40. An aggressive commercial plan sets it at 70. Same platform, same pipeline, different risk tolerance. Every threshold change is audited with who changed it and when.
+  </div>
+</div>
+
+<!-- ══ SLIDE 7: INTEGRATION PATTERNS ══ -->
+<div class="slide bg-dark" id="slide-7">
+  <div class="eyebrow">Integration</div>
+  <div class="h-section">Three ways to connect.<br/><em>You choose based on your architecture.</em></div>
+  <div class="card-grid" style="grid-template-columns:repeat(3,1fr);margin-top:28px">
+    <div class="card card-teal">
+      <div style="font-family:monospace;font-size:.62rem;color:#6FD0D8;margin-bottom:10px;">PATTERN 1 · DAYS TO IMPLEMENT</div>
+      <div class="card-title">Semantic Layer</div>
+      <div class="card-sub">Your middleware assembles data from all source systems — eligibility, provider, contracts, auth — into one enriched payload before calling our API. Fastest POC path. No direct access to your internal systems required.</div>
+      <div style="margin-top:12px;font-size:.72rem;color:rgba(255,255,255,.35);">Source systems → Enrichment → POST to FHIRFabric</div>
+    </div>
+    <div class="card">
+      <div style="font-family:monospace;font-size:.62rem;color:rgba(255,255,255,.35);margin-bottom:10px;">PATTERN 2 · WEEKS TO IMPLEMENT</div>
+      <div class="card-title">Real-Time API</div>
+      <div class="card-sub">FHIRFabric calls your source systems live at the moment each stage needs the data. Stage 1 fires → calls your eligibility API. Stage 10 fires → calls your provider contract system. You expose the endpoints, we orchestrate.</div>
+      <div style="margin-top:12px;font-size:.72rem;color:rgba(255,255,255,.35);">Claim arrives → FHIRFabric → live lookups → decision</div>
+    </div>
+    <div class="card">
+      <div style="font-family:monospace;font-size:.62rem;color:rgba(255,255,255,.35);margin-bottom:10px;">PATTERN 3 · ZERO INTEGRATION WORK</div>
+      <div class="card-title">FHIR Native</div>
+      <div class="card-sub">If you run FHIRFabric for CMS interoperability compliance, all source systems are already normalized into FHIR R4 resources. The PI pipeline reads directly — no ETL, no API calls, no integration project.</div>
+      <div style="margin-top:12px;font-size:.72rem;color:rgba(255,255,255,.35);">FHIR datastore → PI pipeline reads natively</div>
+    </div>
+  </div>
+  <div style="margin-top:24px;padding:14px 20px;background:rgba(255,255,255,.05);border-radius:10px;font-size:.85rem;color:rgba(255,255,255,.6)">
+    <span style="color:white;font-weight:600;">The pitch in one sentence:</span> Your adjudication system stays. You call our API before cutting the check. We return a decision with a complete, auditable finding — every denial citing the specific CMS policy, LCD, or contract clause that triggered it.
+  </div>
+</div>
+
+<!-- ══ SLIDE 8: LIVE DEMO ══ -->
+<div class="slide bg-dark" id="slide-8">
+  <div class="eyebrow">Live demonstration</div>
+  <div class="h-section">A real claim. Real AI.<br/><em>Real findings. Right now.</em></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:16px">
+    <div>
+      <div style="font-family:monospace;font-size:.65rem;color:rgba(255,255,255,.35);margin-bottom:14px;text-transform:uppercase;letter-spacing:.08em">Step-by-step</div>
+      <div class="demo-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Open the terminal</div>
+          <div class="step-desc">The pipeline runs locally. Start the FastAPI server.</div>
+          <div class="code-block">cd /Users/jularyy/data/fhirfabric<br/>source .venv/bin/activate<br/>uvicorn api.main:app --reload</div>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Run the knee replacement demo</div>
+          <div class="step-desc">CPT 27447 · $16,200 billed · NCCI violations + FWA pattern</div>
+          <div class="code-block">python3 demo/run_demo.py</div>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Show the workflow dashboard</div>
+          <div class="step-desc">Open fhirfabric.com/workflow-dashboard — walk through Stage 8 (Coding) findings and Stage 12 (FWA) risk score.</div>
+        </div>
+      </div>
+      <div class="demo-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Run the institutional demo</div>
+          <div class="step-desc">DRG 470 knee replacement · $37,200 · MCC upcoding caught</div>
+          <div class="code-block">python3 demo/run_institutional_demo.py</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:monospace;font-size:.65rem;color:rgba(255,255,255,.35);margin-bottom:14px;text-transform:uppercase;letter-spacing:.08em">What they'll see</div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title" style="color:#F7C1C1">DENIED — Knee replacement (professional)</div>
+        <div class="card-sub">NCCI bundling CPT 27447+27310 · MUE exceeded (qty 3, max 2) · Wrong POS (11 vs 21) · Anatomical mismatch · Provider outlier pattern → SIU referred · Confidence 91% · Risk 82/100 · <strong style="color:#97C459">$16,200 saved</strong></div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title" style="color:#F7C1C1">DENIED — DRG 470 knee (institutional)</div>
+        <div class="card-sub">DRG 470 billed at MCC tier · N17.0 AKF has POA=N (hospital-acquired) → excluded from MCC calculation · Correct tier: CC · <strong style="color:#97C459">$7,032 overpayment recovered</strong></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#97C459">APPROVED — Office visit</div>
+        <div class="card-sub">CPT 99213 · $75 · All 13 stages passed cleanly · Confidence 97% · Risk 5/100 · Approved at contracted rate in &lt;2 seconds</div>
+      </div>
+      <div style="margin-top:16px;padding:12px 16px;background:rgba(0,131,143,.1);border:1px solid rgba(111,208,216,.2);border-radius:8px;font-size:.78rem;color:rgba(255,255,255,.6)">
+        <span style="color:#6FD0D8;font-weight:600;">Key talking point:</span> Every denial cites the specific CMS policy. The provider knows exactly what was wrong and how to resubmit. No black box. No appeals from confusion.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 9: ROADMAP ══ -->
+<div class="slide bg-dark" id="slide-9">
+  <div class="eyebrow">Roadmap</div>
+  <div class="h-section">Five phases.<br/><em>From POC to predictive.</em></div>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-dot" style="background:#6FD0D8"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-phase">Phase 1 — Months 1–6 · NOW</div>
+        <div class="tl-title">Claims Engine</div>
+        <div class="tl-items">17-stage pipeline · Professional + institutional tracks · COB · FWA · AI decision engine · Workflow + PA dashboards · Plug-and-play API</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-dot" style="background:#97C459"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-phase">Phase 2 — Months 6–12</div>
+        <div class="tl-title">Fraud + Advanced Analytics</div>
+        <div class="tl-items">Cross-claim behavioral analytics · Provider risk scoring · Live eligibility API · Fee schedule DB · Standard reporting suite · SIU workflow</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-dot" style="background:#FAC775"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-phase">Phase 3 — Months 12–18</div>
+        <div class="tl-title">AI Platform</div>
+        <div class="tl-items">Claim pre-scoring · NCD/LCD RAG retrieval · Member risk scoring · HCC validation for Medicare Advantage · Predicted savings model</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-dot" style="background:#F09595"></div><div class="tl-line"></div></div>
+      <div class="tl-content">
+        <div class="tl-phase">Phase 4 — Months 18–24</div>
+        <div class="tl-title">Provider Portal</div>
+        <div class="tl-items">Provider-facing denial review · Pre-submission scrubbing · Real-time eligibility check before service · Provider scorecard</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-dot" style="background:#CECBF6"></div></div>
+      <div class="tl-content">
+        <div class="tl-phase">Phase 5 — Months 24+</div>
+        <div class="tl-title">Predictive Payment Integrity</div>
+        <div class="tl-items">Graph analytics for fraud network detection · Contract optimization · Subrogation automation · Self-improving rules engine · CMS audit automation</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 10: WHY FHIRFABRIC ══ -->
+<div class="slide bg-dark" id="slide-10">
+  <div class="eyebrow">Why FHIRFabric</div>
+  <div class="h-section">What no incumbent<br/><em>can offer you.</em></div>
+  <div class="card-grid" style="grid-template-columns:repeat(2,1fr)">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:32px;height:32px;background:rgba(0,131,143,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">🔌</div>
+        <div class="card-title">Plug and play — no rip and replace</div>
+      </div>
+      <div class="card-sub">Your adjudication system stays. One API call. Your team changes nothing. Most payers can run a POC in days on Pattern 1 (semantic layer) without touching internal systems.</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:32px;height:32px;background:rgba(0,131,143,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">👁</div>
+        <div class="card-title">Real-time visibility — not a black box</div>
+      </div>
+      <div class="card-sub">Your VP of PI opens a browser and sees every claim, every stage, every finding, every dollar — right now. No weekly report. No batch file. No calling the vendor to ask what happened.</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:32px;height:32px;background:rgba(83,74,183,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">🤖</div>
+        <div class="card-title">LLM-agnostic — you own the AI</div>
+      </div>
+      <div class="card-sub">Cotiviti's AI is proprietary — you can't see it, adjust it, or explain it in an appeal. FHIRFabric's AI is pluggable. Bring Anthropic, Azure OpenAI, or run Llama on-prem. You control the model.</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:32px;height:32px;background:rgba(59,109,17,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">📋</div>
+        <div class="card-title">Every denial is defensible</div>
+      </div>
+      <div class="card-sub">Every finding cites the specific CMS policy chapter, LCD number, or contract clause. Provider appeals have an exact answer. No ambiguous denial codes. No "the algorithm said so."</div>
+    </div>
+  </div>
+  <div style="margin-top:28px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+    <div style="text-align:center"><div class="stat" style="font-size:2rem">17</div><div class="stat-label">validation stages</div></div>
+    <div style="text-align:center"><div class="stat" style="font-size:2rem">&lt;60s</div><div class="stat-label">decision per claim</div></div>
+    <div style="text-align:center"><div class="stat" style="font-size:2rem">0</div><div class="stat-label">workflow changes needed</div></div>
+    <div style="text-align:center"><div class="stat" style="font-size:2rem">100%</div><div class="stat-label">of findings citable</div></div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 11: NEXT STEPS ══ -->
+<div class="slide bg-teal" id="slide-11">
+  <div class="eyebrow" style="color:rgba(255,255,255,.5)">Next steps</div>
+  <div class="h-section">Let's run your claims<br/><em>through our pipeline.</em></div>
+  <div class="sub">The fastest path to value is a 2-week POC. You give us 100 representative claims — anonymized. We run them through the full 17-stage pipeline and return a finding report showing exactly what would have been caught, what would have been saved, and where the gaps are in your current system.</div>
+  <div class="card-grid" style="grid-template-columns:repeat(3,1fr);margin-top:32px">
+    <div class="card" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15)">
+      <div style="font-family:monospace;font-size:.62rem;color:rgba(255,255,255,.5);margin-bottom:8px">WEEK 1</div>
+      <div class="card-title">Technical briefing</div>
+      <div class="card-sub">Your IT architect + our team. Integration pattern selection. API spec review. Data governance and PHI handling. BAA execution.</div>
+    </div>
+    <div class="card" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15)">
+      <div style="font-family:monospace;font-size:.62rem;color:rgba(255,255,255,.5);margin-bottom:8px">WEEK 2</div>
+      <div class="card-title">POC deployment</div>
+      <div class="card-sub">Pattern 1 integration. 100 anonymized claims through the pipeline. Full finding report. Dollar savings estimate. Stage-by-stage breakdown.</div>
+    </div>
+    <div class="card" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15)">
+      <div style="font-family:monospace;font-size:.62rem;color:rgba(255,255,255,.5);margin-bottom:8px">WEEK 3+</div>
+      <div class="card-title">Results review</div>
+      <div class="card-sub">Executive readout of POC findings. ROI model. Production integration scoping. Contract discussion.</div>
+    </div>
+  </div>
+  <div style="margin-top:36px;display:flex;gap:16px;align-items:center">
+    <div style="font-size:1rem;color:rgba(255,255,255,.8)">Ready to start?</div>
+    <div style="padding:10px 24px;background:white;color:#0F6E56;border-radius:8px;font-weight:600;font-size:.9rem">hello@fhirfabric.com</div>
+    <div style="padding:10px 24px;background:rgba(255,255,255,.15);color:white;border-radius:8px;font-size:.9rem">fhirfabric.com</div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="slide-num" id="slide-num">1 / 11</div>
+<div class="nav-btns">
+  <button class="nav-btn" onclick="prevSlide()">← Back</button>
+  <button class="nav-btn primary" onclick="nextSlide()">Next →</button>
+</div>
+
+<script>
+let current=1;const total=11;
+
+function showSlide(n){
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('active'));
+  document.getElementById('slide-'+n).classList.add('active');
+  document.getElementById('slide-num').textContent=n+' / '+total;
+  current=n;
+}
+
+function nextSlide(){ if(current<total) showSlide(current+1); }
+function prevSlide(){ if(current>1) showSlide(current-1); }
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='Space') nextSlide();
+  if(e.key==='ArrowLeft') prevSlide();
+});
+</script>
+</body>
+</html>

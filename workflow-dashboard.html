@@ -661,6 +661,13 @@ const PERIOD_TOTALS = {
 
 let period='today', selectedStage=null, selectedSub=null, expandedStages=new Set();
 
+// Map any period key to a stage-level period key (stages only have today/week/month/ytd)
+function stagesPeriod(p){
+  if(['today','week','month','ytd'].includes(p)) return p;
+  // Quarters and full years → use ytd as the closest stage-level proxy
+  return 'ytd';
+}
+
 function fmt(n){return n>=1000000?'$'+(n/1000000).toFixed(1)+'M':n>=1000?'$'+(n/1000).toFixed(0)+'K':'$'+n}
 
 // ── SYNTHETIC CLAIM GENERATOR ──
@@ -1029,7 +1036,10 @@ function renderKPIs(){
   document.getElementById('s-sav').textContent=fmt(d.sav);
   document.getElementById('intake-count').textContent=d.total+' claims';
   // Active period label
-  const periodLabels={today:'Today',week:'This week',month:'This month',q1:'Q1 2026',q2:'Q2 2026',q3:'Q3 2026',q4:'Q4 2026',ytd:'Year to date',custom:'Custom range'};
+  const periodLabels={today:'Today',week:'This week',month:'This month',
+    q1:'Q1 '+pfActiveYear,q2:'Q2 '+pfActiveYear,q3:'Q3 '+pfActiveYear,q4:'Q4 '+pfActiveYear,
+    ytd:'Year to date',custom:'Custom range',
+    year_2024:'Full year 2024',year_2025:'Full year 2025',year_2026:'Full year 2026'};
   const lbl=document.getElementById('active-period-label');
   if(lbl) lbl.textContent=periodLabels[period]||period;
   // Episode score banner — aggregate across all 17 stages
@@ -1064,7 +1074,7 @@ function tierBg(tier){
 }
 
 function chipHTML(p){
-  const pd=p.periods[period];
+  const pd=p.periods[stagesPeriod(period)]||p.periods['today']||{pass:0,deny:0,pend:0};
   const sc=p.scores||{conf:0.95,risk:5,dq:1.0,tier_c:'high',tier_r:'minimal',signals:[]};
   let chips='';
   if(pd.pass>0) chips+=`<span class="chip chip-pass">${pd.pass}✓</span>`;
@@ -1145,7 +1155,7 @@ function buildSignalRows(signals){
 }
 
 function renderDetail(stage, sub){
-  const pd=stage.periods[period];
+  const pd=stage.periods[stagesPeriod(period)]||stage.periods['today']||{pass:0,deny:0,pend:0};
   const rp=document.getElementById('right-panel');
 
   // ── Score panel ──

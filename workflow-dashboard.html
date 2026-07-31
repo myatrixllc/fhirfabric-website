@@ -1479,6 +1479,228 @@ renderKPIs(); renderTree();
 const nav=document.getElementById('nav');
 window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));
 document.getElementById('hamburger').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');this.classList.toggle('active');});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIVE API INTEGRATION — auto-injected by inject_dashboard.py
+// ═══════════════════════════════════════════════════════════════════════════
+
+const DEMO_EDI = {
+  "Office visit": "ISA*00*          *00*          *ZZ*PROVIDER123    *ZZ*BLUEPRINT      *240718*1200*^*00501*000000001*0*P*:~\nGS*HC*PROVIDER123*BLUEPRINT*20240718*1200*1*X*005010X222A2~\nST*837*0001*005010X222A2~\nBHT*0019*00*RUN1-CLM-00442*20240718*1200*CH~\nNM1*85*2*RIVERSIDE FAMILY CARE*****XX*1679943265~\nREF*EI*371234567~\nPRV*BI*PXC*207Q00000X~\nNM1*IL*1*REYES*AVA****MI*MBR-2024-55102~\nDMG*D8*19790412*F~\nREF*1L*BLUEPRINT-PPO-GOLD~\nCLM*RUN1-CLM-00442*75***11:B:1*Y*A*Y*Y~\nHI*ABK:Z0000~\nLX*1~\nSV1*HC:99213*75*UN*1*11**1~\nDTP*472*D8*20240718~\nSE*14*0001~\nGE*1*1~\nIEA*1*000000001~\n",
+  "HMO office visit": "ISA*00*          *00*          *ZZ*PROVIDER123    *ZZ*BLUEPRINT      *240718*1200*^*00501*000000002*0*P*:~\nGS*HC*PROVIDER123*BLUEPRINT*20240718*1200*2*X*005010X222A2~\nST*837*0002*005010X222A2~\nBHT*0019*00*RUN2-CLM-00449*20240718*1200*CH~\nNM1*85*2*METRO INTERNAL MEDICINE*****XX*9876543210~\nREF*EI*371234567~\nPRV*BI*PXC*207R00000X~\nNM1*IL*1*BELL*MARCUS****MI*MBR-2024-33291~\nDMG*D8*19880930*M~\nREF*1L*BLUEPRINT-HMO-SILVER~\nCLM*RUN2-CLM-00449*185***11:B:1*Y*A*Y*Y~\nHI*ABK:J069~\nLX*1~\nSV1*HC:99214*185*UN*1*11**1~\nDTP*472*D8*20240718~\nSE*14*0002~\nGE*1*2~\nIEA*1*000000002~\n",
+  "Surgical": "ISA*00*          *00*          *ZZ*RIVERSIDE       *ZZ*BLUEPRINT      *240718*1200*^*00501*000000005*0*P*:~\nGS*HC*RIVERSIDE*BLUEPRINT*20240718*1200*5*X*005010X222A2~\nST*837*0005*005010X222A2~\nBHT*0019*00*RUN3P-CLM-00451*20240718*1200*CH~\nNM1*85*2*RIVERSIDE ORTHOPAEDICS LLC*****XX*1548372906~\nREF*EI*371234567~\nPRV*BI*PXC*207X00000X~\nNM1*IL*1*OKAFOR*DIANE****MI*MBR-2024-88821~\nDMG*D8*19610122*F~\nREF*1L*BLUEPRINT-PPO-GOLD~\nCLM*RUN3P-CLM-00451*44800***11:B:1*Y*A*Y*Y~\nHI*ABK:M1711~\nLX*1~\nSV1*HC:27447:50*42000*UN*3*11**1~\nDTP*472*D8*20240718~\nLX*2~\nSV1*HC:27310*2200*UN*1*11**1~\nDTP*472*D8*20240718~\nLX*3~\nSV1*HC:99215*350*UN*1*11**1~\nDTP*472*D8*20240718~\nLX*4~\nSV1*HC:99214*250*UN*1*11**1~\nDTP*472*D8*20240718~\nSE*23*0005~\nGE*1*5~\nIEA*1*000000005~\n",
+  "PT clinic": "ISA*00*          *00*          *ZZ*PROVIDER555    *ZZ*BLUEPRINT      *240718*1200*^*00501*000000004*0*P*:~\nGS*HC*PROVIDER555*BLUEPRINT*20240718*1200*4*X*005010X222A2~\nST*837*0004*005010X222A2~\nBHT*0019*00*RUN4-CLM-00444*20240718*1200*CH~\nNM1*85*2*ACTIVE LIFE PHYSICAL THERAPY*****XX*5551234567~\nREF*EI*371234567~\nPRV*BI*PXC*225100000X~\nNM1*IL*1*NAKAMURA*LEO****MI*MBR-2024-19982~\nDMG*D8*19900705*M~\nREF*1L*BLUEPRINT-PPO-GOLD~\nCLM*RUN4-CLM-00444*3858***11:B:1*Y*A*Y*Y~\nHI*ABK:M545~\nLX*1~\nSV1*HC:99215*350*UN*1*11**1~\nDTP*472*D8*20240718~\nLX*2~\nSV1*HC:97110*720*UN*16*11**1~\nDTP*472*D8*20240718~\nLX*3~\nSV1*HC:97530*720*UN*16*11**1~\nDTP*472*D8*20240718~\nLX*4~\nSV1*HC:97140*720*UN*16*11**1~\nDTP*472*D8*20240718~\nLX*5~\nSV1*HC:97012*304*UN*8*11**1~\nDTP*472*D8*20240718~\nLX*6~\nSV1*HC:97035*304*UN*8*11**1~\nDTP*472*D8*20240718~\nLX*7~\nSV1*HC:20553*740*UN*4*11**1~\nDTP*472*D8*20240718~\nSE*32*0004~\nGE*1*4~\nIEA*1*000000004~\n"
+};
+
+const API_BASE = 'https://api.fhirfabric.com';
+let _apiToken = null;
+let _realClaims = [];   // store full API responses for drilldown
+
+// Mint a demo token via the API (requires the private key on the server)
+// For the dashboard we use a pre-minted token stored in sessionStorage,
+// or fall back to prompting the user.
+function getToken() {
+  if (_apiToken) return _apiToken;
+  const stored = sessionStorage.getItem('fhirfabric_token');
+  if (stored) { _apiToken = stored; return _apiToken; }
+  const t = prompt(
+    'Paste your FHIRFabric demo token:\n' +
+    '(run: python scripts/mint_demo_token.py --partner DEMOPAYER-demo --kid demopayer-2026-a --ttl 14400)');
+  if (t) { _apiToken = t.trim(); sessionStorage.setItem('fhirfabric_token', _apiToken); }
+  return _apiToken;
+}
+
+async function submitClaim(label, edi, token) {
+  const resp = await fetch(API_BASE + '/v1/claims/validate/x12', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ edi }),
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  return resp.json();
+}
+
+function dispositionType(d) {
+  if (!d) return 'pend';
+  const v = d.toLowerCase();
+  if (v === 'approved' || v === 'approve') return 'pass';
+  if (v === 'denied'   || v === 'deny')   return 'deny';
+  return 'pend';
+}
+
+function buildClaimsPanel(results) {
+  const labels = {pass:'APPROVE', deny:'DENY', pend:'PEND'};
+  const colors = {pass:'#3B6D11', deny:'#A32D2D', pend:'#854F0B'};
+  const bgs    = {pass:'#EAF3DE', deny:'#FCEBEB', pend:'#FAEEDA'};
+
+  return `
+    <div style="padding:20px 24px 0;border-top:1px solid #E2E6ED;margin-top:16px;">
+      <div style="font-size:.75rem;font-weight:700;color:var(--text-3);letter-spacing:.08em;
+                  text-transform:uppercase;margin-bottom:12px;">Live Results — ${results.length} Claims</div>
+      ${results.map(r => {
+        const t = dispositionType(r.response.final_disposition);
+        const savings = parseFloat(r.response.total_estimated_savings || 0);
+        const conf = Math.round((r.response.confidence_score || 0) * 100);
+        const stages = (r.response.stages || []).length;
+        return `
+          <div style="background:${bgs[t]};border:1px solid ${colors[t]}33;border-radius:8px;
+                      padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;
+                      justify-content:space-between;cursor:pointer;"
+               onclick="showClaimDetail(${results.indexOf(r)})">
+            <div>
+              <div style="font-weight:600;color:var(--navy);font-size:.82rem;">${r.label}</div>
+              <div style="font-size:.72rem;color:var(--text-3);margin-top:2px;">
+                $${parseFloat(r.response.total_billed||0).toLocaleString()} billed
+                ${savings > 0 ? '· <b style="color:#00838F">$' + savings.toLocaleString() + ' saved</b>' : ''}
+                · ${r.response.total_findings||0} findings
+                · ${stages} stages
+                · ${conf}% confidence
+              </div>
+              ${r.response.short_circuit_at ?
+                `<div style="font-size:.68rem;color:#854F0B;margin-top:2px;">
+                  ⚡ stopped at: ${r.response.short_circuit_at}</div>` : ''}
+            </div>
+            <span style="background:${colors[t]};color:#fff;font-size:.7rem;font-weight:700;
+                         padding:3px 10px;border-radius:20px;white-space:nowrap;">
+              ${labels[t]}
+            </span>
+          </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function showClaimDetail(idx) {
+  const r = _realClaims[idx];
+  if (!r) return;
+  const panel = document.getElementById('live-results-detail');
+  if (!panel) return;
+  const stages = (r.response.stages || []).filter(s => s.stage && s.name);
+  const rows = stages.map(s => {
+    const disp = s.disposition || '—';
+    const color = disp.includes('deny') ? '#A32D2D'
+                : disp.includes('siu')  ? '#534AB7'
+                : disp.includes('pend') ? '#854F0B'
+                : '#3B6D11';
+    return `<tr style="border-bottom:1px solid #E2E6ED;">
+      <td style="padding:6px 8px;font-size:.75rem;color:var(--text-3);">${s.stage}</td>
+      <td style="padding:6px 8px;font-size:.75rem;font-weight:500;">${s.name}</td>
+      <td style="padding:6px 8px;font-size:.75rem;">${s.status||'—'}</td>
+      <td style="padding:6px 8px;font-size:.75rem;color:${color};font-weight:600;">${disp}</td>
+      <td style="padding:6px 8px;font-size:.75rem;text-align:right;">${s.confidence != null ? Math.round(s.confidence*100)+'%' : '—'}</td>
+      <td style="padding:6px 8px;font-size:.75rem;text-align:right;">${s.risk != null ? s.risk : '—'}</td>
+      <td style="padding:6px 8px;font-size:.75rem;text-align:right;">${s.findings||0}</td>
+    </tr>`;
+  }).join('');
+  panel.innerHTML = `
+    <div style="padding:16px 24px;border-top:2px solid var(--teal);">
+      <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:4px;">${r.label}</div>
+      <div style="font-size:.72rem;color:var(--text-3);margin-bottom:12px;">${r.response.disposition_summary||''}</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:#F0F2F5;">
+          <th style="padding:6px 8px;font-size:.68rem;text-align:left;color:var(--text-3);">#</th>
+          <th style="padding:6px 8px;font-size:.68rem;text-align:left;color:var(--text-3);">Stage</th>
+          <th style="padding:6px 8px;font-size:.68rem;text-align:left;color:var(--text-3);">Status</th>
+          <th style="padding:6px 8px;font-size:.68rem;text-align:left;color:var(--text-3);">Disposition</th>
+          <th style="padding:6px 8px;font-size:.68rem;text-align:right;color:var(--text-3);">Conf</th>
+          <th style="padding:6px 8px;font-size:.68rem;text-align:right;color:var(--text-3);">Risk</th>
+          <th style="padding:6px 8px;font-size:.68rem;text-align:right;color:var(--text-3);">Findings</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+async function loadRealClaims() {
+  const token = getToken();
+  if (!token) return;
+
+  // Show loading state on KPIs
+  ['s-total','s-pass','s-deny','s-pend','s-fwa','s-siu'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '…';
+  });
+  document.getElementById('s-sav').textContent = '$…';
+
+  // Inject a results panel below the KPI row if not already there
+  if (!document.getElementById('live-results-panel')) {
+    const kpiRow = document.querySelector('.scorecard-row') ||
+                   document.getElementById('s-total')?.closest('section, div.row, div');
+    if (kpiRow && kpiRow.parentNode) {
+      const panel = document.createElement('div');
+      panel.id = 'live-results-panel';
+      kpiRow.parentNode.insertBefore(panel, kpiRow.nextSibling);
+
+      const detail = document.createElement('div');
+      detail.id = 'live-results-detail';
+      kpiRow.parentNode.insertBefore(detail, panel.nextSibling);
+    }
+  }
+
+  // Submit all four claims concurrently
+  const entries = Object.entries(DEMO_EDI);
+  const results = await Promise.allSettled(
+    entries.map(([label, edi]) =>
+      submitClaim(label, edi, token).then(r => ({label, response: r}))
+    )
+  );
+
+  _realClaims = [];
+  let pass=0, deny=0, pend=0, fwa=0, siu=0, sav=0;
+
+  for (const r of results) {
+    if (r.status === 'rejected') continue;
+    const v = r.value;
+    _realClaims.push(v);
+
+    const t = dispositionType(v.response.final_disposition);
+    if (t === 'pass') pass++;
+    else if (t === 'deny') deny++;
+    else pend++;
+
+    const q = v.response.pend_queue || '';
+    if (q.includes('fraud') || q.includes('fwa')) fwa++;
+    if (q.includes('siu')) siu++;
+
+    sav += parseFloat(v.response.total_estimated_savings || 0);
+  }
+
+  const total = _realClaims.length;
+
+  // Update PERIOD_TOTALS.today with real data
+  PERIOD_TOTALS.today = {total, pass, deny, pend, fwa, siu, sav};
+
+  // Re-render KPIs
+  if (period === 'today') renderKPIs();
+  else {
+    // Force today period to show real data
+    document.getElementById('s-total').textContent = total;
+    document.getElementById('s-pass').textContent = pass;
+    document.getElementById('s-deny').textContent = deny;
+    document.getElementById('s-pend').textContent = pend;
+    document.getElementById('s-fwa').textContent = fwa;
+    document.getElementById('s-siu').textContent = siu;
+    document.getElementById('s-sav').textContent =
+      sav >= 1000 ? '$' + (sav/1000).toFixed(0) + 'K' : '$' + sav;
+  }
+
+  // Show per-claim results panel
+  const panel = document.getElementById('live-results-panel');
+  if (panel) panel.innerHTML = buildClaimsPanel(_realClaims);
+}
+
+// Auto-load on page open — token prompt appears once per session
+document.addEventListener('DOMContentLoaded', function() {
+  // Small delay so the page renders first
+  setTimeout(loadRealClaims, 500);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END LIVE API INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════
+
 </script>
 </body>
 </html>

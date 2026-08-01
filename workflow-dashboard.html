@@ -1697,6 +1697,7 @@ async function fetchLatestResults() {
       headers: {
         'apikey': SUPABASE_ANON,
         'Authorization': 'Bearer ' + SUPABASE_ANON,
+        'Accept-Profile': 'payer_systems',
       }
     }
   );

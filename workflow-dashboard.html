@@ -274,10 +274,10 @@
       <div class="pf-dd" id="pf-dd">
         <!-- Relative -->
         <div class="pf-dg">Relative</div>
-        <div class="pf-di on" id="pfi-today" onclick="pfSelect('today','Today','Jul 20','Claims for <strong>today Jul 20, 2026</strong> — real-time')">Today <span class="pf-dm">Jul 20, 2026</span></div>
+        <div class="pf-di on" id="pfi-today" onclick="pfSelect('today','Today','Jul 20','Claims for <strong>today " + new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) + "</strong> — real-time')">Today <span class="pf-dm">" + new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) + "</span></div>
         <div class="pf-di" id="pfi-week" onclick="pfSelect('week','This week','Jul 14–20','Claims for <strong>Jul 14–20, 2026</strong> (this week)')">This week <span class="pf-dm">Jul 14–20</span></div>
         <div class="pf-di" id="pfi-month" onclick="pfSelect('month','This month','Jul 2026','Claims for <strong>Jul 1–20, 2026</strong> (month to date)')">This month <span class="pf-dm">Jul 1–20</span></div>
-        <div class="pf-di" id="pfi-ytd" onclick="pfSelect('ytd','Year to date','Jan–Jul 26','Claims for <strong>Jan 1 – Jul 20, 2026</strong> (year to date)')">Year to date <span class="pf-dm">Jan 1 – today</span></div>
+        <div class="pf-di" id="pfi-ytd" onclick="pfSelect('ytd','Year to date','Jan–Jul 26','Claims for <strong>Jan 1 – " + new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) + "</strong> (year to date)')">Year to date <span class="pf-dm">Jan 1 – today</span></div>
         <div class="pf-sep"></div>
         <!-- Quarters -->
         <div class="pf-dg">Quarter — <span id="pf-q-year">2026</span></div>
@@ -1453,7 +1453,23 @@ function pfApplyCustom(){
 function pfClearCustom(){
   const chip=document.getElementById('pf-chip');
   if(chip) chip.classList.remove('show');
-  pfSelect('today','Today','Jul 20');
+  // Dynamic date — always shows today's actual date
+  (function() {
+    const now = new Date();
+    const mo = now.toLocaleString('en-US',{month:'short'});
+    const dy = now.getDate();
+    const yr = now.getFullYear();
+    const badge = mo + ' ' + dy;
+    const full  = mo + ' ' + dy + ', ' + yr;
+    const mofull= mo + ' 1\u2013' + dy;
+    // Update the period picker options
+    const today = document.getElementById('pfi-today');
+    if (today) today.innerHTML = 'Today <span class="pf-dm">' + full + '</span>';
+    const month = document.getElementById('pfi-month');
+    if (month) month.innerHTML = 'This month <span class="pf-dm">' + mofull + '</span>';
+    pfSelect('today', 'Today', badge,
+      'Claims for <strong>today ' + full + '</strong> — real-time');
+  })();
 }
 
 // Close on outside click — but not on date inputs

@@ -1467,6 +1467,9 @@ function pfClearCustom(){
     if (today) today.innerHTML = 'Today <span class="pf-dm">' + full + '</span>';
     const month = document.getElementById('pfi-month');
     if (month) month.innerHTML = 'This month <span class="pf-dm">' + mofull + '</span>';
+    // Update the badge element directly
+    var badgeEl = document.getElementById('pf-badge');
+    if (badgeEl) badgeEl.textContent = badge;
     pfSelect('today', 'Today', badge,
       'Claims for <strong>today ' + full + '</strong> — real-time');
   })();

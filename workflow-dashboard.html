@@ -1675,7 +1675,7 @@ const POLL_INTERVAL = 5000; // 5 seconds
 async function fetchLatestResults() {
   const resp = await fetch(
     SUPABASE_URL + '/rest/v1/pipeline_results' +
-    '?order=submitted_at.desc&limit=10',
+    '?order=submitted_at.desc&limit=4',
     {
       headers: {
         'apikey': SUPABASE_ANON,

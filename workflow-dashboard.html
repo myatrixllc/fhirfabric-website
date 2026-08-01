@@ -1743,11 +1743,80 @@ function applyResults(results) {
   if (panel) panel.innerHTML = buildClaimsPanel(results);
 }
 
-// Auto-load on page open — token prompt appears once per session
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SUPABASE REAL-TIME POLLING — replaces the live API calls
+// ═══════════════════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://ghldkdsmitlwtzuxvhhk.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+const POLL_INTERVAL = 5000; // 5 seconds
+
+async function fetchLatestResults() {
+  const resp = await fetch(
+    SUPABASE_URL + '/rest/v1/pipeline_results' +
+    '?order=submitted_at.desc&limit=10',
+    {
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': 'Bearer ' + SUPABASE_ANON,
+      }
+    }
+  );
+  if (!resp.ok) throw new Error('Supabase ' + resp.status);
+  return resp.json();
+}
+
+function supabaseRowToResult(row) {
+  return {
+    label: row.run_label || row.run_id,
+    response: {
+      final_disposition:   row.final_disposition,
+      confidence_score:    row.confidence_score,
+      total_billed:        String(row.total_billed || 0),
+      total_estimated_savings: String(row.total_savings || 0),
+      total_findings:      row.total_findings || 0,
+      error_findings:      row.error_findings || 0,
+      pend_queue:          row.pend_queue,
+      short_circuit_at:    row.short_circuit_at,
+      disposition_summary: row.disposition_summary,
+      stages:              row.stages_json || [],
+    }
+  };
+}
+
+let _pollTimer = null;
+
+async function pollSupabase() {
+  try {
+    const rows = await fetchLatestResults();
+    if (!rows || rows.length === 0) return;
+    _realClaims = rows.map(supabaseRowToResult);
+    applyResults(_realClaims);
+
+    // Flash "Live" indicator
+    const liveEl = document.querySelector('.live-dot, .live-badge, [class*=live]');
+    if (liveEl) {
+      liveEl.style.opacity = '0.3';
+      setTimeout(() => liveEl.style.opacity = '1', 300);
+    }
+  } catch(e) {
+    console.warn('Supabase poll error:', e.message);
+  }
+}
+
+function startPolling() {
+  pollSupabase(); // immediate first fetch
+  _pollTimer = setInterval(pollSupabase, POLL_INTERVAL);
+}
+
+// Replace loadRealClaims with Supabase polling on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Small delay so the page renders first
-  setTimeout(loadRealClaims, 500);
+  setTimeout(startPolling, 500);
 });
+// ═══════════════════════════════════════════════════════════════════════════
+// END SUPABASE POLLING
+// ═══════════════════════════════════════════════════════════════════════════
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 // END LIVE API INTEGRATION

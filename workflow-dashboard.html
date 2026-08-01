@@ -1453,26 +1453,6 @@ function pfApplyCustom(){
 function pfClearCustom(){
   const chip=document.getElementById('pf-chip');
   if(chip) chip.classList.remove('show');
-  // Dynamic date — always shows today's actual date
-  (function() {
-    const now = new Date();
-    const mo = now.toLocaleString('en-US',{month:'short'});
-    const dy = now.getDate();
-    const yr = now.getFullYear();
-    const badge = mo + ' ' + dy;
-    const full  = mo + ' ' + dy + ', ' + yr;
-    const mofull= mo + ' 1\u2013' + dy;
-    // Update the period picker options
-    const today = document.getElementById('pfi-today');
-    if (today) today.innerHTML = 'Today <span class="pf-dm">' + full + '</span>';
-    const month = document.getElementById('pfi-month');
-    if (month) month.innerHTML = 'This month <span class="pf-dm">' + mofull + '</span>';
-    // Update the badge element directly
-    var badgeEl = document.getElementById('pf-badge');
-    if (badgeEl) badgeEl.textContent = badge;
-    pfSelect('today', 'Today', badge,
-      'Claims for <strong>today ' + full + '</strong> — real-time');
-  })();
 }
 
 // Close on outside click — but not on date inputs
@@ -1494,6 +1474,24 @@ document.addEventListener('DOMContentLoaded',function(){
 function setPeriod(p){ pfSelect(p,p,''); }
 
 renderKPIs(); renderTree();
+
+// Dynamic date — runs once at page load
+(function(){
+  var n=new Date();
+  var mo=n.toLocaleString('en-US',{month:'short'});
+  var dy=n.getDate();
+  var yr=n.getFullYear();
+  var badge=mo+' '+dy;
+  var full=mo+' '+dy+', '+yr;
+  var mofull=mo+' 1\u2013'+dy;
+  var el=document.getElementById('pf-badge');
+  if(el) el.textContent=badge;
+  var ti=document.getElementById('pfi-today');
+  if(ti) ti.innerHTML='Today <span class="pf-dm">'+full+'</span>';
+  var mi=document.getElementById('pfi-month');
+  if(mi) mi.innerHTML='This month <span class="pf-dm">'+mofull+'</span>';
+  pfSelect('today','Today',badge,'Claims for today '+full+' — real-time');
+})();
 
 const nav=document.getElementById('nav');
 window.addEventListener('scroll',()=>nav.classList.toggle('elevated',window.scrollY>20));
@@ -1632,86 +1630,7 @@ function showClaimDetail(idx) {
   panel.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
-async function loadRealClaims() {
-  const token = getToken();
-  if (!token) return;
-
-  // Check cache first — avoid re-running the full pipeline on every page load
-  const CACHE_KEY = 'fhirfabric_results';
-  const CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
-  const cached = sessionStorage.getItem(CACHE_KEY);
-  if (cached) {
-    try {
-      const {ts, results} = JSON.parse(cached);
-      if (Date.now() - ts < CACHE_TTL) {
-        _realClaims = results;
-        applyResults(results);
-        return;
-      }
-    } catch(e) { sessionStorage.removeItem(CACHE_KEY); }
-  }
-
-  // Show loading state on KPIs
-  ['s-total','s-pass','s-deny','s-pend','s-fwa','s-siu'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = '…';
-  });
-  document.getElementById('s-sav').textContent = '$…';
-
-  // Inject a results panel below the KPI row if not already there
-  if (!document.getElementById('live-results-panel')) {
-    const summary = document.querySelector('div.summary');
-    if (summary && summary.parentNode) {
-      if (!document.getElementById('live-results-panel')) {
-        const panel = document.createElement('div');
-        panel.id = 'live-results-panel';
-        panel.style.cssText = 'width:100%;margin:12px 0 0 0;';
-        summary.parentNode.insertBefore(panel, summary.nextSibling);
-      }
-      if (!document.getElementById('live-results-detail')) {
-        const detail = document.createElement('div');
-        detail.id = 'live-results-detail';
-        detail.style.cssText = 'width:100%;margin:0 0 16px 0;background:#fff;border-radius:8px;border:1px solid #E2E6ED;';
-        const panel = document.getElementById('live-results-panel');
-        summary.parentNode.insertBefore(detail, panel.nextSibling);
-      }
-    }
-  }
-
-  // Submit all four claims concurrently
-  const entries = Object.entries(DEMO_EDI);
-  const results = await Promise.allSettled(
-    entries.map(([label, edi]) =>
-      submitClaim(label, edi, token).then(r => ({label, response: r}))
-    )
-  );
-
-  _realClaims = [];
-  let pass=0, deny=0, pend=0, fwa=0, siu=0, sav=0;
-
-  for (const r of results) {
-    if (r.status === 'rejected') continue;
-    const v = r.value;
-    _realClaims.push(v);
-
-    const t = dispositionType(v.response.final_disposition);
-    if (t === 'pass') pass++;
-    else if (t === 'deny') deny++;
-    else pend++;
-
-    const q = v.response.pend_queue || '';
-    if (q.includes('fraud') || q.includes('fwa')) fwa++;
-    if (q.includes('siu')) siu++;
-
-    sav += parseFloat(v.response.total_estimated_savings || 0);
-  }
-
-  // Cache the results so subsequent page loads are instant
-  const CACHE_KEY = 'fhirfabric_results';
-  sessionStorage.setItem(CACHE_KEY, JSON.stringify({ts: Date.now(), results: _realClaims}));
-
-  applyResults(_realClaims);
-}
+// loadRealClaims removed — replaced by Supabase polling (pollSupabase)
 
 function applyResults(results) {
   let pass=0, deny=0, pend=0, fwa=0, siu=0, sav=0;

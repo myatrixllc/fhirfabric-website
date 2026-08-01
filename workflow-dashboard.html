@@ -1555,7 +1555,8 @@ function buildClaimsPanel(results) {
   return `
     <div style="padding:20px 24px 0;border-top:1px solid #E2E6ED;margin-top:16px;">
       <div style="font-size:.75rem;font-weight:700;color:var(--text-3);letter-spacing:.08em;
-                  text-transform:uppercase;margin-bottom:12px;">Live Results — ${results.length} Claims</div>
+                  text-transform:uppercase;margin-bottom:12px;padding:0 4px;">
+                  LIVE RESULTS — ${results.length} CLAIMS · <span style="color:#00838F;">real-time</span></div>
       ${results.map(r => {
         const t = dispositionType(r.response.final_disposition);
         const savings = parseFloat(r.response.total_estimated_savings || 0);
@@ -1658,27 +1659,9 @@ function applyResults(results) {
       sav >= 1000 ? '$' + (sav/1000).toFixed(0) + 'K' : '$' + sav;
   }
 
-  // Ensure panels exist
-  const summary = document.querySelector('div.summary');
-  if (summary && summary.parentNode) {
-    if (!document.getElementById('live-results-panel')) {
-      const panel = document.createElement('div');
-      panel.id = 'live-results-panel';
-      panel.style.cssText = 'width:100%;margin:12px 0 0 0;';
-      summary.parentNode.insertBefore(panel, summary.nextSibling);
-    }
-    if (!document.getElementById('live-results-detail')) {
-      const detail = document.createElement('div');
-      detail.id = 'live-results-detail';
-      detail.style.cssText = 'width:100%;margin:0 0 16px 0;background:#fff;border-radius:8px;border:1px solid #E2E6ED;';
-      const panel2 = document.getElementById('live-results-panel');
-      summary.parentNode.insertBefore(detail, panel2.nextSibling);
-    }
-  }
-
-  // Show per-claim results panel
-  const panel = document.getElementById('live-results-panel');
-  if (panel) panel.innerHTML = buildClaimsPanel(results);
+  // Show claim cards in the right panel
+  const rp = document.getElementById('right-panel');
+  if (rp) rp.innerHTML = buildClaimsPanel(results);
 }
 
 

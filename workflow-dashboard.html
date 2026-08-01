@@ -1626,16 +1626,21 @@ async function loadRealClaims() {
 
   // Inject a results panel below the KPI row if not already there
   if (!document.getElementById('live-results-panel')) {
-    const kpiRow = document.querySelector('.scorecard-row') ||
-                   document.getElementById('s-total')?.closest('section, div.row, div');
-    if (kpiRow && kpiRow.parentNode) {
-      const panel = document.createElement('div');
-      panel.id = 'live-results-panel';
-      kpiRow.parentNode.insertBefore(panel, kpiRow.nextSibling);
-
-      const detail = document.createElement('div');
-      detail.id = 'live-results-detail';
-      kpiRow.parentNode.insertBefore(detail, panel.nextSibling);
+    const summary = document.querySelector('div.summary');
+    if (summary && summary.parentNode) {
+      if (!document.getElementById('live-results-panel')) {
+        const panel = document.createElement('div');
+        panel.id = 'live-results-panel';
+        panel.style.cssText = 'width:100%;margin:12px 0 0 0;';
+        summary.parentNode.insertBefore(panel, summary.nextSibling);
+      }
+      if (!document.getElementById('live-results-detail')) {
+        const detail = document.createElement('div');
+        detail.id = 'live-results-detail';
+        detail.style.cssText = 'width:100%;margin:0 0 16px 0;background:#fff;border-radius:8px;border:1px solid #E2E6ED;';
+        const panel = document.getElementById('live-results-panel');
+        summary.parentNode.insertBefore(detail, panel.nextSibling);
+      }
     }
   }
 

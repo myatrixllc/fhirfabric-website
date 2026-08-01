@@ -1617,6 +1617,21 @@ async function loadRealClaims() {
   const token = getToken();
   if (!token) return;
 
+  // Check cache first — avoid re-running the full pipeline on every page load
+  const CACHE_KEY = 'fhirfabric_results';
+  const CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
+  const cached = sessionStorage.getItem(CACHE_KEY);
+  if (cached) {
+    try {
+      const {ts, results} = JSON.parse(cached);
+      if (Date.now() - ts < CACHE_TTL) {
+        _realClaims = results;
+        applyResults(results);
+        return;
+      }
+    } catch(e) { sessionStorage.removeItem(CACHE_KEY); }
+  }
+
   // Show loading state on KPIs
   ['s-total','s-pass','s-deny','s-pend','s-fwa','s-siu'].forEach(id => {
     const el = document.getElementById(id);
@@ -1672,15 +1687,29 @@ async function loadRealClaims() {
     sav += parseFloat(v.response.total_estimated_savings || 0);
   }
 
-  const total = _realClaims.length;
+  // Cache the results so subsequent page loads are instant
+  const CACHE_KEY = 'fhirfabric_results';
+  sessionStorage.setItem(CACHE_KEY, JSON.stringify({ts: Date.now(), results: _realClaims}));
 
-  // Update PERIOD_TOTALS.today with real data
+  applyResults(_realClaims);
+}
+
+function applyResults(results) {
+  let pass=0, deny=0, pend=0, fwa=0, siu=0, sav=0;
+  for (const v of results) {
+    const t = dispositionType(v.response.final_disposition);
+    if (t === 'pass') pass++;
+    else if (t === 'deny') deny++;
+    else pend++;
+    const q = v.response.pend_queue || '';
+    if (q.includes('fraud') || q.includes('fwa')) fwa++;
+    if (q.includes('siu')) siu++;
+    sav += parseFloat(v.response.total_estimated_savings || 0);
+  }
+  const total = results.length;
   PERIOD_TOTALS.today = {total, pass, deny, pend, fwa, siu, sav};
-
-  // Re-render KPIs
   if (period === 'today') renderKPIs();
   else {
-    // Force today period to show real data
     document.getElementById('s-total').textContent = total;
     document.getElementById('s-pass').textContent = pass;
     document.getElementById('s-deny').textContent = deny;
@@ -1691,9 +1720,27 @@ async function loadRealClaims() {
       sav >= 1000 ? '$' + (sav/1000).toFixed(0) + 'K' : '$' + sav;
   }
 
+  // Ensure panels exist
+  const summary = document.querySelector('div.summary');
+  if (summary && summary.parentNode) {
+    if (!document.getElementById('live-results-panel')) {
+      const panel = document.createElement('div');
+      panel.id = 'live-results-panel';
+      panel.style.cssText = 'width:100%;margin:12px 0 0 0;';
+      summary.parentNode.insertBefore(panel, summary.nextSibling);
+    }
+    if (!document.getElementById('live-results-detail')) {
+      const detail = document.createElement('div');
+      detail.id = 'live-results-detail';
+      detail.style.cssText = 'width:100%;margin:0 0 16px 0;background:#fff;border-radius:8px;border:1px solid #E2E6ED;';
+      const panel2 = document.getElementById('live-results-panel');
+      summary.parentNode.insertBefore(detail, panel2.nextSibling);
+    }
+  }
+
   // Show per-claim results panel
   const panel = document.getElementById('live-results-panel');
-  if (panel) panel.innerHTML = buildClaimsPanel(_realClaims);
+  if (panel) panel.innerHTML = buildClaimsPanel(results);
 }
 
 // Auto-load on page open — token prompt appears once per session
